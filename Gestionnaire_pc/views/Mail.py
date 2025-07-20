@@ -145,9 +145,7 @@ def get_notifications(request):
     if request.method == 'GET':
         try:
             # Récupérer les 10 dernières notifications (emails) par exemple
-            # Vous pouvez ajuster le filtre et le nombre selon vos besoins
-            notifications = Email.objects.all().order_by('-date_envoi')[:10]
-            
+            notifications = Email.objects.all().order_by('-date_envoi')[:10] 
             notifications_data = []
             for email in notifications:
                 notification_type = 'info'
@@ -172,7 +170,7 @@ def get_notifications(request):
                     'time': formatted_time,
                     'sender_name': sender_name,
                     'sender_email': sender_email,
-                    'read': email.is_read # Utilisation du champ is_read du modèle
+                    'read': email.is_read 
                 })
             
             return JsonResponse(notifications_data, safe=False)
@@ -197,8 +195,7 @@ def mark_notification_as_read(request, email_id):
    
 def valider_ou_refuser_pc(request):
     if request.method == 'POST':
-        try:
-          
+        try:  
             data = json.loads(request.body)
             pc_id = data.get('pc_id')
             action = data.get('action')  
@@ -218,7 +215,6 @@ def valider_ou_refuser_pc(request):
                     pc.validation_rmg = 'validé'
                 elif fonction == 'DAF':
                     pc.validation_daf = 'validé'
-                # Si les deux ont validé, status = validé
                 if pc.validation_rmg == 'validé' and pc.validation_daf == 'validé':
                     pc.status = 'validé'
                 else:

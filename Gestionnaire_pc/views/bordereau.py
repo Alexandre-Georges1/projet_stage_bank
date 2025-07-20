@@ -50,7 +50,6 @@ def bordereau_utilisateur(request):
     else:
         bordereaux = []
 
-    # On passe les objets bordereaux avec statut et date_statut pour le template
     return render(request, 'dashboard.html', {
         'bordereaux': bordereaux,
         'employe': employe_connecte

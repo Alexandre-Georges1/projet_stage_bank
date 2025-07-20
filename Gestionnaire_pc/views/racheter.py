@@ -1,14 +1,8 @@
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse,request
+from django.http import JsonResponse
 from ..models import Pc_attribué, Employe, Email
-import json
 from django.core.mail import send_mail
 from django.conf import settings
 
-
-
-   
 def racheter_pc(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -26,9 +20,8 @@ def racheter_pc(request):
             'disque_dur': pc.disque_dur,
             'date_achat': pc.date_achat,
             'date_attribution': pc.date_attribution,
-            'status': pc.status  # Ajout du statut en texte
+            'status': pc.status 
         }
-
         return JsonResponse({'pc_info': pc_info})
     except Employe.DoesNotExist:
         return JsonResponse({'error': 'Employé introuvable.'}, status=404)
@@ -40,7 +33,6 @@ def racheter_pc(request):
 def demande_de_rachat(request):
     if request.method == 'POST':
         try:
-            # On ignore les données du frontend, on prend tout depuis l'utilisateur connecté et son PC attribué
             connected_user = None
             pc = None
             if 'user_id' in request.session:
@@ -54,8 +46,6 @@ def demande_de_rachat(request):
 
             if not connected_user or not pc:
                 return JsonResponse({'error': "Impossible de retrouver l'utilisateur ou son PC attribué."}, status=400)
-
-            # Récupérer toutes les infos nécessaires
             nom = connected_user.nom
             prenom = connected_user.prenom
             telephone = connected_user.telephone

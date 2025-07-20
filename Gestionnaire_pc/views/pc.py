@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.core.mail import send_mail
@@ -54,14 +53,11 @@ def modifier_pc(request, pc_id):
         try:
             pc = PC.objects.get(pk=pc_id)
             data = json.loads(request.body)
-
-            # Traitement de la marque
             marque_name = data.get('marque')
             if marque_name:
                 marque_instance, created = marquePC.objects.get_or_create(nom_marque=marque_name)
                 pc.marque = marque_instance
 
-            # Traitement du modèle
             modele_name = data.get('model')
             if modele_name:
                 modele_instance, created = modelePC.objects.get_or_create(nom_modele=modele_name)
@@ -102,10 +98,10 @@ def assign_pc_via_form(request):
                 marque=pc.marque.nom_marque,
                 modele=pc.modele.nom_modele,
                 ram=pc.ram,
-                disque_dur=pc.disque_dur, # Assurez-vous que le disque dur est également inclus ici
-                processeur=pc.processeur, # Inclure le processeur
-                numero_serie=pc.numero_serie, # Ajout du numéro de série
-                date_achat=pc.date_achat, # Inclure la date d'achat
+                disque_dur=pc.disque_dur, 
+                processeur=pc.processeur, 
+                numero_serie=pc.numero_serie, 
+                date_achat=pc.date_achat, 
                 employe=employe,
                 date_attribution=date_attribution
             )
@@ -119,7 +115,7 @@ def assign_pc_via_form(request):
 def pc_disponible():
     return PC.objects.count()
 
-from django.views.decorators.csrf import csrf_exempt
+
     
 def gestion_modeles(request):
     if request.method == 'GET':
@@ -176,12 +172,6 @@ def restituer_pc(request):
             date_restitution = request.POST.get('date_restitution')
             commentaires = request.POST.get('commentaires', '')
 
-            # Debug : afficher les données reçues
-            print(f"🔍 DEBUG - Données reçues:")
-            print(f"  motif: {motif}")
-            print(f"  autre_motif: {autre_motif}")
-            print(f"  date_restitution: {date_restitution}")
-
             user_id = request.session.get('user_id')
             print(f"  user_id de session: {user_id}")
             
@@ -190,23 +180,16 @@ def restituer_pc(request):
             
             try:
                 employe = Employe.objects.get(id_employe=user_id)
-                print(f"  Employé trouvé: {employe.prenom} {employe.nom} (ID: {employe.id_employe})")
             except Employe.DoesNotExist:
-                print(f"  ❌ Employé non trouvé pour user_id: {user_id}")
                 return JsonResponse({'error': 'Employé non trouvé.'}, status=404)
 
-            # Rechercher le PC attribué à cet employé (sans dépendre du pc_id du formulaire)
             try:
                 pc_attribue = Pc_attribué.objects.get(employe=employe)
-                print(f"  ✅ PC attribué trouvé: {pc_attribue.marque} {pc_attribue.modele} (ID: {pc_attribue.id_attribue})")
             except Pc_attribué.DoesNotExist:
-                print(f"  ❌ Aucun PC attribué trouvé pour l'employé {employe.id_employe} ({employe.nom})")
                 return JsonResponse({'error': 'Aucun PC attribué trouvé pour cet employé.'}, status=404)
-            except Pc_attribué.MultipleObjectsReturned:
-                print(f"  ⚠️ Plusieurs PCs attribués trouvés pour l'employé {employe.id_employe}")
-                # Prendre le premier PC trouvé
+            except Pc_attribué.MultipleObjectsReturned: 
                 pc_attribue = Pc_attribué.objects.filter(employe=employe).first()
-                print(f"  📌 PC sélectionné: {pc_attribue.marque} {pc_attribue.modele}")
+              
 
             objet = f"Demande de restitution - {motif}"
             if motif == "Autre" and autre_motif:

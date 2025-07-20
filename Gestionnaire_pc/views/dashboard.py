@@ -114,7 +114,7 @@ def dashboard_employe(request):
         'bordereaux': bordereaux,
         'demandes_achat': demandes_achat
     }
-    return render(request, 'dashboard_employé.html', context)
+    return render(request, 'page_employe/dashboard_employé.html', context)
 
 
 @csrf_exempt
@@ -138,7 +138,7 @@ def dashboard_DCH(request):
                       'pcs_attribues': pcs_attribues,
                       
                       }
-    return render(request, 'dashboard_DCH.html', context)
+    return render(request, 'page_DCH/dashboard_DCH.html', context)
 
 
 @csrf_exempt
@@ -156,7 +156,7 @@ def dashboard_MG(request):
             del request.session['user_id']
 
     context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
-    return render(request, 'dashboard_MG.html', context)
+    return render(request, 'page_MGX/dashboard_MG.html', context)
 
 
 @csrf_exempt
@@ -174,7 +174,7 @@ def dashboard_RMG(request):
             del request.session['user_id']
 
     context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
-    return render(request, 'dashboard_RMG.html', context)
+    return render(request, 'page_MGX/dashboard_RMG.html', context)
 
 
 @csrf_exempt
@@ -192,7 +192,7 @@ def dashboard_DAF(request):
             del request.session['user_id']
 
     context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
-    return render(request, 'dashboard_DAF.html', context)
+    return render(request, 'page_DAF/dashboard_DAF.html', context)
 
 
 
@@ -228,7 +228,7 @@ def dashboard_RDOT(request):
                 'demandes_peripheriques_en_attente': demandes_peripheriques_en_attente,
                 'demandes_peripheriques_traitees': demandes_peripheriques_traitees
                   }
-    return render(request, 'dashboard_RDOT.html', context)
+    return render(request, 'page_DOT/dashboard_RDOT.html', context)
 
 
 @csrf_exempt
@@ -261,7 +261,7 @@ def dashboard_DOT(request):
                 'marques': marques,
                 'modeles': modeles,
                 'notifications': emails}
-    return render(request, 'dashboard_DOT.html', context)
+    return render(request, 'page_DOT/dashboard_DOT.html', context)
 
 @csrf_exempt
 def Admin(request):
@@ -293,4 +293,4 @@ def Admin(request):
                 'marques': marques,
                 'modeles': modeles,
                 'notifications':emails}
-    return render(request, 'custom-admin.html', context)
+    return render(request, 'page_admin/custom-admin.html', context)
