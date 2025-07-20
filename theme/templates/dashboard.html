@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="csrf-token" content="{{ csrf_token }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dist/dashboard.css' %}?v=20250719190828">
+    
+    <title>Dashboard</title>
+</head>
+<body>
+    <section id="sidebar">
+        
+        <div  class="brand">
+            <div class="logo-container">
+                <img src="{% static 'logo_dashboard.png' %}" alt="Logo AdminHub - Gestion des PC" style="width: 60px; height: 60px;">
+            </div>
+            <h1 class="brand">AdminHub</h1>
+        </div>
+        <script>
+        // Configuration des notifications pour la production
+        window.notificationsData = [
+          {% for notif in notifications %}
+            {
+              id: {{ notif.id_email|default:'null' }},
+              type: "info",
+              message: "{{ notif.objet|escapejs|truncatechars:50 }}",
+              time: "{{ notif.date_envoi|date:'Y-m-d H:i:s' }}",
+              sender_name: "{% if notif.expediteur %}{{ notif.expediteur.prenom }} {{ notif.expediteur.nom }}{% else %}Système{% endif %}",
+              is_read: {% if notif.is_read %}true{% else %}false{% endif %}
+            }{% if not forloop.last %},{% endif %}
+          {% endfor %}
+        ];
+        </script>
+        <ul class="side-menu top">
+{% block content %}
+            <li class="active" id="dashboard-btn">
+                    <i class='bx bxs-dashboard'></i>
+                    <span class="text">Tableau de Bord</span>
+            </li>
+            
+            
+            <li id="catalogue-ancien-btn">
+                <i class="fas fa-folder"></i> 
+                    <span class="text">Catalogue ancien</span>
+            </li>
+            <li id="message-btn">
+                    <i class='bx bxs-message-dots'></i>
+                    <span class="text">Message</span>
+            </li>
+            <li id="equipe-btn" >
+                    <i class='bx bxs-group'></i>
+                    <span class="text">Équipe</span>
+            </li>
+            <li id="nouvel-employe-btn">
+                    <i class='bx bxs-user-plus'></i>
+                    <span class="text">Nouvel Employé</span>
+            </li>
+            <li id="received-characteristics-btn">
+                <i class='bx bx-laptop'></i> 
+                <span class="text">Caractéristiques Reçues</span>
+            </li>
+            <li id="parametre-btn">
+                    <i class='bx bxs-cog' ></i>
+                    <span class="text"> Parametre </span>
+            </li>
+            <li id="Racheter-btn">
+                <i class='bx bx-dollar-circle'></i> 
+                <span class="text">Racheter votre PC</span>
+            </li>
+            <li id="Restituer-btn">
+                <i class='bx bx-undo'></i> 
+                <span class="text">Restituer votre PC</span>
+            </li>
+            <li id="bordereau-btn">
+                <i class="fa-solid fa-file-contract"></i>
+                    <span class="text"> Mon Bordereau</span>
+            </li>
+            <li id="lesdemandes-btn">
+                <i class="fa-solid fa-history"></i>
+                    <span class="text"> Les demandes de rachat </span>
+            </li>
+            <li id="Achat_piecevalider-btn">
+                <i class="fa-solid fa-check-circle"></i>
+                    <span class="text">les demandes d'achat</span>
+            </li>
+            <li id="Achat_piece-btn">
+               <i class="fa-solid fa-computer-mouse"></i>
+                    <span class="text">Demande d'achat de périphérique</span>
+            </li>
+        </ul>
+            {% endblock %}
+        <script>
+      
+        document.addEventListener('DOMContentLoaded', function() {
+            var menuItems = document.querySelectorAll('#sidebar .side-menu.top li');
+            var firstVisibleMenu = null;
+            for (var i = 0; i < menuItems.length; i++) {
+                var li = menuItems[i];
+                if (li.offsetParent !== null) { // visible à l'écran
+                    firstVisibleMenu = li;
+                    break;
+                }
+            }
+            if (firstVisibleMenu) {
+                menuItems.forEach(function(li) {
+                    li.classList.remove('active');
+                });
+                firstVisibleMenu.classList.add('active');
+                document.querySelectorAll('main > div[id$="-view"]').forEach(function(view) {
+                    view.classList.add('hidden');
+                });
+                var firstId = firstVisibleMenu.id.replace('-btn', '-view');
+                var firstView = document.getElementById(firstId);
+                if (firstView) {
+                    firstView.classList.remove('hidden');
+                }
+            }
+        });
+        </script>
+        <div class="sidebar" style="position: absolute; bottom: 0; width: 100%;">
+            <ul class="side-menu">
+                <li id="logout-btn">
+                        <i class='bx bxs-log-out-circle'></i>
+                        <span class="text" style="color:#dc3545; font-weight:bold;">Se déconnecter</span>
+                </li>
+            </ul>
+            <div class="user-circle" onclick="toggleUserInfo()" style="border-radius: 50%; width: 40px; height: 40px; background-color: #4CAF50; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;">
+    <span class="user-initials">
+        {% if connected_user %}{{ connected_user.prenom|first|upper }}{{ connected_user.nom|first|upper }}{% else %}??{% endif %}
+    </span>
+</div>
+
+<div class="user-info-dropdown" style="display: none; flex-direction: column; background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 8px; position: absolute; top: 50px; right: 0;">
+    <div class="user-circle" onclick="toggleUserInfo()" style="border-radius: 50%; width: 40px; height: 40px; background-color: #4CAF50; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; margin-bottom: 10px;">
+        <span class="user-initials">
+            {% if connected_user %}{{ connected_user.prenom|first|upper }}{{ connected_user.nom|first|upper }}{% else %}??{% endif %}
+        </span>
+    </div>
+    <div class="user-details" style="margin-left: 10px;">
+        <span class="user-name">
+            {% if connected_user %}{{ connected_user.prenom }} {{ connected_user.nom }}{% else %}Utilisateur Inconnu{% endif %}
+        </span><br>
+        <span class="user-role">
+            {% if connected_user %}{{ connected_user.fonction }}{% else %}Rôle Inconnu{% endif %}
+        </span><br><br>
+    </div>
+</div>
+        </div>
+        
+    </section>
+    <section id="content">
+        <nav>
+            <i class='bx bx-menu' ></i>
+            <form action="#" method="get">
+                <div class="form-input">
+                    <input type="search" placeholder="Search..." name="q">
+                    <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
+                </div>
+            </form>
+                 <div class="notification-container">
+        <button class="notification-btn" id="notificationBtn">
+            <i class='bx bxs-bell'></i>
+            <span class="notification-badge" id="notificationBadge">0</span>
+        </button>
+        
+       <div class="notification-dropdown" id="notificationDropdown">
+    <div class="notification-header">
+        <span class="notification-title">Notifications</span>
+        <button class="clear-all" id="clearAllBtn">Tout effacer</button>
+    </div>
+    <div class="notification-list" id="notificationList">
+        {% for notif in notifications %}
+        <div class="notification-item" style="{% if not notif.is_read %}font-weight: bold;{% endif %}">
+            <div class="notification-content">
+                <div class="notification-icon info">
+                    <i class='bx bx-envelope'></i>
+                </div>
+                <div class="notification-details">
+                    <div class="notification-message">
+                        <strong>Objet : {{ notif.objet }}</strong><br>
+                        {{ notif.corps|truncatechars:60 }}<br>
+                        De : {% if notif.expediteur %}{{ notif.expediteur.prenom }} {{ notif.expediteur.nom }}{% else %}Inconnu{% endif %}
+                    </div>
+                    <div class="notification-time">{{ notif.date_envoi|date:'Y-m-d H:i:s' }}</div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class='bx bx-bell-off'></i>
+            <div>Aucune notification</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+    </div>
+
+        </nav>
+        <main>
+            <!-- Inclusion de toutes les vues du dashboard -->
+            {% include 'dashboard_views.html' %}
+        </main>
+    </section>
+    
+    <!-- Inclusion de toutes les modales du dashboard -->
+    {% include 'dashboard_modal.html' %}
+    
+    <script>
+    window.demandeRachat="{% url 'demande_de_rachat'%}"
+    window.ajouterPcUrl = "{% url 'ajouter_pc' %}";
+    window.modifierPcUrl = "{% url 'modifier_pc' pc_id=0 %}";
+    window.supprimerPcUrl = "{% url 'supprimer_pc' pc_id=0 %}";
+    window.assignPcUrl = "{% url 'assign_pc_via_form' %}";
+    window.envoyercaracteristiquesUrl="{% url 'envoyer_caracteristiques' %}";
+    window.demandeCaracteristiqueUrl="{% url 'demander_caracteristique' %}";
+    window.deconnexionUrl = "{% url 'deconnexion' %}";
+    window.connexionUrl= "{% url 'connexion' %}";
+    window.addUserUrl = "{% url 'ajouter_utilisateur' %}";
+    window.modifierUtilisateurUrl = "{% url 'modifier_utilisateur' user_id=0 %}";
+    window.supprimerUtilisateurUrl = "{% url 'supprimer_utilisateur' user_id=0 %}";
+    window.supprimerPcUrl = "{% url 'supprimer_pc' pc_id=0 %}";
+    window.enregistrerEmployeUrl = "{% url 'enregistrer_employe' %}";
+    window.getNotificationsUrl = "{% url 'get_notifications' %}"; 
+    window.markNotificationAsReadUrl = "{% url 'mark_notification_as_read' email_id=0 %}";
+    window.racheterPcUrl = "{% url 'racheter_pc' %}"; 
+    window.envoyerBordereauEmployeUrl = "{% url 'envoyer_bordereau_employe' %}"; 
+    window.validerOuRefuserPcUrl = "{% url 'valider_ou_refuser_pc' %}";
+    window.restituerPcUrl = "{% url 'restituer_pc' %}";
+    window.demandeAchatPeripheriquesUrl = "{% url 'demande_achat_peripheriques' %}";
+    window.connectedUserFonction = "{{ connected_user.fonction|default:'' }}";
+    </script>
+
+<script src="{% static 'js/core/utilities.js' %}"></script>
+<!-- Token CSRF caché pour JavaScript -->
+<form style="display: none;">
+    {% csrf_token %}
+</form>
+
+<script src="{% static 'js/core/dashboard-core.js' %}"></script>
+<script src="{% static 'js/core/notifications.js' %}"></script>
+<script src="{% static 'js/modules/pc-management.js' %}"></script>
+<script src="{% static 'js/modules/user-management.js' %}"></script>
+<script src="{% static 'js/modules/rachat-management.js' %}"></script>
+<script src="{% static 'js/modules/bordereau-management.js' %}"></script>
+<script src="{% static 'js/modules/restitution-management.js' %}"></script>
+<script src="{% static 'js/modules/achat-peripheriques-management.js' %}"></script>
+<script src="{% static 'validation-demandes-management.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!-- Toutes les modales du dashboard -->
+
+<!-- Modal pour ajouter un PC -->
+<div id="addPcModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="modal-close-button">&times;</span>
+        <h2>Ajouter un Nouveau PC</h2>
+        <form id="addPcForm" method="post" action="{% url 'ajouter_pc' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="brand">Marque:</label>
+                <select id="brand" name="brand" required>
+                    <option value="" disabled selected>Sélectionner une marque</option>
+                    {% for marque in marques %}
+                    <option value="{{ marque.nom_marque }}">{{ marque.nom_marque }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="model">Modèle:</label>
+                <select id="model" name="model" required>
+                    <option value="" disabled selected>Sélectionner un Modèle</option>
+                    {% for modele in modeles %}
+                    <option value="{{ modele.nom_modele }}">{{ modele.nom_modele }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="processeur">Processeur:</label>
+                <select id="processeur" name="processeur" required>
+                    <option value="" disabled selected>Sélectionner un Processeur</option>
+                    <option value="corei7"> Core i7</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ram">RAM:</label>
+                <select id="ram" name="ram" required>
+                    <option value="" disabled selected>Sélectionner la RAM</option>
+                    <option value="8GB">8 GB</option>
+                    <option value="16GB">16 GB</option>
+                    <option value="32GB">32 GB</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="disque">Disque:</label>
+                <select id="disque" name="disque" required>
+                    <option value="" disabled selected>Sélectionner un Disque </option>
+                    <option value="256GB">256 GB</option>
+                    <option value="512GB">512 GB</option>
+                    <option value="1To">1 To</option>
+                    <option value="2To">2 To</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="serial">Numéro de série:</label>
+                <input type="text" id="serial" name="serial" required>
+            </div>
+            <div class="form-group">
+                <label for="dateAchat">Date d'achat:</label>
+                <input type="date" id="dateAchat" name="dateAchat" required>
+            </div>
+            <button type="submit" class="btn-ajouter-manuel">Ajouter PC</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div id="confirmModal" class="modal hidden">
+    <div class="modal-content">
+        <h3 class="text-lg font-semibold mb-4">Confirmer la suppression</h3>
+        <p class="mb-4">Êtes-vous sûr de vouloir supprimer cet élément ?</p>
+        <div class="flex justify-end gap-2">
+            <button onclick="fermerModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                Annuler
+            </button>
+            <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'édition -->
+<div id="editModal" class="modal hidden">
+    <div class="modal-content">
+        <h3 class="text-lg font-semibold mb-4">Modifier</h3>
+        <input type="text" id="editInput" class="w-full border rounded p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <div class="flex justify-end gap-2">
+            <button onclick="fermerModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                Annuler
+            </button>
+            <button id="confirmEdit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                Modifier
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'attribution de PC -->
+<div id="assignPcModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="modal-close-button">&times;</span>
+        <h2>Attribuer un PC</h2>
+        <form id="assignPcform" method="post" action="{% url 'assign_pc_via_form' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="assignEmploye">Sélectionner un employé:</label>
+                <select id="assignEmploye" name="employe_id" required>
+                    <option value="" disabled>-- Sélectionner --</option>
+                    {% for employe in employes %}
+                    <option value="{{ employe.id_employe }}">{{ employe.nom }} {{ employe.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="assignPcNumeroSerie">Sélectionner un PC à attribuer:</label>
+                <select id="assignPcNumeroSerie" name="numero_serie" required>
+                    <option value="" disabled selected>-- Sélectionner --</option>
+                    {% for pc in pcs %}
+                    <option value="{{ pc.numero_serie }}">{{ pc.marque }} {{ pc.modele }} ({{ pc.numero_serie }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="assignDateAttribution">Date d'attribution:</label>
+                <input type="date" id="assignDateAttribution" name="date_attribution" required>
+            </div>
+            
+            <button type="submit" class="btn-ajouter-manuel">Attribuer PC</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal d'ajout d'utilisateur -->
+<div id="addUserModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="modal-close-button">&times;</span>
+        <h2>Ajouter un Nouvel Utilisateur</h2>
+        <form id="addUserForm" action="{% url 'ajouter_utilisateur' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="addUserName">Nom:</label>
+                <input type="text" id="addUserName" name="nom" required>
+            </div>
+            <div class="form-group">
+                <label for="addUserPrenom">Prénom:</label>
+                <input type="text" id="addUserPrenom" name="prenom" required>
+            </div>
+            <div class="form-group">
+                <label for="addUserLogin">Login:</label>
+                <input type="text" id="addUserLogin" name="login" required>
+            </div>
+            <div class="form-group">
+                <label for="addUserPassword">Mot de passe:</label>
+                <input type="password" id="addUserPassword" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="addUserMatricule">Matricule:</label>
+                <input type="text" id="addUserMatricule" name="matricule" required>
+            </div>
+            <div class="form-group">
+                <label for="addUserTelephone">Téléphone:</label>
+                <input type="tel" id="addUserTelephone" name="telephone" required>
+            </div>
+            <div class="form-group">
+                <label for="addUserEmail">Email:</label>
+                <input type="email" id="addUserEmail" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="addUserDepartement">Département:</label>
+                <select id="addUserDepartement" name="departement" required>  
+                    <option value="" disabled selected>Sélectionner un département</option>
+                    <option value="Utilisateur">Utilisateur</option>
+                    <option value="DOT">DOT</option>
+                    <option value="RDOT">RDOT</option>
+                    <option value="DAF">DAF</option>
+                    <option value="MGX">MGX</option>
+                    <option value="RMG">RMGX</option>
+                    <option value="DCH">DCH</option>
+                    <option value="Stagiaire">Stagiaire</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="addUserDateEmbauche">Date d'embauche:</label>
+                <input type="date" id="addUserDateEmbauche" name="dateEmbauche" required>
+            </div>
+            <div class="form-group">
+                <label for="addUserFonction">Fonction:</label>
+                <input type="text" id="addUserFonction" name="fonction" placeholder="Saisir la fonction" required>
+            </div>
+            <button type="submit" class="btn-ajouter-manuel">Ajouter Utilisateur</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal d'envoi de caractéristiques -->
+<div id="sendCharacteristicsModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="modal-close-button">&times;</span>
+        <h2>Sélectionner les Caractéristiques à Envoyer</h2>
+        <form id="sendCharacteristicsForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="selectMarque">Marque:</label>
+                <select id="selectMarque" name="marque" required>
+                    <option value="" disabled selected>Sélectionner une marque</option>
+                    {% for marque in marques %}
+                    <option value="{{ marque }}">{{ marque }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="selectModel">Modèle:</label>
+                <select id="selectModel" name="model" required>
+                    <option value="" disabled selected>Sélectionner un modèle</option>
+                    {% for modele in modeles %}
+                    <option value="{{ modele }}">{{ modele }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="selectProcesseur">Processeur:</label>
+                <select id="selectProcesseur" name="processeur" required>
+                    <option value="" disabled selected>Sélectionner un processeur</option>
+                    <option value="Intel Core i5">Intel Core i5</option>
+                    <option value="Intel Core i7">Intel Core i7</option>
+                    <option value="AMD Ryzen 5">AMD Ryzen 5</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="selectRam">RAM:</label>
+                <select id="selectRam" name="ram" required>
+                    <option value="" disabled selected>Sélectionner la RAM</option>
+                    <option value="8 Go">8 Go</option>
+                    <option value="16 Go">16 Go</option>
+                    <option value="32 Go">32 Go</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="selectDisque">Disque Dur:</label>
+                <select id="selectDisque" name="disque" required>
+                    <option value="" disabled selected>Sélectionner le disque dur</option>
+                    <option value="256 Go SSD">256 Go SSD</option>
+                    <option value="512 Go SSD">512 Go SSD</option>
+                    <option value="1 To HDD">1 To HDD</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="selectEmployeConcerne">Employé Concerné:</label>
+                <select id="selectEmployeConcerne" name="employe_concerne" required>
+                    <option value="" disabled selected>Sélectionner un employé</option>
+                    {% for employe in employes %}
+                    <option value="{{ employe.pk }}">{{ employe.nom }} {{ employe.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn-ajouter-manuel">Envoyer</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modale pour le bordereau de livraison -->
+<div id="bordereauModal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <span class="modal-close-button" style="font-size: 24px; color: #666; transition: color 0.3s;">&times;</span>
+        
+        <!-- En-tête du bordereau -->
+        <div style="text-align: center; border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="font-size: 28px; font-weight: bold; color: #1f2937; margin: 0; letter-spacing: 1px;">
+                📋 BORDEREAU DE LIVRAISON
+            </h1>
+            <p style="color: #6b7280; font-size: 14px; margin: 5px 0 0 0;">Document officiel de livraison</p>
+        </div>
+
+        <!-- Informations de date -->
+        <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #059669;">
+            <p id="bordereauDate" style="font-weight: 600; color: #374151; margin: 0; font-size: 16px;">
+                📅 Date: <span style="color: #059669;"></span>
+            </p>
+        </div>
+
+        <!-- Section CLIENT -->
+        <div style="background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="color: #15803d; font-size: 18px; font-weight: bold; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
+                👤 INFORMATIONS CLIENT
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #d1fae5;">
+                    <label style="font-weight: 600; color: #4b5563; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Nom</label>
+                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #1f2937;">
+                        <span id="bordereauNom" style="font-weight: 500;"></span>
+                    </p>
+                </div>
+                
+                <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #d1fae5;">
+                    <label style="font-weight: 600; color: #4b5563; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Prénom</label>
+                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #1f2937;">
+                        <span id="bordereauPrenom" style="font-weight: 500;"></span>
+                    </p>
+                </div>
+                
+                <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #d1fae5;">
+                    <label style="font-weight: 600; color: #4b5563; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Email</label>
+                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #1f2937;">
+                        📧 <span id="bordereauEmail" style="font-weight: 500;">
+                            {% if employe %}
+                                {{ employe.email|default:"Non renseigné" }}
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </span>
+                    </p>
+                </div>
+                
+                <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #d1fae5;">
+                    <label style="font-weight: 600; color: #4b5563; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Filiale</label>
+                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #1f2937; font-weight: 600;">
+                        🏢 ORAGROUP
+                    </p>
+                </div>
+                
+                <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #d1fae5;">
+                    <label style="font-weight: 600; color: #4b5563; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Téléphone</label>
+                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #1f2937;">
+                        📞 <span id="bordereauTelephone" style="font-weight: 500;">
+                            {% if employe %}
+                                {{ employe.telephone }}
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section MATÉRIEL -->
+        <div style="margin-bottom: 30px;">
+            <h3 style="color: #15803d; font-size: 18px; font-weight: bold; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
+                💻 MATÉRIEL LIVRÉ
+            </h3>
+            
+            <div style="overflow-x: auto; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <table id="bordereauTable" style="width: 100%; border-collapse: collapse; background: white; font-size: 15px;">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, #16a34a 0%, #059669 100%); color: white;">
+                            <th style="padding: 16px 12px; text-align: center; font-weight: 600; border: none;">N°</th>
+                            <th style="padding: 16px 12px; text-align: left; font-weight: 600; border: none;">Numéro de série</th>
+                            <th style="padding: 16px 12px; text-align: left; font-weight: 600; border: none;">Description</th>
+                            <th style="padding: 16px 12px; text-align: center; font-weight: 600; border: none;">Quantité</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #d1fae5; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f0fdf4'" onmouseout="this.style.backgroundColor='white'">
+                            <td style="padding: 16px 12px; text-align: center; font-weight: 600; color: #059669; background: #dcfce7;">1</td>
+                            <td id="bordereauSerie" style="padding: 16px 12px; font-family: 'Courier New', monospace; font-weight: 500; color: #374151;"></td>
+                            <td id="bordereauDesc" style="padding: 16px 12px; color: #374151; font-weight: 500;"></td>
+                            <td style="padding: 16px 12px; text-align: center; font-weight: 600; color: #15803d; background: #dcfce7;">1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; padding-top: 20px; border-top: 2px solid #d1fae5;">
+            <button class="btn-Envoyer-Demande" style="
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 16px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(16, 185, 129, 0.4)'" 
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(16, 185, 129, 0.3)'">
+                📧 Envoyer le bordereau
+            </button>
+            
+            <button id="downloadBordereauBtn" class="btn-ajouter-manuel no-print" style="
+                background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 16px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 6px rgba(22, 163, 74, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(22, 163, 74, 0.4)'" 
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(22, 163, 74, 0.3)'">
+                🖨️ Télécharger / Imprimer
+            </button>
+        </div>
+        
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #d1fae5; color: #6b7280; font-size: 12px;">
+            <p style="margin: 0;">📄 Document généré automatiquement par le système de gestion ORAGROUP</p>
+        </div>
+    </div>
+</div>

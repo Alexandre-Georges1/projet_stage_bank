@@ -1,0 +1,1068 @@
+<!-- Toutes les vues du dashboard -->
+
+<!-- Vue Tableau de Bord -->
+<div id="dashboard-view" class="hidden">
+    <h1>Tableau de Bord</h1>
+    <ul class="box-info">
+        <li>
+            <i class="fas fa-desktop text-purple-600 text-xl mr-2"></i>
+            <span class="text">
+                <h3>{{pc_total}}</h3>
+                <p>PC disponible</p>
+            </span>
+        </li>
+        <li>
+            <i class="fa-solid fa-laptop"></i>
+            <span class="text">
+                <h3>{{pc_en_rebu}}</h3>
+                <p>PC Mis en Rebu</p>
+            </span>
+        </li>
+        <li>
+            <i class="fas fa-desktop text-purple-600 text-xl mr-2"></i>
+            <span class="text">
+                <h3>{{pc_en_service}}</h3>
+                <p>PC en service</p>
+            </span>
+        </li>
+    </ul>
+</div>
+
+<!-- Vue Paramètres -->
+<div id="parametre-view">
+    <div class="bg-white shadow-sm border-b">
+        <div class="parametres-container">
+            <h1 class="text-3xl font-bold text-gray-900 py-4">Paramètres</h1>
+        </div>
+    </div>
+    
+    <div class="parametres-container">
+        <div id="alertContainer"></div>
+        
+        <form id="parametresForm" method="post">
+            {%csrf_token%}
+            <!-- Conteneur flex pour les deux blocs côte à côte -->
+            <div class="flex flex-row gap-6" style="display: flex; flex-direction: row; gap: 30px; width: 100%;">
+                <!-- Bloc Marques -->
+                <div class="gestion-box flex-1">
+                    <h2 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-house-laptop"></i> Gérer les Marques
+                    </h2>
+                    
+                    <!-- Input + bouton -->
+                    <div class="flex items-center gap-4 mb-4">
+                        <input type="text" id="inputMarque" placeholder="Ajouter une marque"
+                               class="border rounded p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <button type="button" onclick="ajouterMarque()"
+                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                            Ajouter
+                        </button>
+                    </div>
+                    
+                    <!-- Tableau des marques -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full border text-left">
+                            <thead class="bg-gray-200">
+                                <tr>    
+                                    <th class="p-2">N°</th>     
+                                    <th class="p-2">Marque</th>
+                                    <th class="p-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableMarques">
+                                <!-- Les marques seront ajoutées ici dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Bloc Modèles -->
+                <div class="gestion-box flex-1">
+                    <h2 class="text-xl font-semibold mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-laptop"></i> Gérer les Modèles
+                    </h2>
+                    
+                    <!-- Input + bouton -->
+                    <div class="flex items-center gap-4 mb-4">
+                        <input type="text" id="inputModele" placeholder="Ajouter un modèle"
+                               class="border rounded p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <button type="button" onclick="ajouterModele()"
+                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                            Ajouter
+                        </button>
+                    </div>
+                    
+                    <!-- Tableau des modèles -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full border text-left">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="p-2">N°</th> 
+                                    <th class="p-2">Modèle</th>
+                                    <th class="p-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableModeles">
+                                <!-- Les modèles seront ajoutés ici dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Vue Catalogue -->
+<div id="catalogue-view" class="hidden">
+    <h2>Catalogue des PC</h2>
+    <div class="flex justify-between items-center mb-8">
+        <button id="new-user-btn" class="btn-ajouter-manuel">
+            Ajouter PC
+        </button>
+    </div>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Les PCs</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>marque</th>
+                        <th>model</th>
+                        <th>processeur</th>
+                        <th>RAM</th>
+                        <th>Disque</th>
+                        <th>Numéro de série</th>
+                        <th>date d'achat</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pc in pcs %}
+                    <tr data-pc-id="{{ pc.pk }}">
+                        <td>{{ pc.marque }}</td>
+                        <td>{{ pc.modele }}</td>
+                        <td>{{ pc.processeur }}</td>
+                        <td>{{ pc.ram }}</td>
+                        <td>{{ pc.disque_dur }}</td>
+                        <td>{{ pc.numero_serie }}</td>
+                        <td>{{ pc.date_achat|date:"Y-m-d" }}</td>
+                        <td>
+                            <button class="btn-modifier" aria-label="Modifier"><i class="fas fa-edit"></i></button>
+                            <button class="btn-supprimer" aria-label="Supprimer"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Catalogue Ancien -->
+<div id="catalogue-ancien-view" class="hidden">
+    <h1>Catalogue Ancien</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Les PCs archivés</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Marque</th>
+                        <th>Modèle</th>
+                        <th>Processeur</th>
+                        <th>RAM</th>
+                        <th>Disque</th>
+                        <th>Numéro de série</th>
+                        <th>Date d'achat</th>
+                        <th>Employé</th>
+                        <th>Date d'archivage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pc_arch in pcs_anciens %}
+                    <tr>
+                        <td>{{ pc_arch.pc.marque }}</td>
+                        <td>{{ pc_arch.pc.modele }}</td>
+                        <td>{{ pc_arch.pc.processeur }}</td>
+                        <td>{{ pc_arch.pc.ram }}</td>
+                        <td>{{ pc_arch.pc.disque_dur }}</td>
+                        <td>{{ pc_arch.pc.numero_serie }}</td>
+                        <td>{{ pc_arch.pc.date_achat|date:"Y-m-d" }}</td>
+                        <td>
+                            {% if pc_arch.pc.employe %}
+                                {{ pc_arch.pc.employe.nom }} {{ pc_arch.pc.employe.prenom }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ pc_arch.date_ajout|date:"Y-m-d" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9">Aucun PC archivé.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Utilisateurs -->
+<div id="utilisateur-view" class="hidden">
+    <h1>Utilisateurs</h1>
+    <div class="flex justify-between items-center mb-8">
+        <button id="add-user-btn" class="btn-ajouter-manuel" aria-label="Ajouter Utilisateur">
+            <i class="fas fa-plus"></i>
+            Ajouter Utilisateur
+        </button>
+    </div> 
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Tous les utilisateurs</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Nom</th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Prénom</th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Login</th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Mot de passe</th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Matricule</th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Téléphone</th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Email</th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Departement</th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Date d'embauche</th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Fonction</th>
+                        <th style="padding: 12px 16px; text-align: center; border-bottom: 1px solid #e0e0e0;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employe in employes %}
+                    <tr data-user-id="{{ employe.pk }}">
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.nom }}</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.prenom }}</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.login }}</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">********</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.matricule }}</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.telephone }}</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.email }}</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.Département }}</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.date_embauche|date:"Y-m-d" }}</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.fonction }}</td>
+                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0; text-align: center;">
+                            <button class="btn-modifier" aria-label="Modifier" style="margin: 0 4px;">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 4px;">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Nouvel Employé -->
+<div id="nouvel-employe-view" class="hidden">	
+    <h1>Nouvel Employé</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Informer de l'arrivé d'un nouvel employé</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <form id="nouvelEmployeForm" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="nouvelNom">Nom:</label>
+                    <input type="text" id="nouvelNom" name="nom" required>
+                </div>
+                <div class="form-group">
+                    <label for="nouvelPrenom">Prénom:</label>
+                    <input type="text" id="nouvelPrenom" name="prenom" required>
+                </div>
+                <div class="form-group">
+                    <label for="nouvelMatricule">Matricule:</label>
+                    <input type="text" id="nouvelMatricule" name="matricule" required>
+                </div>
+                <div class="form-group">
+                    <label for="nouvelTelephone">Téléphone:</label>
+                    <input type="tel" id="nouvelTelephone" name="telephone" required>
+                </div>
+                <div class="form-group">
+                    <label for="nouvelDépartement">Département:</label>
+                    <input type="text" id="nouvelDepartement" name="département" required>
+                </div>
+                <div class="form-group">
+                    <label for="nouvelDateEmbauche">Date d'embauche:</label>
+                    <input type="date" id="nouvelDateEmbauche" name="dateEmbauche" required>
+                </div>
+                <div class="form-group">
+                    <label for="nouvelFonction">Fonction:</label>
+                    <input type="text" id="nouvelFonction" name="fonction" placeholder="Saisir la fonction" required>
+                </div>
+                <button type="submit" class="btn-ajouter-manuel">Informer l'arrivée</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Demande de caractéristique -->
+<div id="demande-view" class="hidden">
+    <h1>Demande de caractéristique</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Demander une caractéristique pour un PC</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <form id="demandeCaracteristiqueForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="demandeEmploye">Sélectionner un employé:</label>
+                    <select id="demandeEmploye" name="employe_id" required>
+                        <option value="" disabled selected>Sélectionner un employé</option>
+                        {% for employe in employes %}
+                        <option value="{{ employe.pk }}">{{ employe.nom }} {{ employe.prenom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="caracteristiqueDemande">Objet de la demande:</label>
+                    <select id="caracteristiqueDemande" name="caracteristique" required disabled style="width: 100%; padding: 12px 15px; border: 1px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; font-size: 16px; color: #333;">
+                        <option value="Demande de caractéristique" selected>Demande de caractéristique</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-ajouter-manuel">Demander</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Achat de périphérique -->
+<div id="Achat_piece-view" class="hidden">
+    <h1>Demande d'achat de périphérique</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Faire une demande d'achat de périphérique</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <form id="demandeAchatPieceForm" method="post" action="{% url 'demande_achat_peripheriques' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="demandeAchatMateriel">Sélectionner le matériel </label>
+                    <select id="demandeAchatMateriel" name="materiel" required>
+                        <option value="" disabled selected>Sélectionner le matériel: </option>
+                        <option value="Souris">Souris</option>
+                        <option value="Clavier">Clavier</option>
+                        <option value="Écran">Écran</option>
+                        <option value="Imprimante">Imprimante</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="demandeAchatCaracteristique">Objet de la demande:</label>
+                    <select id="demandeAchatCaracteristique" name="caracteristique" required disabled style="width: 100%; padding: 12px 15px; border: 1px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; font-size: 16px; color: #333;">
+                        <option value="Demande d'achat de périphérique" selected>Demande d'achat de périphérique</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="commentairesAchat">Commentaires additionnels (optionnel):</label>
+                    <textarea id="commentairesAchat" name="commentaires" rows="3" placeholder="Précisez vos besoins ou ajoutez des informations complémentaires..."></textarea>
+                </div>
+                <button type="submit" class="btn-ajouter-manuel">Faire la demande</button>
+            </form>
+        </div>
+    </div>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Historique de vos demandes</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Matériel</th>
+                        <th>Date de la demande</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for demande in demandes_achat %}
+                    <tr>
+                        <td>{{ demande.materiel }}</td>
+                        <td>{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="{{ demande.get_statut_display_class }}">{{ demande.get_statut_display }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">Aucune demande d'achat de périphérique.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Validation des demandes d'achat de périphériques -->
+<div id="Achat_piecevalider-view" class="hidden">
+    <h1>Validation des Demandes d'Achat de Périphériques</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Demandes en attente de validation</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employé</th>
+                        <th>Département</th>
+                        <th>Matériel demandé</th>
+                        <th>Date de demande</th>
+                        <th>Commentaires</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for demande in demandes_peripheriques_en_attente %}
+                    <tr data-demande-id="{{ demande.id_demande }}">
+                        <td>{{ demande.employe.prenom }} {{ demande.employe.nom }}</td>
+                        <td>{{ demande.employe.Département }}</td>
+                        <td>{{ demande.get_materiel_display }}</td>
+                        <td>{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                        <td>{{ demande.commentaires|default:"Aucun commentaire" }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-valider-demande" data-demande-id="{{ demande.id_demande }}" data-action="approuver">
+                                    <i class="fas fa-check"></i> Approuver
+                                </button>
+                                <button class="btn-refuser-demande" data-demande-id="{{ demande.id_demande }}" data-action="refuser">
+                                    <i class="fas fa-times"></i> Refuser
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #888; padding: 30px;">
+                            Aucune demande de périphérique en attente
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Historique des validations -->
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Historique des validations</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employé</th>
+                        <th>Matériel</th>
+                        <th>Statut</th>
+                        <th>Date de validation</th>
+                        <th>Traité par</th>
+                        <th>Commentaires</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for demande in demandes_peripheriques_traitees %}
+                    <tr>
+                        <td>{{ demande.employe.prenom }} {{ demande.employe.nom }}</td>
+                        <td>{{ demande.get_materiel_display }}</td>
+                        <td>
+                            <span class="{{ demande.get_statut_display_class }}">
+                                {{ demande.get_statut_display }}
+                            </span>
+                        </td>
+                        <td>{{ demande.date_modification|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if demande.traite_par %}
+                                {{ demande.traite_par.prenom }} {{ demande.traite_par.nom }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ demande.commentaires|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #888;">
+                            Aucune validation effectuée
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Envoi des caractéristiques -->
+<div id="Envoi-view" class="hidden">
+    <h1>Envoi des caractéristiques</h1>
+    <div class="flex justify-between items-center mb-8">
+        <button id="send-characteristics-btn" class="btn-ajouter-manuel">
+            <i class="fas fa-paper-plane"></i> Envoyer Caractéristiques
+        </button>
+    </div>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Historique des Caractéristiques Envoyées</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Marque</th>
+                        <th>Modèle</th>
+                        <th>Processeur</th>
+                        <th>RAM</th>
+                        <th>Disque Dur</th>
+                        <th>Envoyeur</th>
+                        <th>Employé Concerné</th>
+                        <th>Date d'envoi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for caracteristique in caracteristiques_envoyees %}
+                    <tr data-pc-id="{{ pc.id_attribue }}">
+                        <td>{{ caracteristique.marque }}</td>
+                        <td>{{ caracteristique.modele }}</td>
+                        <td>{{ caracteristique.processeur }}</td>
+                        <td>{{ caracteristique.ram }}</td>
+                        <td>{{ caracteristique.disque_dur }}</td>
+                        <td>{{ caracteristique.envoyeur.prenom }} {{ caracteristique.envoyeur.nom }}</td>
+                        <td>{{ caracteristique.employe_concerne.prenom }} {{ caracteristique.employe_concerne.nom }}</td>
+                        <td>{{ caracteristique.date_envoi|date:"d M Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr data-pc-id="{{ pc.pk }}">
+                        <td colspan="8">Aucune caractéristique envoyée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Caractéristiques reçues -->
+<div id="received-characteristics-view" class="hidden">
+    <h1>Caractéristiques Reçues</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Historique des Caractéristiques Reçues</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Marque</th>
+                        <th>Modèle</th>
+                        <th>Processeur</th>
+                        <th>RAM</th>
+                        <th>Disque Dur</th>
+                        <th>Envoyeur</th>
+                        <th>Employé Concerné</th>
+                        <th>Date d'envoi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for caracteristique in caracteristiques_envoyees %}
+                    <tr>
+                        <td>{{ caracteristique.marque }}</td>
+                        <td>{{ caracteristique.modele }}</td>
+                        <td>{{ caracteristique.processeur }}</td>
+                        <td>{{ caracteristique.ram }}</td>
+                        <td>{{ caracteristique.disque_dur }}</td>
+                        <td>{{ caracteristique.envoyeur.prenom }} {{ caracteristique.envoyeur.nom }}</td>
+                        <td>{{ caracteristique.employe_concerne.prenom }} {{ caracteristique.employe_concerne.nom }}</td>
+                        <td>{{ caracteristique.date_envoi|date:"d M Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">Aucune caractéristique envoyée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Attribution -->
+<div id="attribuer-view" class="hidden">
+    <h1>Attribution</h1>
+    <div class="flex justify-between items-center mb-8">
+        <button id="assign-pc-btn" class="btn-ajouter-manuel">
+            <i class="fas fa-plus"></i> Attribuer un PC
+        </button>
+    </div>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Les attributions</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <div class="table-data">
+                <div class="order">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Marque PC</th>
+                                <th>Modèle PC</th>
+                                <th>Numéro Série PC</th>
+                                <th>Date d'Attribution</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attribution in pcs_attribues %}
+                            <tr data-attribution-id="{{ attribution.id }}">
+                                <td> {{ attribution.employe.nom }}</td>
+                                <td>{{ attribution.employe.prenom }}</td>
+                                <td>{{ attribution.marque }}</td>
+                                <td>{{ attribution.modele }}</td>
+                                <td>{{ attribution.numero_serie }}</td>	
+                                <td>{{ attribution.date_attribution|date:"d M Y" }}</td>
+                                <td>
+                                    <button class="btn-bordereau" data-attribution-id="{{ attribution.id }}" data-telephone="{{ attribution.employe.telephone }}" data-email="{{ attribution.employe.email }}" data-employe-id="{{ attribution.employe.pk }}">Bordereau</button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5">Aucun PC attribué.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Bordereau -->
+<div id="bordereau-view" class="hidden">
+    <h1>Mon Bordereau de Livraison</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Détails du bordereau</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+
+            <!-- Infos Employé -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Filiale</th>
+                        <th>Téléphone</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in bordereaux %}
+                    <tr>
+                        <td>{{ b.date_creation|date:"d/m/Y" }}</td>
+                        <td>{{ employe.nom }}</td>
+                        <td>{{ employe.prenom }}</td>
+                        <td>ORAGROUP</td>
+                        <td>{{ employe.telephone }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">Aucun bordereau disponible.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Infos Matériel -->
+            <table style="margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Numéro de série</th>
+                        <th>Description</th>
+                        <th>Quantité</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in bordereaux %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ b.numero_serie_pc }}</td>
+                        <td>{{ b.description_pc }}</td>
+                        <td>1</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Aucun matériel associé.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Politique -->
+            <div class="politique-box">
+                <a href="{% url 'politique_confidentialite' %}"><h2> Politique de Confidentialité et d'Utilisation</h2></a>
+                <p>
+                    En acceptant ce bordereau, vous reconnaissez avoir pris connaissance et accepté les termes de notre politique de confidentialité et d'utilisation des équipements. Cela inclut la gestion des données personnelles, l'utilisation des ressources informatiques de l'entreprise et les responsabilités liées à la sécurité des informations.
+                </p>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="acceptCheckbox" onchange="toggleAcceptButton()">
+                    J'ai lu et j'accepte les termes du bordereau et la politique de confidentialité.
+                </label>
+            </div>
+
+            <!-- Bouton -->
+            <div style="text-align: center; margin-top: 20px;">
+                {% for b in bordereaux %}
+                    {% if b.statut == 'lu et accepté' %}
+                        <button id="acceptBordereauBtn" class="btn-Envoyer-Demande" disabled style="background-color: #28a745;">
+                            Bordereau accepté
+                        </button>
+                        <p id="messageBordereauAccept" class="accepted-message" style="display: block; color: #28a745; font-weight: bold; margin-top: 10px;">
+                            Bordereau lu et accepté le {{ b.date_statut|date:"d/m/Y à H:i" }}
+                        </p>
+                    {% else %}
+                        <button id="acceptBordereauBtn" class="btn-Envoyer-Demande" disabled onclick="handleAcceptBordereau()">
+                            Marquer comme Lu et Accepté
+                        </button>
+                        <p id="messageBordereauAccept" class="accepted-message" style="display: none;"></p>
+                    {% endif %}
+                {% empty %}
+                    <button id="acceptBordereauBtn" class="btn-Envoyer-Demande" disabled onclick="handleAcceptBordereau()">
+                        Marquer comme Lu et Accepté
+                    </button>
+                    <p id="messageBordereauAccept" class="accepted-message" style="display: none;"></p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Les demandes -->
+<div id="lesdemandes-view" class="hidden">
+    <h1>Les Demandes</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Les demandes de rachat</h3>
+                <i class="bx bx-search"></i>
+                <i class="bx bx-filter"></i>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Marque</th>
+                            <th>Modèle</th>
+                            <th>Date d'achat</th>
+                            <th>Date d'attribution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pc in pcs_attribues %}
+                        {% if pc.status == "en attente" %}
+                        <tr data-pc-id="{{ pc.pk }}">
+                            <td>{{ pc.employe.nom }}</td>
+                            <td>{{ pc.employe.prenom }}</td>
+                            <td>{{ pc.marque }}</td>
+                            <td>{{ pc.modele }}</td>
+                            <td>{{ pc.date_achat|date:"Y-m-d" }}</td>
+                            <td>{{ pc.date_attribution|date:"Y-m-d" }}</td>
+                            <td>
+                                <button class="action-btn-demande">Valider</button>
+                            </td>
+                            <td>
+                                <button class="action-btn-demande">Refuser</button>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" style="text-align:center; color:#888; padding:30px;">Aucune demande de rachat.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Restituer -->
+<div id="Restituer-view" class="hidden">
+    <h1>Restituer votre PC</h1>
+    
+    <!-- Script de debug pour voir les données -->
+    <script>
+        console.log('🔍 DEBUG RESTITUTION - Données disponibles:');
+        console.log('📋 Connected user:', {
+            {% if connected_user %}
+                id: '{{ connected_user.id_employe }}',
+                nom: '{{ connected_user.nom }}',
+                prenom: '{{ connected_user.prenom }}',
+                fonction: '{{ connected_user.fonction }}'
+            {% else %}
+                status: 'Non connecté'
+            {% endif %}
+        });
+        
+        console.log('🖥️ PCs attribués (total: {{ pcs_attribues|length }}) :');
+        {% for pc in pcs_attribues %}
+            console.log('  PC {{ forloop.counter }}:', {
+                id_attribue: '{{ pc.id_attribue }}',
+                marque: '{{ pc.marque }}',
+                modele: '{{ pc.modele }}',
+                numero_serie: '{{ pc.numero_serie }}',
+                employe_id: '{{ pc.employe.id_employe }}',
+                employe_nom: '{{ pc.employe.nom }} {{ pc.employe.prenom }}',
+                date_attribution: '{{ pc.date_attribution }}',
+                status: '{{ pc.status }}'
+            });
+        {% empty %}
+            console.log('  ❌ Aucun PC attribué trouvé');
+        {% endfor %}
+        
+        {% if connected_user %}
+            console.log('🔍 Recherche PC pour utilisateur {{ connected_user.id_employe }}...');
+            let pcTrouve = false;
+            {% for pc in pcs_attribues %}
+                {% if pc.employe.id_employe == connected_user.id_employe %}
+                    console.log('✅ PC trouvé pour l\'utilisateur:', {
+                        id_attribue: '{{ pc.id_attribue }}',
+                        marque: '{{ pc.marque }}',
+                        modele: '{{ pc.modele }}',
+                        numero_serie: '{{ pc.numero_serie }}'
+                    });
+                    pcTrouve = true;
+                {% endif %}
+            {% endfor %}
+            if (!pcTrouve) {
+                console.log('❌ Aucun PC trouvé pour l\'utilisateur {{ connected_user.id_employe }}');
+            }
+        {% endif %}
+    </script>
+    
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Informations de restitution</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <form id="restituerPcForm" method="post" action="{% url 'restituer_pc' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="restituerEmploye">Employé:</label>
+                    <input type="text" id="restituerEmploye" value="{% if connected_user %}{{ connected_user.prenom }} {{ connected_user.nom }}{% endif %}" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="restituerMotif">Motif de restitution:</label>
+                    <select id="restituerMotif" name="motif" required>
+                        <option value="" disabled selected>Sélectionner un motif</option>
+                        <option value="Fin de contrat">Fin de contrat</option>
+                        <option value="Changement de poste">Changement de poste</option>
+                        <option value="Démission">Démission</option>
+                        <option value="Retraite">Retraite</option>
+                        <option value="Mutation">Mutation</option>
+                        <option value="Défaillance matérielle">Défaillance matérielle</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="autreMotifGroup" style="display: none;">
+                    <label for="autreMotif">Précisez le motif:</label>
+                    <textarea id="autreMotif" name="autre_motif" rows="3" placeholder="Veuillez préciser le motif de restitution..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="dateRestitution">Date de restitution prévue:</label>
+                    <input type="date" id="dateRestitution" name="date_restitution" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="commentairesRestitution">Commentaires additionnels (optionnel):</label>
+                    <textarea id="commentairesRestitution" name="commentaires" rows="4" placeholder="Ajoutez des informations complémentaires si nécessaire..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="confirmerRestitution" name="confirmer" required>
+                        Je confirme vouloir restituer ce PC et comprends que cette action est irréversible.
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-restituer">
+                    <i class="fas fa-undo"></i> Restituer le PC
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script pour gérer l'activation du bouton -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmCheckbox = document.getElementById('confirmerRestitution');
+            const submitButton = document.querySelector('.btn-restituer');
+            
+            if (confirmCheckbox && submitButton) {
+                // Initialiser le bouton comme désactivé
+                submitButton.disabled = true;
+                
+                // Activer/désactiver le bouton selon la checkbox
+                confirmCheckbox.addEventListener('change', function() {
+                    submitButton.disabled = !this.checked;
+                });
+            }
+        });
+    </script>
+
+    <!-- Script de test pour débugger la restitution -->
+    <script>
+        // Test simple pour vérifier les éléments
+        function testRestitutionElements() {
+            console.log('🧪 Test des éléments de restitution:');
+            
+            const elements = {
+                'restituerPcForm': document.getElementById('restituerPcForm'),
+                'confirmerRestitution': document.getElementById('confirmerRestitution'),
+                'btn-restituer': document.querySelector('.btn-restituer'),
+                'restituerMotif': document.getElementById('restituerMotif'),
+                'autreMotifGroup': document.getElementById('autreMotifGroup')
+            };
+            
+            for (const [name, element] of Object.entries(elements)) {
+                console.log(`  ${element ? '✅' : '❌'} ${name}: ${element ? 'Trouvé' : 'Manquant'}`);
+            }
+            
+            console.log('🌐 URL restituerPcUrl:', window.restituerPcUrl);
+            console.log('🤖 RestitutionManager instance:', window.restitutionManager);
+            
+            return elements;
+        }
+        
+        // Gestionnaire pour afficher/masquer le champ "Autre motif"
+        document.addEventListener('DOMContentLoaded', function() {
+            const motifSelect = document.getElementById('restituerMotif');
+            const autreMotifGroup = document.getElementById('autreMotifGroup');
+            
+            if (motifSelect && autreMotifGroup) {
+                motifSelect.addEventListener('change', function() {
+                    if (this.value === 'Autre') {
+                        autreMotifGroup.style.display = 'block';
+                    } else {
+                        autreMotifGroup.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Historique des restitutions -->
+    
+
+    <p id="noPcRestitutionMessage" class="hidden" style="text-align: center; margin-top: 20px; color: #555;">
+        Aucun PC attribué disponible pour la restitution.
+    </p>
+</div>
+
+<!-- Vue Racheter -->
+<div id="Racheter-view" class="hidden">
+    <h1>Racheter votre PC</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Votre PC</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Marque</th>
+                        <th>Model</th>
+                        <th>Ram</th>
+                        <th>Disque dur</th>
+                        <th>processeur</th>
+                        <th>Date d'achat</th>
+                        <th>Date d'attribution</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="racheterPcRow">
+                        <td id="racheterMarque"></td>
+                        <td id="racheterModele"></td>
+                        <td id="racheterRam"></td>
+                        <td id="racheterDisqueDur"></td>
+                        <td id="racheterProcesseur"></td>
+                        <td id="racheterDateAchat"></td>
+                        <td id="racheterDateAttribution"></td>
+                        <td id="racheterStatut">
+                            {% if Pc_attribué.status == "en attente" %}
+                                <span class="statut-en-attente">En attente</span>
+                            {% elif Pc_attribué.status == "non envoyé" %}
+                                <span class="statut-non-envoye">Non envoyé</span>
+                            {% elif Pc_attribué.status == "validé" %}
+                                <span class="statut-valide">Validé</span>
+                            {% elif Pc_attribué.status == "refusé" %}
+                                <span class="statut-refuse">Refusé</span>
+                            {% else %}
+                                <span>{{ Pc_attribué.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>  
+                            <button type="submit" class="btn-Envoyer-Demande_de_rachat" >Envoyer demande </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p id="noPcAttributedMessage" class="hidden" style="text-align: center; margin-top: 20px; color: #555;">Aucun PC attribué à cet employé pour le rachat.</p>
+        </div>
+    </div>
+</div>

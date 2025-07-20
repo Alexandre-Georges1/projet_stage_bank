@@ -1,0 +1,296 @@
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique
+
+def get_demandes_peripheriques():
+    """Helper function pour récupérer les demandes de périphériques"""
+    demandes_en_attente = DemandeAchatPeripherique.objects.filter(statut="en_attente").order_by('-date_demande')
+    demandes_traitees = DemandeAchatPeripherique.objects.filter(statut__in=["approuve", "refuse"]).order_by('-date_demande')
+    return demandes_en_attente, demandes_traitees
+
+def get_user_demandes_achat(user_id):
+    """Helper function pour récupérer les demandes d'achat d'un utilisateur"""
+    demandes_achat = []
+    if user_id:
+        try:
+            employe = Employe.objects.get(pk=user_id)
+            demandes_achat = DemandeAchatPeripherique.objects.filter(
+                employe=employe
+            ).order_by('-date_demande')
+            print(f"DEBUG - Demandes d'achat trouvées pour {employe.nom}: {demandes_achat.count()}")
+        except Employe.DoesNotExist:
+            pass
+    return demandes_achat
+
+
+@csrf_exempt
+def dashboard(request):
+    employes = Employe.objects.all()
+    pcs = PC.objects.all()
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi') 
+    pcs_anciens = Pc_ancien.objects.select_related('pc__employe').all().order_by('-date_ajout')
+    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')  
+    pc_total = PC.objects.count()  
+    pc_en_service = Pc_attribué.objects.count()
+    pc_en_rebu = Pc_ancien.objects.count()
+    marques = marquePC.objects.all()
+    modeles = modelePC.objects.all()
+    emails = Email.objects.all()
+    connected_user = None
+    demandes_achat = []
+    demandes_peripheriques_en_attente, demandes_peripheriques_traitees = get_demandes_peripheriques()
+    
+    if 'user_id' in request.session:
+        try:
+            connected_user = Employe.objects.get(pk=request.session['user_id'])
+            # Récupérer les demandes d'achat de périphériques de l'utilisateur connecté
+            demandes_achat = DemandeAchatPeripherique.objects.filter(
+                employe=connected_user
+            ).order_by('-date_demande')
+            
+            # DEBUG: Affichage des informations de débogage
+            print(f"DEBUG - Utilisateur connecté: {connected_user.nom} {connected_user.prenom} (ID: {connected_user.id_employe})")
+            print(f"DEBUG - Nombre de demandes d'achat trouvées: {demandes_achat.count()}")
+            for demande in demandes_achat:
+                print(f"DEBUG - Demande: {demande.materiel} - {demande.statut} - {demande.date_demande}")
+            print(f"DEBUG - Nombre total de PC attribués: {pcs_attribues.count()}")
+            
+            # DEBUG: Vérification spécifique pour cet utilisateur
+            pcs_de_cet_employe = Pc_attribué.objects.filter(employe__id_employe=connected_user.id_employe)
+            print(f"DEBUG - PC trouvés pour cet employé: {pcs_de_cet_employe.count()}")
+            
+            for pc in pcs_attribues:
+                print(f"DEBUG - PC: {pc.marque} {pc.modele} attribué à employé ID: {pc.employe.id_employe} ({pc.employe.nom} {pc.employe.prenom})")
+                if pc.employe.id_employe == connected_user.id_employe:
+                    print(f"DEBUG - *** CORRESPONDANCE TROUVÉE! ***")
+        except Employe.DoesNotExist:
+            del request.session['user_id']
+
+    context = {
+        'employes': employes,
+        'pcs': pcs,
+        'caracteristiques_envoyees': caracteristiques_envoyees,
+        'pcs_anciens': pcs_anciens,
+        'pcs_attribues': pcs_attribues,  
+        'pc_total':pc_total,
+        'pc_en_service': pc_en_service,
+        'pc_en_rebu': pc_en_rebu,
+        'marques': marques,
+        'modeles': modeles,
+        'notifications': emails,
+        'connected_user':connected_user,
+        'demandes_achat': demandes_achat,
+        'demandes_peripheriques_en_attente': demandes_peripheriques_en_attente,
+        'demandes_peripheriques_traitees': demandes_peripheriques_traitees
+    }
+    return render(request, 'dashboard.html',context)
+
+
+@csrf_exempt
+def dashboard_employe(request):
+    employes = Employe.objects.all()
+    pcs = PC.objects.all()
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
+    connected_user = None
+    employe = None
+    bordereaux = []
+    demandes_achat = []
+    if 'user_id' in request.session:
+        try:
+            employe = Employe.objects.get(pk=request.session['user_id'])
+            connected_user = employe
+            bordereaux = Bordereau.objects.filter(employe=employe)
+            # Utiliser la fonction helper pour récupérer les demandes
+            demandes_achat = get_user_demandes_achat(request.session['user_id'])
+        except Employe.DoesNotExist:
+            del request.session['user_id']
+
+    context = {
+        'employes': employes,
+        'pcs': pcs,
+        'connected_user': connected_user,
+        'caracteristiques_envoyees': caracteristiques_envoyees,
+        'employe': employe,
+        'bordereaux': bordereaux,
+        'demandes_achat': demandes_achat
+    }
+    return render(request, 'dashboard_employé.html', context)
+
+
+@csrf_exempt
+def dashboard_DCH(request):
+    employes = Employe.objects.all()
+    pcs = PC.objects.all()
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+
+    connected_user = None
+    if 'user_id' in request.session:
+        try:
+            connected_user = Employe.objects.get(pk=request.session['user_id'])
+        except Employe.DoesNotExist:
+            del request.session['user_id']
+
+    context = {'employes': employes,
+                'pcs': pcs,
+                  'connected_user': connected_user,
+                    'caracteristiques_envoyees': caracteristiques_envoyees,
+                      'pcs_attribues': pcs_attribues,
+                      
+                      }
+    return render(request, 'dashboard_DCH.html', context)
+
+
+@csrf_exempt
+def dashboard_MG(request):
+    employes = Employe.objects.all()
+    pcs = PC.objects.all()
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+
+    connected_user = None
+    if 'user_id' in request.session:
+        try:
+            connected_user = Employe.objects.get(pk=request.session['user_id'])
+        except Employe.DoesNotExist:
+            del request.session['user_id']
+
+    context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
+    return render(request, 'dashboard_MG.html', context)
+
+
+@csrf_exempt
+def dashboard_RMG(request):
+    employes = Employe.objects.all()
+    pcs = PC.objects.all()
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+
+    connected_user = None
+    if 'user_id' in request.session:
+        try:
+            connected_user = Employe.objects.get(pk=request.session['user_id'])
+        except Employe.DoesNotExist:
+            del request.session['user_id']
+
+    context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
+    return render(request, 'dashboard_RMG.html', context)
+
+
+@csrf_exempt
+def dashboard_DAF(request):
+    employes = Employe.objects.all()
+    pcs = PC.objects.all()
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+
+    connected_user = None
+    if 'user_id' in request.session:
+        try:
+            connected_user = Employe.objects.get(pk=request.session['user_id'])
+        except Employe.DoesNotExist:
+            del request.session['user_id']
+
+    context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
+    return render(request, 'dashboard_DAF.html', context)
+
+
+
+@csrf_exempt
+def dashboard_RDOT(request):
+    employes = Employe.objects.all()
+    pcs = PC.objects.all()
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+    pc_en_service= Pc_attribué.objects.count()
+    pc_total = PC.objects.count()
+    pc_en_rebu = Pc_ancien.objects.count()
+    
+    # Ajouter les demandes de périphériques
+    demandes_peripheriques_en_attente, demandes_peripheriques_traitees = get_demandes_peripheriques()
+    
+    connected_user = None
+    if 'user_id' in request.session:
+        try:
+            connected_user = Employe.objects.get(pk=request.session['user_id'])
+        except Employe.DoesNotExist:
+            del request.session['user_id']
+
+    context = {
+                'employes': employes,
+                'pcs': pcs, 
+                'connected_user': connected_user, 
+                'caracteristiques_envoyees': caracteristiques_envoyees,
+                'pcs_attribues': pcs_attribues,
+                'pc_en_service': pc_en_service,
+                'pc_total': pc_total,
+                'pc_en_rebu': pc_en_rebu,
+                'demandes_peripheriques_en_attente': demandes_peripheriques_en_attente,
+                'demandes_peripheriques_traitees': demandes_peripheriques_traitees
+                  }
+    return render(request, 'dashboard_RDOT.html', context)
+
+
+@csrf_exempt
+def dashboard_DOT(request):
+    employes = Employe.objects.all()
+    pcs = PC.objects.all()
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+    pc_total = PC.objects.count()  
+    pc_en_service= Pc_attribué.objects.count()
+    pc_en_rebu= Pc_ancien.objects.count()
+    marques=marquePC.objects.all()
+    modeles=modelePC.objects.all()
+    connected_user = None
+    emails = Email.objects.all()
+    if 'user_id' in request.session:
+        try:
+            connected_user = Employe.objects.get(pk=request.session['user_id'])
+        except Employe.DoesNotExist:
+            del request.session['user_id']
+
+    context = {'employes': employes,
+                'pcs': pcs,
+                'connected_user': connected_user, 
+                'caracteristiques_envoyees': caracteristiques_envoyees, 
+                'pcs_attribues': pcs_attribues,
+                'pc_total': pc_total, 
+                'pc_en_service': pc_en_service,
+                'pc_en_rebu': pc_en_rebu,
+                'marques': marques,
+                'modeles': modeles,
+                'notifications': emails}
+    return render(request, 'dashboard_DOT.html', context)
+
+@csrf_exempt
+def Admin(request):
+    employes = Employe.objects.all()
+    pcs = PC.objects.all()
+    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+    pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
+    pc_total = PC.objects.count()  
+    pc_en_service= Pc_attribué.objects.count()
+    pc_en_rebu = Pc_ancien.objects.count()
+    marques=marquePC.objects.all()
+    modeles=modelePC.objects.all()
+    emails = Email.objects.all()
+    connected_user = None
+    if 'user_id' in request.session:
+        try:
+            connected_user = Employe.objects.get(pk=request.session['user_id'])
+        except Employe.DoesNotExist:
+            del request.session['user_id']
+
+    context = {'employes': employes,
+                'pcs': pcs,
+                'connected_user': connected_user,
+                'pcs_attribues': pcs_attribues,
+                'pcs_anciens': pcs_anciens,
+                'pc_total': pc_total, 
+                'pc_en_service': pc_en_service,
+                'pc_en_rebu': pc_en_rebu,
+                'marques': marques,
+                'modeles': modeles,
+                'notifications':emails}
+    return render(request, 'custom-admin.html', context)

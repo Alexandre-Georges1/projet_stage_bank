@@ -1,0 +1,39 @@
+<!-- 
+===============================
+EXEMPLE D'INCLUSION DES FICHIERS JS MODULAIRES
+===============================
+Ajoutez ces lignes dans votre template HTML, avant la fermeture de </body>
+Dans l'ordre suivant pour éviter les erreurs de dépendances :
+-->
+
+<!-- 1. CORE : Utilitaires de base -->
+<script src="{% static 'js/core/utilities.js' %}"></script>
+
+<!-- 2. CORE : Navigation et fonctions de base -->
+<script src="{% static 'js/core/dashboard-core.js' %}"></script>
+
+<!-- 3. CORE : Système de notifications -->
+<script src="{% static 'js/core/notifications.js' %}"></script>
+
+<!-- 4. MODULES : Gestion des PCs -->
+<script src="{% static 'js/modules/pc-management.js' %}"></script>
+
+<!-- 5. MODULES : Gestion des utilisateurs -->
+<script src="{% static 'js/modules/user-management.js' %}"></script>
+
+<!-- 6. MODULES : Gestion des rachats -->
+<script src="{% static 'js/modules/rachat-management.js' %}"></script>
+
+<!-- 7. MODULES : Gestion des bordereaux -->
+<script src="{% static 'js/modules/bordereau-management.js' %}"></script>
+
+<!-- 8. MAIN : Point d'entrée principal (doit être le dernier) -->
+<script src="{% static 'js/main.js' %}"></script>
+
+<!-- 
+IMPORTANT : 
+- Remplacez le fichier dashboard.js actuel par ces 8 fichiers
+- Respectez l'ordre d'inclusion pour éviter les erreurs
+- Toutes les fonctions globals sont maintenant accessibles via window.Dashboard*
+- Le code est maintenant modulaire et plus facile à maintenir
+-->

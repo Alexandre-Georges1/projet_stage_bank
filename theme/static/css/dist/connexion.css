@@ -1,0 +1,168 @@
+.fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeSlideIn 1s ease-out forwards;
+}
+
+@keyframes fadeSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Styles pour le modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Fond semi-transparent */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    transform: translateY(-20px); /* Légère animation d'entrée */
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-overlay:not(.hidden) .modal-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.modal-close-button {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 30px;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.3s ease;
+}
+
+.modal-close-button:hover {
+    color: #333;
+}
+
+.modal-content h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.modal-content p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn-choice {
+    display: block;
+    padding: 14px 20px;
+    background-color: #3e8e41;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+    text-align: center;
+}
+
+.btn-choice:hover {
+    background-color: #2d6f2f;
+    box-shadow: 0 6px 20px rgba(0, 255, 98, 0.272);
+    transform: translateY(-2px);
+}
+
+.btn-choice:active {
+    background-color: #00853c;
+    box-shadow: 0 2px 10px rgba(0, 255, 76, 0.348);
+    transform: translateY(1px);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.2);
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
+}
+
+.btn-secondary:active {
+    background-color: #4e555b;
+}
+
+/* Styles pour les champs avec icônes */
+.input-container {
+    position: relative;
+}
+
+.input-container i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 18px;
+    z-index: 10;
+    transition: color 0.3s ease;
+}
+
+.input-container input {
+    padding-left: 45px !important;
+}
+
+.input-container input:focus + i,
+.input-container input:focus ~ i {
+    color: #16a34a;
+}
+
+/* Style pour les messages d'erreur */
+.error-message {
+    color: #dc3545;
+    font-weight: bold;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.success-message {
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 15px;
+    text-align: center;
+}
