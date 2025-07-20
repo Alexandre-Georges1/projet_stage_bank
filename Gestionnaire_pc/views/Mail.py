@@ -1,12 +1,10 @@
 from django.http import JsonResponse
 import json
-from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.conf import settings
 from ..models import Employe, Email, CaracteristiqueEnvoyee,Pc_attribué
-from django.core import serializers # Ajout de serializers
 
-   
+
 def demander_caracteristique(request):
     if request.method == 'POST':
         try:
@@ -27,11 +25,14 @@ def demander_caracteristique(request):
             if connected_user:
                 sender_info = f' par {connected_user.prenom} {connected_user.nom} ({connected_user.fonction})'
 
-            subject = "Demande de caractéristique PC"
+            subject = f'Nouvelle Demande de Caractéristique PC : {employe.prenom} {employe.nom}'
             if connected_user:
-                subject = f"Demande de caractéristique PC par {connected_user.prenom} {connected_user.nom} ({connected_user.fonction})"
+                subject = f'Nouvelle Demande de Caractéristique PC : {employe.prenom} {employe.nom} - Par {connected_user.prenom} {connected_user.nom}'
 
-            message = f'Une demande de caractéristique PC a été émise pour l\'employé {employe.prenom} {employe.nom}{sender_info}.\n\nObjet de la demande : {caracteristique}'
+            message = f'Une nouvelle demande de caractéristique PC a été émise dans le système.\n\nInformations de la demande :\nEmployé concerné : {employe.prenom} {employe.nom}\nMatricule : {employe.matricule}\nDépartement : {employe.Département}\nFonction : {employe.fonction}\n\nObjet de la demande :\n{caracteristique}'
+            
+            if connected_user:
+                message += f'\n\nDemande émise par :\nNom : {connected_user.nom}\nPrénom : {connected_user.prenom}\nFonction : {connected_user.fonction}\nDépartement : {connected_user.Département}'
             from_email = settings.EMAIL_HOST_USER  
             recipient_list = ['kaogeorges2006@gmail.com'] 
 
@@ -40,6 +41,7 @@ def demander_caracteristique(request):
                 email_status = "E-mail de notification envoyé avec succès."
                 Email.objects.create(
                     objet=subject,
+                    corps=message,
                     destinataire=', '.join(recipient_list), 
                     expediteur=connected_user, 
                 )
@@ -88,22 +90,17 @@ def envoyer_caracteristiques(request):
             print(f"[DEBUG] employe_concerne: {employe_concerne}")
             print(f"[DEBUG] connected_user: {connected_user}")
 
-            subject = "Envoi de Caractéristiques PC"
+            subject = f'Nouvelles Caractéristiques PC Envoyées : {employe_concerne.prenom if employe_concerne else "Général"} {employe_concerne.nom if employe_concerne else ""}'
             if connected_user:
-                subject = f"Envoi de Caractéristiques PC par {connected_user.prenom} {connected_user.nom} ({connected_user.fonction})"
+                subject = f'Nouvelles Caractéristiques PC Envoyées : {employe_concerne.prenom if employe_concerne else "Général"} {employe_concerne.nom if employe_concerne else ""} - Par {connected_user.prenom} {connected_user.nom}'
 
-            message = f"Les caractéristiques de PC suivantes ont été envoyées :\n\n"
-            message += f"Marque : {marque}\n"
-            message += f"Modèle : {modele}\n"
-            message += f"Processeur : {processeur}\n"
-            message += f"RAM : {ram}\n"
-            message += f"Disque Dur : {disque}\n"
+            message = f"De nouvelles caractéristiques PC ont été envoyées dans le système.\n\nCaractéristiques du PC :\nMarque : {marque}\nModèle : {modele}\nProcesseur : {processeur}\nRAM : {ram}\nDisque Dur : {disque}"
 
             if employe_concerne:
-                message += f"\nPour l'employé : {employe_concerne.prenom} {employe_concerne.nom}"
+                message += f"\n\nEmployé concerné :\nNom : {employe_concerne.nom}\nPrénom : {employe_concerne.prenom}\nMatricule : {employe_concerne.matricule}\nDépartement : {employe_concerne.Département}\nFonction : {employe_concerne.fonction}"
             
             if connected_user:
-                message += f"\nEnvoyé par : {connected_user.prenom} {connected_user.nom} ({connected_user.fonction})"
+                message += f"\n\nEnvoyé par :\nNom : {connected_user.nom}\nPrénom : {connected_user.prenom}\nFonction : {connected_user.fonction}\nDépartement : {connected_user.Département}"
 
             from_email = settings.EMAIL_HOST_USER
             recipient_list = ['kaogeorges2006@gmail.com'] 
@@ -114,6 +111,7 @@ def envoyer_caracteristiques(request):
 
                 Email.objects.create(
                     objet=subject,
+                    corps=message,
                     destinataire=', '.join(recipient_list),
                     expediteur=connected_user,
                 )

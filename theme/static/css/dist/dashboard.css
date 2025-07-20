@@ -57,30 +57,40 @@
 	background-color: #28a745 !important;
 	color: white !important;
 	border: none;
-	padding: 5px 10px;
+	padding: 6px 12px;
 	border-radius: 4px;
 	cursor: pointer;
 	font-size: 12px;
-	transition: background-color 0.3s;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	min-width: 80px;
+	text-align: center;
 }
 
 .btn-valider-demande:hover {
 	background-color: #218838 !important;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
 }
 
 .btn-refuser-demande {
 	background-color: #dc3545 !important;
 	color: white !important;
 	border: none;
-	padding: 5px 10px;
+	padding: 6px 12px;
 	border-radius: 4px;
 	cursor: pointer;
 	font-size: 12px;
-	transition: background-color 0.3s;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	min-width: 80px;
+	text-align: center;
 }
 
 .btn-refuser-demande:hover {
 	background-color: #c82333 !important;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
 }
 
 .btn-voir-details {
@@ -96,6 +106,57 @@
 
 .btn-voir-details:hover {
 	background-color: #138496 !important;
+}
+
+/* Boutons d'action pour les demandes de rachat */
+.action-btn-demande {
+	border: none;
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	min-width: 70px;
+	text-align: center;
+}
+
+/* Bouton Valider */
+.action-btn-demande:nth-child(1),
+.action-btn-demande[data-action="valider"],
+button.action-btn-demande:contains("Valider") {
+	background-color: #28a745 !important;
+	color: white !important;
+}
+
+.action-btn-demande:nth-child(1):hover,
+.action-btn-demande[data-action="valider"]:hover,
+button.action-btn-demande:contains("Valider"):hover {
+	background-color: #218838 !important;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+/* Bouton Refuser */
+.action-btn-demande:nth-child(2),
+.action-btn-demande[data-action="refuser"],
+button.action-btn-demande:contains("Refuser") {
+	background-color: #dc3545 !important;
+	color: white !important;
+}
+
+.action-btn-demande:nth-child(2):hover,
+.action-btn-demande[data-action="refuser"]:hover,
+button.action-btn-demande:contains("Refuser"):hover {
+	background-color: #c82333 !important;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* Style par défaut avec détection du texte */
+.action-btn-demande {
+	background-color: #6c757d !important;
+	color: white !important;
 }
 
 .btn-definir-prix {
@@ -560,10 +621,6 @@ body {
 	overflow-x: hidden;
 }
 
-
-
-
-
 /* SIDEBAR */
 #sidebar {
 	position: fixed;
@@ -917,10 +974,6 @@ body {
 }
 /* NAVBAR */
 
-
-
-
-
 /* MAIN */
 #content main {
 	width: 100%;
@@ -971,9 +1024,6 @@ body {
 	font-weight: 500;
 }
 
-
-
-
 #content main .box-info {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -1017,10 +1067,6 @@ body {
 #content main .box-info li .text p {
 	color: var(--dark);	
 }
-
-
-
-
 
 #content main .table-data {
 	display: flex;
@@ -1416,14 +1462,6 @@ table .btn-supprimer {
 /* MAIN */
 /* CONTENT */
 
-
-
-
-
-
-
-
-
 @media screen and (max-width: 768px) {
 	#sidebar {
 		width: 200px;
@@ -1438,9 +1476,6 @@ table .btn-supprimer {
 		display: none;
 	}
 }
-
-
-
 .btn-ajouter-manuel {
 	background-color: #4CAF50;
 	color: white;

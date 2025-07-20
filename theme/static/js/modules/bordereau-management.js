@@ -6,7 +6,6 @@
 
 // Fonction principale d'initialisation de la gestion des bordereaux
 function initBordereauManagement() {
-    // Gestion du bouton Bordereau dans la liste des attributions
     const bordereauButtons = document.querySelectorAll('.btn-bordereau');
     bordereauButtons.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -55,7 +54,6 @@ function initBordereauManagement() {
                 const btnEnvoyerDemande = bordereauModal.querySelector('.btn-Envoyer-Demande');
                 if (btnEnvoyerDemande) {
                     btnEnvoyerDemande.onclick = async function() {
-                        console.log('Bouton Envoyer demande cliqué !');
                         await handleEnvoyerDemande(bordereauModal);
                     };
                 }
@@ -85,10 +83,16 @@ function initBordereauManagement() {
 
 // Fonction pour gérer l'envoi de la demande
 async function handleEnvoyerDemande(bordereauModal) {
+    const btnEnvoyerDemande = bordereauModal.querySelector('.btn-Envoyer-Demande');
+    
+    // Activer l'état de chargement
+    showBordereauLoadingState(true, btnEnvoyerDemande);
+    
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
     
     if (!csrfToken) {
-        alert('Token CSRF manquant');
+        showBordereauNotification('Token CSRF manquant', 'error');
+        showBordereauLoadingState(false, btnEnvoyerDemande);
         return;
     }
 
@@ -116,14 +120,18 @@ async function handleEnvoyerDemande(bordereauModal) {
         const result = await response.json();
 
         if (response.ok) {
-            alert(result.message);
-            bordereauModal.classList.add('hidden');
+            showBordereauNotification(result.message, 'success');
+            setTimeout(() => {
+                bordereauModal.classList.add('hidden');
+            }, 1500);
         } else {
-            alert("Erreur lors de l'envoi du bordereau : " + result.error);
+            showBordereauNotification("Erreur lors de l'envoi du bordereau : " + result.error, 'error');
         }
     } catch (error) {
-        console.error("Erreur lors de l'envoi du bordereau:", error);
-        alert("Une erreur est survenue lors de l'envoi du bordereau.");
+        showBordereauNotification("Une erreur est survenue lors de l'envoi du bordereau.", 'error');
+    } finally {
+        // Désactiver l'état de chargement
+        showBordereauLoadingState(false, btnEnvoyerDemande);
     }
 }
 
@@ -163,19 +171,17 @@ async function handleAcceptBordereau() {
     const messageDiv = document.getElementById('messageBordereauAccept');
     
     if (!acceptBtn || !messageDiv) {
-        console.error("Éléments non trouvés:", { acceptBtn, messageDiv });
+        showBordereauNotification("Éléments de la page non trouvés", 'error');
         return;
     }
+
+    // Activer l'état de chargement
+    showBordereauLoadingState(true, acceptBtn);
 
     // Récupérer le token CSRF
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                      document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
                      getCookie('csrftoken');
-    
-    if (!csrfToken) {
-        console.error("Token CSRF non trouvé");
-        return;
-    }
 
     try {
         const response = await fetch('/accepter-bordereau/', {
@@ -201,13 +207,18 @@ async function handleAcceptBordereau() {
             messageDiv.style.color = '#28a745';
             messageDiv.style.fontWeight = 'bold';
             messageDiv.style.marginTop = '10px';
+            
+            showBordereauNotification(`Bordereau accepté avec succès le ${result.date_acceptation}`, 'success');
         } else {
-            console.error("Erreur de réponse:", result);
-            alert("Erreur lors de l'acceptation du bordereau : " + result.error);
+            showBordereauNotification("Erreur lors de l'acceptation du bordereau : " + result.error, 'error');
         }
     } catch (error) {
-        console.error("Erreur lors de l'acceptation du bordereau:", error);
-        alert("Une erreur est survenue lors de l'acceptation du bordereau.");
+        showBordereauNotification("Une erreur est survenue lors de l'acceptation du bordereau.", 'error');
+    } finally {
+        // Désactiver l'état de chargement seulement si l'acceptation a échoué
+        if (!acceptBtn.disabled) {
+            showBordereauLoadingState(false, acceptBtn);
+        }
     }
 }
 
@@ -245,6 +256,144 @@ function toggleAcceptButton() {
 
 // Rendre cette fonction accessible globalement
 window.toggleAcceptButton = toggleAcceptButton;
+
+/**
+ * Gère l'état de chargement pour les boutons de bordereau
+ * @param {boolean} isLoading - État de chargement
+ * @param {HTMLElement} submitButton - Bouton de soumission
+ */
+function showBordereauLoadingState(isLoading, submitButton) {
+    if (!submitButton) return;
+    
+    if (isLoading) {
+        // Sauvegarder le texte original
+        submitButton.dataset.originalText = submitButton.innerHTML;
+        
+        // Afficher l'indicateur de chargement
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+        submitButton.style.opacity = '0.7';
+        
+        // Ajouter une classe pour le style
+        submitButton.classList.add('loading');
+    } else {
+        // Restaurer l'état original
+        submitButton.disabled = false;
+        submitButton.innerHTML = submitButton.dataset.originalText || 'Envoyer';
+        submitButton.style.opacity = '1';
+        
+        // Retirer la classe de chargement
+        submitButton.classList.remove('loading');
+    }
+}
+
+/**
+ * Affiche une notification pour les opérations de bordereau
+ * @param {string} message - Message à afficher
+ * @param {string} type - Type de notification (success, error, info)
+ */
+function showBordereauNotification(message, type = 'info') {
+    // Créer ou réutiliser un conteneur de notification
+    let notificationContainer = document.getElementById('bordereau-notification-container');
+    
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'bordereau-notification-container';
+        notificationContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+        `;
+        document.body.appendChild(notificationContainer);
+    }
+    
+    // Créer la notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.4;
+        animation: slideIn 0.3s ease-out;
+        border-left: 4px solid;
+        background: white;
+    `;
+    
+    // Définir les couleurs selon le type
+    const styles = {
+        success: {
+            borderColor: '#28a745',
+            backgroundColor: '#d4edda',
+            color: '#155724',
+            icon: '✅'
+        },
+        error: {
+            borderColor: '#dc3545',
+            backgroundColor: '#f8d7da',
+            color: '#721c24',
+            icon: '❌'
+        },
+        info: {
+            borderColor: '#17a2b8',
+            backgroundColor: '#d1ecf1',
+            color: '#0c5460',
+            icon: 'ℹ️'
+        }
+    };
+    
+    const style = styles[type] || styles.info;
+    notification.style.borderLeftColor = style.borderColor;
+    notification.style.backgroundColor = style.backgroundColor;
+    notification.style.color = style.color;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 16px;">${style.icon}</span>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="margin-left: auto; background: none; border: none; font-size: 18px; 
+                           cursor: pointer; color: ${style.color}; opacity: 0.7;">&times;</button>
+        </div>
+    `;
+    
+    // Ajouter les styles d'animation si ce n'est pas déjà fait
+    if (!document.getElementById('bordereau-notification-styles')) {
+        const styleSheet = document.createElement('style');
+        styleSheet.id = 'bordereau-notification-styles';
+        styleSheet.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+    }
+    
+    // Ajouter la notification
+    notificationContainer.appendChild(notification);
+    
+    // Auto-suppression après 5 secondes pour les succès, 8 secondes pour les erreurs
+    const autoRemoveDelay = type === 'success' ? 5000 : 8000;
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, autoRemoveDelay);
+}
 
 // Export des fonctions pour utilisation dans d'autres modules
 window.DashboardBordereauManagement = {

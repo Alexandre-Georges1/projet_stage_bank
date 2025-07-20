@@ -23,9 +23,9 @@ class AchatPeripheriquesManager {
             // Vérifier que tous les éléments sont présents
             if (this.checkRequiredElements()) {
                 this.setupEventListeners();
-                console.log('✅ AchatPeripheriquesManager initialisé avec succès');
+                console.log('AchatPeripheriquesManager initialisé avec succès');
             } else {
-                console.error('❌ AchatPeripheriquesManager: Échec de l\'initialisation - éléments manquants');
+                console.error(' AchatPeripheriquesManager: Échec de l\'initialisation - éléments manquants');
             }
         });
     }
@@ -64,18 +64,12 @@ class AchatPeripheriquesManager {
      */
     async handleFormSubmit() {
         try {
-            // Validation côté client
             if (!this.validateForm()) {
                 return;
             }
 
-            // Debug : afficher les données du formulaire
             this.debugFormData();
-
-            // Préparation des données
             const formData = new FormData(this.demandeForm);
-            
-            // Affichage d'un indicateur de chargement
             this.showLoadingState(true);
 
             // Envoi de la requête
@@ -88,16 +82,9 @@ class AchatPeripheriquesManager {
             });
 
             const data = await response.json();
-
-            // Debug : afficher la réponse
-            console.log('📨 Réponse du serveur:', data);
-            console.log('🌐 Status de la réponse:', response.status, response.statusText);
-
-            // Traitement de la réponse
             this.handleResponse(data, response.ok);
 
         } catch (error) {
-            console.error('💥 Erreur lors de l\'envoi de la demande:', error);
             this.showError('Une erreur est survenue lors de l\'envoi de la demande.');
         } finally {
             this.showLoadingState(false);
@@ -119,7 +106,6 @@ class AchatPeripheriquesManager {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -270,16 +256,13 @@ class AchatPeripheriquesManager {
     showLoadingState(isLoading) {
         if (this.submitButton) {
             if (isLoading) {
-                // Sauvegarder le texte original
                 this.submitButton.dataset.originalText = this.submitButton.innerHTML;
                 
-                // Afficher l'indicateur de chargement
                 this.submitButton.disabled = true;
                 this.submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
                 this.submitButton.style.opacity = '0.7';
                 this.submitButton.style.cursor = 'not-allowed';
-                
-                // Ajouter une classe pour le style
+            
                 this.submitButton.classList.add('loading');
             } else {
                 // Restaurer l'état original
@@ -288,7 +271,6 @@ class AchatPeripheriquesManager {
                 this.submitButton.style.cursor = 'pointer';
                 this.submitButton.disabled = false;
                 
-                // Retirer la classe de chargement
                 this.submitButton.classList.remove('loading');
             }
         }
@@ -322,10 +304,6 @@ class AchatPeripheriquesManager {
             for (let [key, value] of formData.entries()) {
                 debugData[key] = value;
             }
-            
-            console.log('🔍 Données du formulaire d\'achat:', debugData);
-            console.log('🌐 URL de destination:', window.demandeAchatPeripheriquesUrl);
-            console.log('🔑 Token CSRF:', this.getCSRFToken() ? 'Présent' : 'Manquant');
         }
     }
 
@@ -340,18 +318,6 @@ class AchatPeripheriquesManager {
         };
 
         let allPresent = true;
-        
-        console.log('🔍 Vérification des éléments requis (Achat):');
-        for (const [name, element] of Object.entries(elements)) {
-            const isPresent = element !== null;
-            console.log(`  ${isPresent ? '✅' : '❌'} ${name}: ${isPresent ? 'Présent' : 'Manquant'}`);
-            if (!isPresent) allPresent = false;
-        }
-
-        if (!allPresent) {
-            console.warn('⚠️ Certains éléments requis sont manquants dans le DOM (Achat)');
-        }
-
         return allPresent;
     }
 }

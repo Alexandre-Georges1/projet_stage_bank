@@ -164,13 +164,7 @@ class RestitutionManager {
                 formData.delete('autre_motif');
                 console.log('🗑️ Champ autre_motif supprimé car motif =', motif);
             }
-            
-            console.log('📦 Données finales à envoyer:');
-            for (let [key, value] of formData.entries()) {
-                console.log(`  ${key}: ${value}`);
-            }
-            
-            // Affichage d'un indicateur de chargement
+        
             this.showLoadingState(true);
 
             // Envoi de la requête
@@ -184,15 +178,10 @@ class RestitutionManager {
 
             const data = await response.json();
 
-            // Debug : afficher la réponse
-            console.log('📨 Réponse du serveur:', data);
-            console.log('🌐 Status de la réponse:', response.status, response.statusText);
-
             // Traitement de la réponse
             this.handleResponse(data, response.ok);
 
         } catch (error) {
-            console.error('💥 Erreur lors de l\'envoi de la demande:', error);
             this.showError('Une erreur est survenue lors de l\'envoi de la demande.');
         } finally {
             this.showLoadingState(false);

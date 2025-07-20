@@ -10,6 +10,71 @@ const URL_MODELES = '/gestion_modeles/';
 let marques = [];
 let modeles = [];
 
+// Fonctions de notification pour le module PC
+function showPcLoadingState(isLoading) {
+    const submitButton = document.querySelector('#addPcForm button[type="submit"]');
+    if (submitButton) {
+        if (isLoading) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner"></span> Traitement...';
+        } else {
+            submitButton.disabled = false;
+            const mode = document.getElementById('addPcForm')?.dataset.mode;
+            submitButton.textContent = mode === 'edit' ? 'Enregistrer les modifications' : 'Ajouter PC';
+        }
+    }
+}
+
+function showPcNotification(message, type = 'success') {
+    // Créer ou récupérer le conteneur de notifications
+    let notificationContainer = document.getElementById('pc-notification-container');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'pc-notification-container';
+        notificationContainer.className = 'notification-container';
+        document.body.appendChild(notificationContainer);
+    }
+
+    // Créer la notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <span class="notification-message">${message}</span>
+        <button class="notification-close">&times;</button>
+    `;
+
+    // Ajouter la notification au conteneur
+    notificationContainer.appendChild(notification);
+
+    // Animation d'entrée
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+
+    // Gestion de la fermeture
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.addEventListener('click', () => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    });
+
+    // Auto-fermeture après 5 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
 // Fonction pour charger les modèles
 function chargerModeles() {
     fetch('/gestion_modeles/')
@@ -318,15 +383,15 @@ function initPcManagement() {
     if (addPcForm) {
         addPcForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Activer l'état de chargement
+            showPcLoadingState(true);
+            
             const mode = addPcForm.dataset.mode;
             const pcId = addPcForm.dataset.pcId; 
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
 
-            if (!csrfToken) {
-                alert('Token CSRF manquant');
-                return;
-            }
-
+        
             const pcData = {
                 marque: formMarque?.value || '',
                 model: formModel?.value || '',
@@ -345,7 +410,8 @@ function initPcManagement() {
             }
 
             if (!url) {
-                alert('URL manquante pour la soumission du formulaire');
+                showPcNotification('URL manquante pour la soumission du formulaire', 'error');
+                showPcLoadingState(false);
                 return;
             }
 
@@ -362,15 +428,19 @@ function initPcManagement() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert(result.message);
-                    addPcModal.classList.add('hidden');
-                    location.reload();
+                    showPcNotification(result.message, 'success');
+                    setTimeout(() => {
+                        addPcModal.classList.add('hidden');
+                        location.reload();
+                    }, 1500);
                 } else {
-                    alert('Erreur : ' + result.error);
+                    showPcNotification('Erreur : ' + result.error, 'error');
                 }
             } catch (error) {
                 console.error('Erreur lors de la soumission du formulaire PC:', error);
-                alert('Une erreur est survenue lors de l\'envoi des données.');
+                showPcNotification('Une erreur est survenue lors de l\'envoi des données.', 'error');
+            } finally {
+                showPcLoadingState(false);
             }
         });
     }
@@ -422,7 +492,7 @@ function initPcManagement() {
                         const url = window.supprimerPcUrl?.replace('0', pcId);
 
                         if (!csrfToken || !url) {
-                            alert('Données manquantes pour la suppression');
+                            showPcNotification('Données manquantes pour la suppression', 'error');
                             return;
                         }
 
@@ -435,14 +505,13 @@ function initPcManagement() {
                             });
                             const result = await response.json();
                             if (response.ok) {
-                                alert(result.message);
+                                showPcNotification(result.message, 'success');
                                 row.remove();
                             } else {
-                                alert('Erreur lors de la suppression : ' + result.error);
+                                showPcNotification('Erreur lors de la suppression : ' + result.error, 'error');
                             }
                         } catch (error) {
-                            console.error('Erreur lors de la suppression du PC:', error);
-                            alert('Une erreur est survenue lors de la suppression.');
+                            showPcNotification('Une erreur est survenue lors de la suppression.', 'error');
                         }
                     }
                 }

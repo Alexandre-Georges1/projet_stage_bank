@@ -530,9 +530,15 @@ function initCharacteristics() {
         demandeCaracteristiqueForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            
+            // Activer l'état de chargement
+            showCharacteristicsLoadingState(true, submitButton);
+
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
             if (!csrfToken) {
-                alert('Token CSRF manquant');
+                showCharacteristicsNotification('Token CSRF manquant', 'error');
+                showCharacteristicsLoadingState(false, submitButton);
                 return;
             }
 
@@ -557,14 +563,17 @@ function initCharacteristics() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert(result.message);
+                    showCharacteristicsNotification(result.message, 'success');
                     demandeCaracteristiqueForm.reset(); 
                 } else {
-                    alert('Erreur : ' + result.error);
+                    showCharacteristicsNotification('Erreur : ' + result.error, 'error');
                 }
             } catch (error) {
                 console.error('Erreur lors de l\'envoi de la demande de caractéristique:', error);
-                alert('Une erreur est survenue lors de l\'envoi des données.');
+                showCharacteristicsNotification('Une erreur est survenue lors de l\'envoi des données.', 'error');
+            } finally {
+                // Désactiver l'état de chargement
+                showCharacteristicsLoadingState(false, submitButton);
             }
         });
     }
@@ -600,10 +609,17 @@ function initCharacteristics() {
     if (sendCharacteristicsForm) {
         sendCharacteristicsForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            
+            // Activer l'état de chargement
+            showCharacteristicsLoadingState(true, submitButton);
+
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
 
             if (!csrfToken) {
-                alert('Token CSRF manquant');
+                showCharacteristicsNotification('Token CSRF manquant', 'error');
+                showCharacteristicsLoadingState(false, submitButton);
                 return;
             }
 
@@ -629,15 +645,18 @@ function initCharacteristics() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert(result.message);
+                    showCharacteristicsNotification(result.message, 'success');
                     sendCharacteristicsModal.classList.add('hidden');
-                    location.reload();
+                    setTimeout(() => location.reload(), 1500); // Délai pour voir la notification
                 } else {
-                    alert('Erreur : ' + result.error);
+                    showCharacteristicsNotification('Erreur : ' + result.error, 'error');
                 }
             } catch (error) {
                 console.error('Erreur lors de l\'envoi des caractéristiques:', error);
-                alert('Une erreur est survenue lors de l\'envoi des données.');
+                showCharacteristicsNotification('Une erreur est survenue lors de l\'envoi des données.', 'error');
+            } finally {
+                // Désactiver l'état de chargement
+                showCharacteristicsLoadingState(false, submitButton);
             }
         });
     }
@@ -679,6 +698,52 @@ function showUserLoadingState(isLoading, submitButton) {
  * @param {string} type - Type de notification (success, error, info)
  */
 function showUserNotification(message, type = 'info') {
+    // Réutiliser la même fonction que pour les employés
+    if (typeof showEmployeeNotification === 'function') {
+        showEmployeeNotification(message, type);
+    } else {
+        // Fallback vers une alerte simple
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+        alert(`${icon} ${message}`);
+    }
+}
+
+/**
+ * Gère l'état de chargement pour les formulaires de caractéristiques
+ * @param {boolean} isLoading - État de chargement
+ * @param {HTMLElement} submitButton - Bouton de soumission
+ */
+function showCharacteristicsLoadingState(isLoading, submitButton) {
+    if (!submitButton) return;
+    
+    if (isLoading) {
+        // Sauvegarder le texte original
+        submitButton.dataset.originalText = submitButton.innerHTML;
+        
+        // Afficher l'indicateur de chargement
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+        submitButton.style.opacity = '0.7';
+        
+        // Ajouter une classe pour le style
+        submitButton.classList.add('loading');
+    } else {
+        // Restaurer l'état original
+        submitButton.disabled = false;
+        submitButton.innerHTML = submitButton.dataset.originalText || 'Envoyer';
+        submitButton.style.opacity = '1';
+        
+        // Retirer la classe de chargement
+        submitButton.classList.remove('loading');
+    }
+}
+
+/**
+ * Affiche une notification pour les opérations de caractéristiques
+ * @param {string} message - Message à afficher
+ * @param {string} type - Type de notification (success, error, info)
+ */
+function showCharacteristicsNotification(message, type = 'info') {
     // Réutiliser la même fonction que pour les employés
     if (typeof showEmployeeNotification === 'function') {
         showEmployeeNotification(message, type);
