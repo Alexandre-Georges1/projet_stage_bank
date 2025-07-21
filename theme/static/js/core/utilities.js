@@ -4,7 +4,6 @@
  * ===============================
  */
 
-// Fonction pour récupérer le token CSRF
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -19,7 +18,6 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-
 // Fonction pour afficher les informations utilisateur
 function toggleUserInfo() {
     const userInfoDropdown = document.querySelector('.user-info-dropdown');
@@ -27,8 +25,6 @@ function toggleUserInfo() {
         userInfoDropdown.style.display = userInfoDropdown.style.display === 'none' ? 'flex' : 'none';
     }
 }
-
-// Export des fonctions pour utilisation dans d'autres modules
 window.DashboardUtils = {
     getCookie,
     toggleUserInfo

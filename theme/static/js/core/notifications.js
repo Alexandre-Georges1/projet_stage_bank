@@ -1,7 +1,5 @@
 /**
- * ===============================
  * NOTIFICATIONS : Gestion du système de notifications
- * ===============================
  */
 
 class NotificationManager {
@@ -11,22 +9,18 @@ class NotificationManager {
         this.notificationBadge = document.getElementById('notificationBadge');
         this.notificationDropdown = document.getElementById('notificationDropdown');
         this.notificationList = document.getElementById('notificationList');
-        this.clearAllBtn = document.getElementById('clearAllBtn');
-        
+        this.clearAllBtn = document.getElementById('clearAllBtn'); 
         this.initEventListeners();
         this.updateBadge();
     }
 
     initEventListeners() {
         if (!this.notificationBtn) return;
-
-        // Toggle dropdown au clic sur la cloche
         this.notificationBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleDropdown();
         });
 
-        // Fermer le dropdown si on clique ailleurs
         document.addEventListener('click', (e) => {
             if (!this.notificationBtn.contains(e.target) && 
                 this.notificationDropdown && !this.notificationDropdown.contains(e.target)) {
@@ -205,12 +199,10 @@ class NotificationManager {
 
 // Fonction d'initialisation des notifications
 function initNotifications() {
-    // Initialiser le gestionnaire de notifications
     window.notificationManager = new NotificationManager();
 
     // Charger les notifications depuis une variable globale générée par Django
     if (window.notificationsData && Array.isArray(window.notificationsData)) {
-        console.log('Notifications Django trouvées :', window.notificationsData);
         window.notificationManager.clearAllNotifications();
         window.notificationsData.forEach(notif => {
             window.notificationManager.addNotification(
@@ -226,8 +218,6 @@ function initNotifications() {
         console.warn('Aucune notification Django trouvée dans window.notificationsData');
     }
 }
-
-// Export des fonctions pour utilisation dans d'autres modules
 window.DashboardNotifications = {
     NotificationManager,
     initNotifications

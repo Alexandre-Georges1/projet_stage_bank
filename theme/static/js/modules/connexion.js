@@ -6,11 +6,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const generalDashboardBtn = document.getElementById('generalDashboardBtn');
     const modalUserRoleSpan = document.getElementById('modalUserRole');
 
-    // Fonction pour afficher les messages (peut être améliorée pour être plus élégante)
     function displayMessage(message, type = 'error') {
-        alert(message); // Simple alerte pour le moment
+        alert(message); 
     }
-
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         const username = document.getElementById('username').value;
@@ -26,9 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
             });
-
             const result = await response.json();
-
             if (result.success) {
                 if (result.choice_required) {
                     // Afficher le modal de choix
@@ -48,12 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
             displayMessage('Une erreur est survenue lors de la connexion.');
         }
     });
-
-    // Fermer le modal
     modalCloseButton.addEventListener('click', function() {
         choiceModal.classList.add('hidden');
     });
-
     choiceModal.addEventListener('click', function(event) {
         if (event.target === choiceModal) {
             choiceModal.classList.add('hidden');

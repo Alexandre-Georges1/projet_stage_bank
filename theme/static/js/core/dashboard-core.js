@@ -43,7 +43,6 @@ function switchView(viewId) {
 // Fonction pour vérifier la visibilité réelle d'un élément
 function isReallyVisible(el) {
     if (!el) return false;
-    // Vérifie la visibilité réelle (dimensions, display, parent, etc.)
     const style = window.getComputedStyle(el);
     const visible = (
         el.offsetParent !== null &&
@@ -53,17 +52,11 @@ function isReallyVisible(el) {
         el.offsetWidth > 0 &&
         el.offsetHeight > 0
     );
-    // Log pour debug
-    console.log('Menu', el.id, 'visible:', visible, '| display:', style.display, '| visibility:', style.visibility, '| offsetParent:', el.offsetParent, '| d-none:', el.classList.contains('d-none'), '| w/h:', el.offsetWidth, el.offsetHeight);
     return visible;
 }
-
-// Initialisation de la navigation
 function initNavigation() {
     console.log('DOMContentLoaded fired');
     const menuItems = document.querySelectorAll('#sidebar .side-menu li');
-    console.log('Nombre d\'éléments de menu trouvés :', menuItems.length);
-
     // Gestion des clics sur le menu
     menuItems.forEach(menuItem => {
         menuItem.addEventListener('click', function() {
@@ -73,7 +66,6 @@ function initNavigation() {
             switchView(viewId);
         });
     });
-
     // Cacher toutes les vues au chargement
     document.querySelectorAll('main > div').forEach(view => {
         view.classList.add('hidden');
@@ -175,22 +167,17 @@ function initLogout() {
                 });
 
                 const result = await response.json();
-
                 if (response.ok) {
-                    // Si la déconnexion est réussie côté serveur
                     window.location.href = window.connexionUrl; 
                 } else {
-                    alert('Erreur lors de la déconnexion : ' + result.error);
+                    showEmployeeNotification('Erreur lors de la déconnexion : ' + result.error);
                 }
             } catch (error) {
                 console.error('Erreur réseau ou autre lors de la déconnexion:', error);
-                alert('Une erreur est survenue lors de la tentative de déconnexion.');
             }
         });
     }
 }
-
-// Export des fonctions pour utilisation dans d'autres modules
 window.DashboardCore = {
     switchView,
     isReallyVisible,

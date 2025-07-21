@@ -26,6 +26,10 @@ function showPcLoadingState(isLoading) {
 }
 
 function showPcNotification(message, type = 'success') {
+    console.log('=== DEBUG NOTIFICATION ===');
+    console.log('Message:', message);
+    console.log('Type:', type);
+    
     // Créer ou récupérer le conteneur de notifications
     let notificationContainer = document.getElementById('pc-notification-container');
     if (!notificationContainer) {

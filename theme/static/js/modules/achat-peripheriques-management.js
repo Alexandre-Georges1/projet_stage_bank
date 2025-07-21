@@ -67,12 +67,9 @@ class AchatPeripheriquesManager {
             if (!this.validateForm()) {
                 return;
             }
-
             this.debugFormData();
             const formData = new FormData(this.demandeForm);
             this.showLoadingState(true);
-
-            // Envoi de la requête
             const response = await fetch(window.demandeAchatPeripheriquesUrl, {
                 method: 'POST',
                 body: formData,
@@ -130,23 +127,14 @@ class AchatPeripheriquesManager {
         }
     }
 
-    /**
-     * Affiche un message de succès
-     */
     showSuccess(message) {
         this.showNotification(message, 'success');
     }
 
-    /**
-     * Affiche un message d'erreur
-     */
     showError(message) {
         this.showNotification(message, 'error');
     }
 
-    /**
-     * Affiche une notification
-     */
     showNotification(message, type = 'info') {
         // Créer ou réutiliser un conteneur de notification
         let notificationContainer = document.getElementById('achat-notification-container');
@@ -233,10 +221,8 @@ class AchatPeripheriquesManager {
             document.head.appendChild(styleSheet);
         }
         
-        // Ajouter la notification
+    
         notificationContainer.appendChild(notification);
-        
-        // Auto-suppression après 5 secondes pour les succès, 8 secondes pour les erreurs
         const autoRemoveDelay = type === 'success' ? 5000 : 8000;
         setTimeout(() => {
             if (notification.parentElement) {
@@ -250,9 +236,6 @@ class AchatPeripheriquesManager {
         }, autoRemoveDelay);
     }
 
-    /**
-     * Gère l'état de chargement
-     */
     showLoadingState(isLoading) {
         if (this.submitButton) {
             if (isLoading) {
@@ -262,40 +245,26 @@ class AchatPeripheriquesManager {
                 this.submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
                 this.submitButton.style.opacity = '0.7';
                 this.submitButton.style.cursor = 'not-allowed';
-            
                 this.submitButton.classList.add('loading');
             } else {
                 // Restaurer l'état original
                 this.submitButton.innerHTML = this.submitButton.dataset.originalText || 'Faire la demande';
                 this.submitButton.style.opacity = '1';
                 this.submitButton.style.cursor = 'pointer';
-                this.submitButton.disabled = false;
-                
+                this.submitButton.disabled = false; 
                 this.submitButton.classList.remove('loading');
             }
         }
     }
-
-    /**
-     * Réinitialise le formulaire après succès
-     */
-    resetForm() {
+       resetForm() {
         if (this.demandeForm) {
             this.demandeForm.reset();
         }
     }
-
-    /**
-     * Récupère le token CSRF
-     */
     getCSRFToken() {
         const csrfElement = document.querySelector('[name=csrfmiddlewaretoken]');
         return csrfElement ? csrfElement.value : '';
     }
-
-    /**
-     * Méthode de débogage pour afficher les données du formulaire
-     */
     debugFormData() {
         if (this.demandeForm) {
             const formData = new FormData(this.demandeForm);
@@ -324,8 +293,6 @@ class AchatPeripheriquesManager {
 
 // Initialisation automatique du gestionnaire d'achat de périphériques
 window.achatPeripheriquesManager = new AchatPeripheriquesManager();
-
-// Export pour utilisation en module ES6 si nécessaire
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AchatPeripheriquesManager;
 }

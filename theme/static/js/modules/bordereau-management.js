@@ -4,9 +4,17 @@
  * ===============================
  */
 
+
+// Test immédiat au chargement du module
+
+
 // Fonction principale d'initialisation de la gestion des bordereaux
 function initBordereauManagement() {
+   
+    
     const bordereauButtons = document.querySelectorAll('.btn-bordereau');
+    console.log('Boutons bordereau trouvés:', bordereauButtons.length);
+    
     bordereauButtons.forEach(btn => {
         btn.addEventListener('click', function() {
             const row = this.closest('tr');
@@ -79,17 +87,64 @@ function initBordereauManagement() {
             handleDownloadBordereau();
         });
     }
+
+    // Gérer l'activation/désactivation du bouton d'acceptation via la checkbox
+    // Cette fonction peut être appelée quand la vue bordereau devient active
+    
+    
+    // Utiliser un délai pour s'assurer que les éléments sont dans le DOM
+    setTimeout(() => {
+        const bordereauCheckbox = document.getElementById('acceptCheckbox');
+        const acceptBordereauBtn = document.getElementById('acceptBordereauBtn');
+       
+        // Vérifier si nous sommes dans la bonne vue
+        const bordereauView = document.getElementById('bordereau-view');
+      
+        
+        if (bordereauCheckbox && acceptBordereauBtn) {
+           
+            
+            // Supprimer les anciens événements pour éviter les doublons
+            const newCheckbox = bordereauCheckbox.cloneNode(true);
+            bordereauCheckbox.parentNode.replaceChild(newCheckbox, bordereauCheckbox);
+            
+            newCheckbox.addEventListener('change', function() {
+                
+                toggleAcceptButton();
+            });
+            
+            // Appeler une première fois pour initialiser l'état du bouton
+          
+            toggleAcceptButton();
+            
+            // Bouton d'acceptation
+            if (acceptBordereauBtn) {
+                // Retirer l'ancien onclick s'il existe
+                acceptBordereauBtn.removeAttribute('onclick');
+                acceptBordereauBtn.addEventListener('click', function() {
+                   
+                    handleAcceptBordereau();
+                });
+            }
+            
+        } else {
+           
+            
+            const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            const allButtons = document.querySelectorAll('button');
+         
+        }
+    }, 500); // Délai de 500ms
+    
+    // Configurer l'observer pour détecter quand la vue bordereau devient active
+    observeBordereauView();
 }
 
 // Fonction pour gérer l'envoi de la demande
 async function handleEnvoyerDemande(bordereauModal) {
     const btnEnvoyerDemande = bordereauModal.querySelector('.btn-Envoyer-Demande');
-    
-    // Activer l'état de chargement
     showBordereauLoadingState(true, btnEnvoyerDemande);
-    
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;  
     if (!csrfToken) {
         showBordereauNotification('Token CSRF manquant', 'error');
         showBordereauLoadingState(false, btnEnvoyerDemande);
@@ -154,8 +209,7 @@ function handleDownloadBordereau() {
         win.document.write(printContents);
         win.document.write('</body></html>');
         win.document.close();
-        win.focus();
-        
+        win.focus();    
         setTimeout(() => {
             win.print();
             win.close();
@@ -174,11 +228,7 @@ async function handleAcceptBordereau() {
         showBordereauNotification("Éléments de la page non trouvés", 'error');
         return;
     }
-
-    // Activer l'état de chargement
     showBordereauLoadingState(true, acceptBtn);
-
-    // Récupérer le token CSRF
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                      document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
                      getCookie('csrftoken');
@@ -240,21 +290,31 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-
-// Rendre la fonction accessible globalement
 window.handleAcceptBordereau = handleAcceptBordereau;
 
 // Fonction pour gérer l'activation du bouton
 function toggleAcceptButton() {
-    const checkbox = document.getElementById('bordereauCheckbox');
+    const checkbox = document.getElementById('acceptCheckbox'); // Corrigé: ID correct du HTML
     const button = document.getElementById('acceptBordereauBtn');
     
     if (checkbox && button) {
+        const wasDisabled = button.disabled;
         button.disabled = !checkbox.checked;
+        console.log('Bouton était désactivé:', wasDisabled);
+        console.log('Bouton maintenant désactivé:', button.disabled);
+        
+        // Ajouter une classe visuelle pour le feedback
+        if (checkbox.checked) {
+            button.classList.remove('btn-disabled');
+            button.classList.add('btn-enabled');
+        } else {
+            button.classList.remove('btn-enabled');
+            button.classList.add('btn-disabled');
+        }
+    } else {
+        console.error('Checkbox ou bouton non trouvé - Checkbox:', checkbox, 'Bouton:', button);
     }
 }
-
-// Rendre cette fonction accessible globalement
 window.toggleAcceptButton = toggleAcceptButton;
 
 /**
@@ -377,10 +437,7 @@ function showBordereauNotification(message, type = 'info') {
         `;
         document.head.appendChild(styleSheet);
     }
-    
-    // Ajouter la notification
     notificationContainer.appendChild(notification);
-    
     // Auto-suppression après 5 secondes pour les succès, 8 secondes pour les erreurs
     const autoRemoveDelay = type === 'success' ? 5000 : 8000;
     setTimeout(() => {
@@ -394,10 +451,78 @@ function showBordereauNotification(message, type = 'info') {
         }
     }, autoRemoveDelay);
 }
+// Fonction spécifique pour initialiser les éléments de la vue bordereau
+function initBordereauViewElements() {
+    console.log('=== INIT BORDEREAU VIEW ELEMENTS ===');
+    
+    const bordereauCheckbox = document.getElementById('acceptCheckbox');
+    const acceptBordereauBtn = document.getElementById('acceptBordereauBtn');
+    
+    console.log('Checkbox trouvée:', bordereauCheckbox);
+    console.log('Bouton trouvé:', acceptBordereauBtn);
+    
+    if (bordereauCheckbox && acceptBordereauBtn) {
+        console.log('✅ Configuration des événements pour la vue bordereau...');
+        
+        // Supprimer les anciens événements pour éviter les doublons
+        bordereauCheckbox.removeEventListener('change', handleCheckboxChange);
+        bordereauCheckbox.addEventListener('change', handleCheckboxChange);
+        
+        // Retirer l'onclick du bouton s'il existe et ajouter notre événement
+        acceptBordereauBtn.removeAttribute('onclick');
+        acceptBordereauBtn.removeEventListener('click', handleAcceptBordereau);
+        acceptBordereauBtn.addEventListener('click', handleAcceptBordereau);
+        
+        // Initialiser l'état du bouton
+        toggleAcceptButton();
+        
+        console.log('✅ Configuration terminée');
+        return true;
+    } else {
+        console.log('❌ Éléments non trouvés dans la vue bordereau');
+        return false;
+    }
+}
 
-// Export des fonctions pour utilisation dans d'autres modules
+// Fonction pour gérer le changement de la checkbox
+function handleCheckboxChange() {
+    console.log('🔄 Checkbox changée:', this.checked);
+    toggleAcceptButton();
+}
+
+// Fonction améliorée pour détecter quand la vue bordereau devient active
+function observeBordereauView() {
+    const bordereauView = document.getElementById('bordereau-view');
+    if (!bordereauView) {
+        return;
+    }
+
+    // Observer les changements de classe sur la vue bordereau
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const target = mutation.target;
+                if (!target.classList.contains('hidden')) {
+                    console.log('🔍 Vue bordereau activée, initialisation des éléments...');
+                    setTimeout(() => {
+                        initBordereauViewElements();
+                    }, 100);
+                }
+            }
+        });
+    });
+
+    observer.observe(bordereauView, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+
+}
+
 window.DashboardBordereauManagement = {
     initBordereauManagement,
+    initBordereauViewElements, // Fonction exposée
+    observeBordereauView,      // Nouvelle fonction exposée
     handleEnvoyerDemande,
     handleDownloadBordereau,
     handleAcceptBordereau

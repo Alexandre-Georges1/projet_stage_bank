@@ -16,12 +16,10 @@ async function fetchRacheterPcInfo() {
         });
 
         const result = await response.json();
-
         const racheterPcRow = document.getElementById('racheterPcRow');
         const noPcAttributedMessage = document.getElementById('noPcAttributedMessage');
 
         if (response.ok && result.pc_info) {
-            // Afficher les informations du PC
             const elements = {
                 'racheterMarque': result.pc_info.marque,
                 'racheterModele': result.pc_info.modele,
@@ -59,7 +57,6 @@ async function fetchRacheterPcInfo() {
                 noPcAttributedMessage.textContent = result.message;
             }
         } else {
-            // Gérer les erreurs (ex: 401, 404, 500)
             console.error('Erreur lors de la récupération des informations du PC de rachat:', result.error || 'Erreur inconnue');
             showRachatNotification('Une erreur est survenue lors du chargement des informations de rachat: ' + (result.error || 'Veuillez réessayer.'), 'error');
             if (racheterPcRow) racheterPcRow.classList.add('hidden');
@@ -83,10 +80,8 @@ async function fetchRacheterPcInfo() {
 
 // Fonction principale d'initialisation de la gestion des rachats
 function initRachatManagement() {
-    // Styliser automatiquement les boutons selon leur texte
     styleActionButtons();
     
-    // Gestion du bouton "Envoyer demande" pour rachat
     const btnRachat = document.querySelector('.btn-Envoyer-Demande_de_rachat');
     if (btnRachat) {
         btnRachat.addEventListener('click', async function(e) {
@@ -139,7 +134,7 @@ function initRachatManagement() {
                 if (response.ok) {
                     showRachatNotification(result.message, 'success');
                     setTimeout(() => {
-                        fetchRacheterPcInfo(); // Rafraîchir le statut après succès
+                        fetchRacheterPcInfo(); 
                     }, 1500);
                 } else {
                     showRachatNotification("Erreur lors de l'envoi de la demande : " + result.error, 'error');
@@ -167,7 +162,7 @@ function initRachatManagement() {
                 return;
             }
             
-            const action = btn.textContent.trim().toLowerCase(); // 'valider' ou 'refuser'
+            const action = btn.textContent.trim().toLowerCase(); 
             const userFonction = window.connectedUserFonction;
             
             if (!['RMG','DAF'].includes(userFonction)) {
@@ -228,7 +223,6 @@ function showRachatLoadingState(isLoading, submitButton) {
     if (!submitButton) return;
     
     if (isLoading) {
-        // Sauvegarder le texte original
         submitButton.dataset.originalText = submitButton.innerHTML;
         
         // Afficher l'indicateur de chargement
@@ -256,8 +250,7 @@ function showRachatLoadingState(isLoading, submitButton) {
  */
 function showRachatNotification(message, type = 'info') {
     // Créer ou réutiliser un conteneur de notification
-    let notificationContainer = document.getElementById('rachat-notification-container');
-    
+    let notificationContainer = document.getElementById('rachat-notification-container');  
     if (!notificationContainer) {
         notificationContainer = document.createElement('div');
         notificationContainer.id = 'rachat-notification-container';
@@ -285,8 +278,6 @@ function showRachatNotification(message, type = 'info') {
         border-left: 4px solid;
         background: white;
     `;
-    
-    // Définir les couleurs selon le type
     const styles = {
         success: {
             borderColor: '#28a745',
@@ -339,11 +330,7 @@ function showRachatNotification(message, type = 'info') {
         `;
         document.head.appendChild(styleSheet);
     }
-    
-    // Ajouter la notification
     notificationContainer.appendChild(notification);
-    
-    // Auto-suppression après 5 secondes pour les succès, 8 secondes pour les erreurs
     const autoRemoveDelay = type === 'success' ? 5000 : 8000;
     setTimeout(() => {
         if (notification.parentElement) {
@@ -357,9 +344,6 @@ function showRachatNotification(message, type = 'info') {
     }, autoRemoveDelay);
 }
 
-/**
- * Stylise automatiquement les boutons d'action selon leur texte
- */
 function styleActionButtons() {
     // Styliser tous les boutons avec la classe action-btn-demande
     const actionButtons = document.querySelectorAll('.action-btn-demande');
@@ -444,14 +428,11 @@ function styleActionButtons() {
         });
     });
     
-    // Observer les changements dans le DOM
     observer.observe(document.body, {
         childList: true,
         subtree: true
     });
 }
-
-// Export des fonctions pour utilisation dans d'autres modules
 window.DashboardRachatManagement = {
     initRachatManagement,
     fetchRacheterPcInfo

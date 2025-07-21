@@ -17,43 +17,29 @@ class RestitutionManager {
     /**
      * Initialise le gestionnaire de restitution
      */
-    init() {
-        console.log('🚀 Initialisation du RestitutionManager...');
-        
+    init() { 
         // Vérifier si le DOM est déjà chargé
         if (document.readyState === 'loading') {
-            console.log('📄 DOM en cours de chargement, attente...');
             document.addEventListener('DOMContentLoaded', () => {
-                console.log('📄 DOM chargé, initialisation des éléments...');
                 this.initElements();
                 this.performInitialization();
             });
         } else {
-            console.log('📄 DOM déjà chargé, initialisation immédiate...');
             this.initElements();
             this.performInitialization();
         }
     }
-
-    /**
-     * Effectue l'initialisation après que les éléments soient prêts
-     */
     performInitialization() {
         // Vérifier que tous les éléments sont présents
         if (this.checkRequiredElements()) {
             this.setupEventListeners();
-            console.log('✅ RestitutionManager initialisé avec succès');
         } else {
-            console.error('❌ RestitutionManager: Échec de l\'initialisation - éléments manquants');
-            console.log('🔄 Retry dans 1 seconde...');
             
-            // Retry après 1 seconde au cas où les éléments ne seraient pas encore disponibles
+      // Retry après 1 seconde au cas où les éléments ne seraient pas encore disponibles
             setTimeout(() => {
-                console.log('🔄 Tentative de réinitialisation...');
                 this.initElements();
                 if (this.checkRequiredElements()) {
                     this.setupEventListeners();
-                    console.log('✅ RestitutionManager initialisé avec succès (retry)');
                 } else {
                     console.error('❌ RestitutionManager: Échec définitif de l\'initialisation');
                 }
@@ -64,23 +50,12 @@ class RestitutionManager {
     /**
      * Initialise les éléments DOM
      */
-    initElements() {
-        console.log('🔍 Recherche des éléments DOM...');
-        
+    initElements() { 
         this.restituerForm = document.getElementById('restituerPcForm');
-        console.log('📝 Formulaire:', this.restituerForm ? '✅ Trouvé' : '❌ Non trouvé');
-        
         this.confirmerCheckbox = document.getElementById('confirmerRestitution');
-        console.log('☑️ Checkbox:', this.confirmerCheckbox ? '✅ Trouvée' : '❌ Non trouvée');
-        
-        this.submitButton = document.querySelector('.btn-restituer');
-        console.log('🔘 Bouton:', this.submitButton ? '✅ Trouvé' : '❌ Non trouvé');
-        
-        this.motifSelect = document.getElementById('restituerMotif');
-        console.log('📋 Select motif:', this.motifSelect ? '✅ Trouvé' : '❌ Non trouvé');
-        
+        this.submitButton = document.querySelector('.btn-restituer');   
+        this.motifSelect = document.getElementById('restituerMotif');   
         this.autreMotifGroup = document.getElementById('autreMotifGroup');
-        console.log('📝 Groupe autre motif:', this.autreMotifGroup ? '✅ Trouvé' : '❌ Non trouvé');
     }
 
     /**
@@ -134,23 +109,16 @@ class RestitutionManager {
      * Traite la soumission du formulaire
      */
     async handleFormSubmit() {
-        try {
-            console.log('📤 Début de la soumission du formulaire...');
-            
+        try { 
             // Vérifier l'URL
             if (!window.restituerPcUrl) {
-                console.error('❌ URL restituerPcUrl non définie');
                 this.showError('Configuration manquante: URL de restitution non définie.');
                 return;
-            }
-            console.log('🌐 URL de restitution:', window.restituerPcUrl);
-            
+            } 
             // Validation côté client
             if (!this.validateForm()) {
-                console.log('❌ Validation du formulaire échouée');
                 return;
             }
-            console.log('✅ Validation du formulaire réussie');
 
             // Debug : afficher les données du formulaire
             this.debugFormData();
@@ -162,7 +130,6 @@ class RestitutionManager {
             const motif = formData.get('motif');
             if (motif !== 'Autre') {
                 formData.delete('autre_motif');
-                console.log('🗑️ Champ autre_motif supprimé car motif =', motif);
             }
         
             this.showLoadingState(true);
@@ -427,10 +394,6 @@ class RestitutionManager {
             for (let [key, value] of formData.entries()) {
                 debugData[key] = value;
             }
-            
-            console.log('🔍 Données du formulaire de restitution:', debugData);
-            console.log('🌐 URL de destination:', window.restituerPcUrl);
-            console.log('🔑 Token CSRF:', this.getCSRFToken() ? 'Présent' : 'Manquant');
         }
     }
 
@@ -447,11 +410,9 @@ class RestitutionManager {
         };
 
         let allPresent = true;
-        
-        console.log('🔍 Vérification des éléments requis:');
+
         for (const [name, element] of Object.entries(elements)) {
             const isPresent = element !== null;
-            console.log(`  ${isPresent ? '✅' : '❌'} ${name}: ${isPresent ? 'Présent' : 'Manquant'}`);
             if (!isPresent) allPresent = false;
         }
 

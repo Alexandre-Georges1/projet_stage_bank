@@ -96,7 +96,6 @@ function initPcAssignment() {
                     alert(result.error || "Erreur lors de l'attribution du PC.");
                 }
             } catch (error) {
-                alert("Erreur réseau ou serveur.");
                 console.error(error);
             }
         });
@@ -284,7 +283,6 @@ function initUserCrud() {
                         const url = window.supprimerUtilisateurUrl?.replace('0', userId);
                         
                         if (!csrfToken || !url) {
-                            alert('Données manquantes pour la suppression');
                             return;
                         }
 
@@ -304,7 +302,6 @@ function initUserCrud() {
                             }
                         } catch (error) {
                             console.error('Erreur lors de la suppression de l\'utilisateur:', error);
-                            alert('Une erreur est survenue lors de la suppression.');
                         }
                     }
                 }
