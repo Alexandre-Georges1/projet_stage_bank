@@ -295,7 +295,7 @@ function initPcManagement() {
     const modalTitle = addPcModal ? addPcModal.querySelector('h2') : null;
     const modalCloseButton = document.querySelector('#addPcModal .modal-close-button');
     const addPcForm = document.getElementById('addPcForm');
-    const formMarque = document.getElementById('marque');
+    const formMarque = document.getElementById('brand'); // Corrigé: était 'marque'
     const formModel = document.getElementById('model');
     const formProcesseur = document.getElementById('processeur');
     const formRam = document.getElementById('ram');
@@ -303,6 +303,8 @@ function initPcManagement() {
     const formSerial = document.getElementById('serial');
     const formDateAchat = document.getElementById('dateAchat');
     const formSubmitBtn = addPcForm ? addPcForm.querySelector('button[type="submit"]') : null;
+
+  
 
     // Variables pour la modale des PCs Attribués (Historique)
     const attributedPcBtn = document.getElementById('attributed-pcs-btn');
@@ -391,15 +393,51 @@ function initPcManagement() {
             const pcId = addPcForm.dataset.pcId; 
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
 
+           
+            // Validation côté client
+            const marqueValue = formMarque?.value?.trim() || '';
+            const modelValue = formModel?.value?.trim() || '';
+            const processeurValue = formProcesseur?.value?.trim() || '';
+            const ramValue = formRam?.value?.trim() || '';
+            const disqueValue = formDisque?.value?.trim() || '';
+            const serialValue = formSerial?.value?.trim() || '';
+            const dateAchatValue = formDateAchat?.value || '';
+
+         
+
+            // Vérifier les champs obligatoires
+            if (!marqueValue) {
+                console.error('Marque manquante! Element:', formMarque, 'Valeur:', marqueValue);
+                showPcNotification('La marque est obligatoire', 'error');
+                showPcLoadingState(false);
+                if (formMarque) formMarque.focus();
+                return;
+            }
+
+            if (!modelValue) {
+                console.error('Modèle manquant! Element:', formModel, 'Valeur:', modelValue);
+                showPcNotification('Le modèle est obligatoire', 'error');
+                showPcLoadingState(false);
+                if (formModel) formModel.focus();
+                return;
+            }
+
+            if (!serialValue) {
+                console.error('Serial manquant! Element:', formSerial, 'Valeur:', serialValue);
+                showPcNotification('Le numéro de série est obligatoire', 'error');
+                showPcLoadingState(false);
+                if (formSerial) formSerial.focus();
+                return;
+            }
         
             const pcData = {
-                marque: formMarque?.value || '',
-                model: formModel?.value || '',
-                processeur: formProcesseur?.value || '',
-                ram: formRam?.value || '',
-                disque: formDisque?.value || '',
-                serial: formSerial?.value || '',
-                dateAchat: formDateAchat?.value || ''
+                marque: marqueValue,
+                model: modelValue,
+                processeur: processeurValue,
+                ram: ramValue,
+                disque: disqueValue,
+                serial: serialValue,
+                dateAchat: dateAchatValue
             };
 
             let url = '';
@@ -415,6 +453,12 @@ function initPcManagement() {
                 return;
             }
 
+            if (!csrfToken) {
+                showPcNotification('Token CSRF manquant', 'error');
+                showPcLoadingState(false);
+                return;
+            }
+
             try {
                 const response = await fetch(url, {
                     method: 'POST',
@@ -426,6 +470,7 @@ function initPcManagement() {
                 });
 
                 const result = await response.json();
+                console.log('Réponse du serveur:', result);
 
                 if (response.ok) {
                     showPcNotification(result.message, 'success');
@@ -434,7 +479,7 @@ function initPcManagement() {
                         location.reload();
                     }, 1500);
                 } else {
-                    showPcNotification('Erreur : ' + result.error, 'error');
+                    showPcNotification('Erreur : ' + (result.error || 'Erreur inconnue'), 'error');
                 }
             } catch (error) {
                 console.error('Erreur lors de la soumission du formulaire PC:', error);
@@ -520,7 +565,6 @@ function initPcManagement() {
     }
 }
 
-// Export des fonctions pour utilisation dans d'autres modules
 window.DashboardPcManagement = {
     initPcManagement,
     chargerModeles,

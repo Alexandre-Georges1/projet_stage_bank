@@ -6,32 +6,52 @@ import json
 from ..models import Employe,PC,Pc_attribué,marquePC,modelePC,Email,DemandeAchatPeripherique
 from datetime import datetime
 
+@csrf_exempt
 def ajouter_pc(request):
     if request.method == 'POST':
         try:
+            print(f"[DEBUG] Request content type: {request.content_type}")
+            print(f"[DEBUG] Request body: {request.body}")
+            
             data = json.loads(request.body)
+            print(f"[DEBUG] Parsed data: {data}")
 
             marque_name = data.get('marque')
+            print(f"[DEBUG] Marque: '{marque_name}'")
             if not marque_name:
                 return JsonResponse({'error': 'Marque manquante.'}, status=400)
             marque_instance, created = marquePC.objects.get_or_create(nom_marque=marque_name)
 
             modele_name = data.get('model')
+            print(f"[DEBUG] Modele: '{modele_name}'")
             if not modele_name:
                 return JsonResponse({'error': 'Modèle manquant.'}, status=400)
             modele_instance, created = modelePC.objects.get_or_create(nom_modele=modele_name)
 
+            processeur = data.get('processeur')
+            ram = data.get('ram')
+            disque_dur = data.get('disque')
+            numero_serie = data.get('serial')
+            date_achat = data.get('dateAchat')
+            
+            print(f"[DEBUG] Autres champs - Processeur: '{processeur}', RAM: '{ram}', Disque: '{disque_dur}', Serial: '{numero_serie}', Date: '{date_achat}'")
+
             pc = PC.objects.create(
                 marque=marque_instance,
                 modele=modele_instance,
-                processeur=data.get('processeur'),
-                ram=data.get('ram'),
-                disque_dur=data.get('disque'),
-                numero_serie=data.get('serial'),
-                date_achat=data.get('dateAchat')
+                processeur=processeur,
+                ram=ram,
+                disque_dur=disque_dur,
+                numero_serie=numero_serie,
+                date_achat=date_achat
             )
+            print(f"[DEBUG] PC créé avec succès: {pc.pk}")
             return JsonResponse({'message': 'PC ajouté avec succès!', 'id': pc.pk})
         except Exception as e:
+            print(f"[ERROR] Exception in ajouter_pc: {e}")
+            print(f"[ERROR] Exception type: {type(e)}")
+            import traceback
+            traceback.print_exc()
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
 
