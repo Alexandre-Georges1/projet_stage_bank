@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique
+
 
 def get_demandes_peripheriques():
     """Helper function pour récupérer les demandes de périphériques"""
@@ -23,7 +23,7 @@ def get_user_demandes_achat(user_id):
     return demandes_achat
 
 
-@csrf_exempt
+    
 def dashboard(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -86,7 +86,7 @@ def dashboard(request):
     return render(request, 'dashboard.html',context)
 
 
-@csrf_exempt
+  
 def dashboard_employe(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -117,7 +117,7 @@ def dashboard_employe(request):
     return render(request, 'page_employe/dashboard_employé.html', context)
 
 
-@csrf_exempt
+   
 def dashboard_DCH(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -141,7 +141,7 @@ def dashboard_DCH(request):
     return render(request, 'page_DCH/dashboard_DCH.html', context)
 
 
-@csrf_exempt
+   
 def dashboard_MG(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -159,7 +159,7 @@ def dashboard_MG(request):
     return render(request, 'page_MGX/dashboard_MG.html', context)
 
 
-@csrf_exempt
+   
 def dashboard_RMG(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -177,7 +177,7 @@ def dashboard_RMG(request):
     return render(request, 'page_MGX/dashboard_RMG.html', context)
 
 
-@csrf_exempt
+   
 def dashboard_DAF(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -196,7 +196,7 @@ def dashboard_DAF(request):
 
 
 
-@csrf_exempt
+   
 def dashboard_RDOT(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -231,7 +231,7 @@ def dashboard_RDOT(request):
     return render(request, 'page_DOT/dashboard_RDOT.html', context)
 
 
-@csrf_exempt
+    
 def dashboard_DOT(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -263,7 +263,7 @@ def dashboard_DOT(request):
                 'notifications': emails}
     return render(request, 'page_DOT/dashboard_DOT.html', context)
 
-@csrf_exempt
+  
 def Admin(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()

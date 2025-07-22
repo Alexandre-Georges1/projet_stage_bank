@@ -7,14 +7,14 @@ from django.utils.crypto import get_random_string
 
 class Employe(models.Model):
     id_employe = models.AutoField(primary_key=True)
-    nom = models.CharField(max_length=100)
-    prenom = models.CharField(max_length=100)
+    nom = models.CharField(max_length=100,default="Nom inconnu")
+    prenom = models.CharField(max_length=100,default="Prénom inconnu")
     login = models.CharField(max_length=200, blank=True,default="employe.nouveau")
     mot_de_passe = models.CharField(max_length=128,default="password123")
-    matricule = models.CharField(max_length=50, unique=True)
-    telephone = models.CharField(max_length=20, unique=True)
-    Département = models.CharField(max_length=191)
-    date_embauche = models.DateField()
+    matricule = models.CharField(max_length=50, unique=True, default="Matricule inconnu")
+    telephone = models.CharField(max_length=20, unique=True,default="0123456789")
+    Département = models.CharField(max_length=191,default="Département inconnu")
+    date_embauche = models.DateField(auto_now_add=True) 
     fonction = models.CharField(max_length=50)
     email= models.EmailField(max_length=50,blank=True, default="employe@gmail.com")
 

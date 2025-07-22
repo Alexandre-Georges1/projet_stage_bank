@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+import ldap
+from django_auth_ldap.config import LDAPSearch, PosixGroupType
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,10 +37,10 @@ load_env()
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-lkll3ju@^y3(0b1ay-k4&_vh9b$#&6d3zowta7l&gpfa+a3wa0')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes', 'on')
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes', 'on')
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
 
@@ -90,21 +92,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gestion_pc.wsgi.application'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes', 'on')
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'kaoalexandre2006@gmail.com')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'mrdn khyu vdch rizu ')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'kaoalexandre2006@gmail.com')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.mysql'),
-        'NAME': os.getenv('DB_NAME', 'bank'),
-        'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST', '127.0.0.1'),
         'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
@@ -155,3 +157,49 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTHENTICATION_BACKENDS = [
+    "django_auth_ldap.backend.LDAPBackend",  
+    "django.contrib.auth.backends.ModelBackend",  
+]
+
+# Paramètres LDAP de base
+AUTH_LDAP_SERVER_URI = os.getenv('LDAP_SERVER_URI')
+AUTH_LDAP_BIND_DN = os.getenv('LDAP_BIND_DN')
+AUTH_LDAP_BIND_PASSWORD = os.getenv('LDAP_BIND_PASSWORD')
+
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    os.getenv('LDAP_USER_SEARCH_BASE'),
+    ldap.SCOPE_SUBTREE,
+    "(uid=%(user)s)"
+)
+
+# Mappage des attributs LDAP vers les champs utilisateur Django
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+}
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    os.getenv('LDAP_GROUP_SEARCH_BASE'),
+    ldap.SCOPE_SUBTREE,
+    "(objectClass=posixGroup)"  # Adaptez si vos groupes utilisent un autre objectClass
+)
+
+AUTH_LDAP_GROUP_TYPE = PosixGroupType()  
+
+# 3. Associez les groupes LDAP à des permissions/attributs Django
+AUTH_LDAP_USER_FLAGS_BY_GROUP = {
+    "is_mgx": os.getenv('LDAP_GROUP_MGX'),
+    "is_dot": os.getenv('LDAP_GROUP_DOT'),
+    "is_dch": os.getenv('LDAP_GROUP_DCH'),
+    "is_admin": os.getenv('LDAP_GROUP_ADMINS'),
+    "is_rdot": os.getenv('LDAP_GROUP_RDOT'),
+    "is_daf": os.getenv('LDAP_GROUP_DAF'),
+    "is_rmg": os.getenv('LDAP_GROUP_RMG'),
+    "is_employé": os.getenv('LDAP_GROUP_EMPLOYE'),
+}
+
+import logging
+logger = logging.getLogger('django_auth_ldap')
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)

@@ -1,10 +1,9 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from ..models import DemandeAchatPeripherique, Employe
 import json
 
-@csrf_exempt
+  
 def gerer_demandes_achat(request):
     """Vue pour gérer les demandes d'achat de périphériques (pour les administrateurs)"""
     if request.method == 'GET':

@@ -1,12 +1,11 @@
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_protect, csrf_exempt
+from django.http import JsonResponse    
 from django.core.mail import send_mail
 from django.conf import settings
 import json
 from ..models import Employe,PC,Pc_attribué,marquePC,modelePC,Email,DemandeAchatPeripherique
 from datetime import datetime
 
-@csrf_exempt
+  
 def ajouter_pc(request):
     if request.method == 'POST':
         try:
@@ -276,7 +275,7 @@ Motif de restitution : {motif}
 
 
 
-@csrf_exempt
+
 def demande_achat_peripheriques(request):
     if request.method == 'POST':
         try:

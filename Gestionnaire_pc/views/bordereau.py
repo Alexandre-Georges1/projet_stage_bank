@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 import json
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from ..models import Employe, Bordereau
 
@@ -56,7 +55,6 @@ def bordereau_utilisateur(request):
     })
 
 
-@csrf_exempt
 def accepter_bordereau(request):
     if request.method == 'POST':
         try:
