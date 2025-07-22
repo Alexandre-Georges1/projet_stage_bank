@@ -87,7 +87,7 @@ def connexion(request):
                     'user_fonction': user_role
                 }
 
-                if user_role in ['DOT', 'DCH', 'MG']:
+                if user_role in ['DOT', 'DCH', 'MG' , 'RDOT', 'RMG', 'DAF', 'Admin']:
                     response_data.update({
                         'choice_required': True,
                         'specific_dashboard_url': reverse(f'dashboard_{user_role}'),
