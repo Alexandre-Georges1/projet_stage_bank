@@ -5,5 +5,5 @@ class Email(models.Model):
     objet = models.CharField(max_length=255)
     corps=models.TextField(default='text')
     date_envoi = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False) # Nouveau champ pour le statut "lu"
+    is_read = models.BooleanField(default=False) 
     expediteur = models.ForeignKey('Employe', on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_emails')

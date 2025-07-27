@@ -22,8 +22,6 @@ def get_user_demandes_achat(user_id):
             pass
     return demandes_achat
 
-
-    
 def dashboard(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()

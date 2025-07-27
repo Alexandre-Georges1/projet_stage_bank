@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse   
 from django.urls import reverse
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import make_password,check_password
 from ..models import Employe
 
    
@@ -9,32 +10,31 @@ def connexion(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')  
-
         try:
-            employe = Employe.objects.get(login=username, mot_de_passe=password)
-            request.session['user_id'] = employe.pk
+            employe = Employe.objects.get(login=username)
+            if check_password(password, employe.mot_de_passe):
+                request.session['user_id'] = employe.pk
 
-            response_data = {'success': True, 'user_fonction': employe.fonction}
+                response_data = {'success': True, 'user_fonction': employe.fonction}
 
-            if employe.fonction in ['DOT', 'RDOT', 'DCH', 'MG', 'RMG', 'DAF']:
-                response_data['choice_required'] = True
-                response_data['user_role'] = employe.fonction
-                response_data['specific_dashboard_url'] = reverse(f'dashboard_{employe.fonction}')
-                response_data['general_dashboard_url'] = reverse('dashboard_employe')
-            elif employe.fonction in ['Admin', 'admin']:
-                response_data['redirect_url'] = reverse('custom_admin')
-            elif employe.fonction in ['Employe', 'Utilisateur', 'Stagiaire', 'Autre']:
-                response_data['redirect_url'] = reverse('dashboard_employe')
+                if employe.fonction in ['DOT', 'RDOT', 'DCH', 'MG', 'RMG', 'DAF']:
+                    response_data['choice_required'] = True
+                    response_data['user_role'] = employe.fonction
+                    response_data['specific_dashboard_url'] = reverse(f'dashboard_{employe.fonction}')
+                    response_data['general_dashboard_url'] = reverse('dashboard_employe')
+                elif employe.fonction in ['Admin', 'admin']:
+                    response_data['redirect_url'] = reverse('custom_admin')
+                elif employe.fonction in ['Employe', 'Utilisateur', 'Stagiaire', 'Autre']:
+                    response_data['redirect_url'] = reverse('dashboard_employe')
+                else:
+                    response_data['success'] = False
+                    response_data['error'] = "Votre rôle n'est pas associé à une page spécifique."
+                return JsonResponse(response_data)
             else:
-                response_data['success'] = False
-                response_data['error'] = "Votre rôle n'est pas associé à une page spécifique."
-            
-            return JsonResponse(response_data)
-
+                # Mot de passe incorrect, on passe à l'authentification LDAP
+                raise Employe.DoesNotExist
         except Employe.DoesNotExist:
-            user = authenticate(request, username=username, password=password)
-            
-            
+            user = authenticate(request, username=username, password=password)     
             if user is not None:
                 ldap_user = user.ldap_user
                 nom = ldap_user.attrs.get('givenName', [''])[0]  # Nom de famille
@@ -67,12 +67,11 @@ def connexion(request):
                     employe, created = Employe.objects.update_or_create(
                         login=username,
                         fonction=user_role,
-                        mot_de_passe=password, 
+                        mot_de_passe= make_password(password),
                         nom=nom,
                         prenom=prenom,
                     )
                     request.session['user_id'] = employe.pk
-
                 except Exception as e:
                     return JsonResponse({
                         'success': False,

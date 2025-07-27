@@ -2,8 +2,8 @@ from django.http import JsonResponse
 import json
 from django.core.mail import send_mail
 from django.conf import settings
-from ..models import Employe, Email
-
+from django.contrib.auth.hashers import make_password
+from ..models import Employe,Email
 
 def ajouter_utilisateur(request):
     if request.method == 'POST':
@@ -13,18 +13,19 @@ def ajouter_utilisateur(request):
                 nom=data.get('nom'),
                 prenom=data.get('prenom'),
                 login=data.get('login'),
-                mot_de_passe=data.get('password'),
+                mot_de_passe=make_password(data.get('password')),
                 matricule=data.get('matricule'),
                 telephone=data.get('telephone'),
-                email=data.get('email'),
                 Département=data.get('departement'),
                 date_embauche=data.get('dateEmbauche'),
                 fonction=data.get('fonction')
             )
+
             subject = f'Nouvel Employé Ajouté : {employe.prenom} {employe.nom}'
             message = f'Un nouvel employé a été ajouté au système.\n\nCaractéristiques de l\'employé :\nNom : {employe.nom}\nPrénom : {employe.prenom}\nLogin : {employe.login}\nMatricule : {employe.matricule}\nTéléphone : {employe.telephone}\nDépartement : {employe.Département}\nDate d\'embauche : {employe.date_embauche}\nfonction : {employe.fonction}'
             from_email = settings.EMAIL_HOST_USER  
             recipient_list = ['kaogeorges2006@gmail.com'] 
+
             try:
                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
                 email_status = "E-mail de notification envoyé avec succès."
@@ -42,7 +43,6 @@ def ajouter_utilisateur(request):
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
 
-
 def supprimer_utilisateur(request, user_id):
     if request.method == 'POST':
         try:
@@ -55,7 +55,6 @@ def supprimer_utilisateur(request, user_id):
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
 
-
 def modifier_utilisateur(request, user_id):
     if request.method == 'POST':
         try:
@@ -64,15 +63,17 @@ def modifier_utilisateur(request, user_id):
 
             employe.nom = data.get('nom', employe.nom)
             employe.prenom = data.get('prenom', employe.prenom)
-            employe.login = data.get('login', employe.login) 
+            employe.login = data.get('login', employe.login)
+            
             if 'password' in data and data['password']:
-                employe.mot_de_passe = data['password']     
+                employe.mot_de_passe = make_password(data['password'])
+                
             employe.matricule = data.get('matricule', employe.matricule)
             employe.telephone = data.get('telephone', employe.telephone)
             employe.Département = data.get('departement', employe.Département)
             employe.date_embauche = data.get('dateEmbauche', employe.date_embauche)
-            employe.email = data.get('email', employe.email)
-            employe.fonction = data.get('fonction', employe.fonction)  
+            employe.fonction = data.get('fonction', employe.fonction)
+            
             employe.save()
             return JsonResponse({'message': 'Utilisateur modifié avec succès!'})
         except Employe.DoesNotExist:
