@@ -15,68 +15,57 @@ function showPcLoadingState(isLoading) {
     const submitButton = document.querySelector('#addPcForm button[type="submit"]');
     if (submitButton) {
         if (isLoading) {
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<span class="spinner"></span> Traitement...';
+            if (window.DashboardModal?.setLoading) {
+                window.DashboardModal.setLoading(submitButton, true);
+            } else {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+            }
         } else {
-            submitButton.disabled = false;
-            const mode = document.getElementById('addPcForm')?.dataset.mode;
-            submitButton.textContent = mode === 'edit' ? 'Enregistrer les modifications' : 'Ajouter PC';
+            if (window.DashboardModal?.setLoading) {
+                window.DashboardModal.setLoading(submitButton, false);
+            } else {
+                submitButton.disabled = false;
+                const mode = document.getElementById('addPcForm')?.dataset.mode;
+                submitButton.textContent = mode === 'edit' ? 'Enregistrer les modifications' : 'Ajouter PC';
+            }
         }
     }
 }
 
+// Fonction de notification unifiée utilisant le système global
 function showPcNotification(message, type = 'success') {
-    console.log('=== DEBUG NOTIFICATION ===');
-    console.log('Message:', message);
-    console.log('Type:', type);
-    
-    // Créer ou récupérer le conteneur de notifications
-    let notificationContainer = document.getElementById('pc-notification-container');
-    if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
-        notificationContainer.id = 'pc-notification-container';
-        notificationContainer.className = 'notification-container';
-        document.body.appendChild(notificationContainer);
-    }
-
-    // Créer la notification
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.innerHTML = `
-        <span class="notification-message">${message}</span>
-        <button class="notification-close">&times;</button>
-    `;
-
-    // Ajouter la notification au conteneur
-    notificationContainer.appendChild(notification);
-
-    // Animation d'entrée
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 10);
-
-    // Gestion de la fermeture
-    const closeBtn = notification.querySelector('.notification-close');
-    closeBtn.addEventListener('click', () => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    });
-
-    // Auto-fermeture après 5 secondes
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
+    // Vérifier si le système de notifications est disponible
+    if (window.NotificationSystem && typeof window.NotificationSystem.show === 'function') {
+        return window.NotificationSystem.show(message, type);
+    } else {
+        // Attendre que le système soit prêt (max 5 secondes)
+        let attempts = 0;
+        const maxAttempts = 50; // 5 secondes avec intervalles de 100ms
+        
+        const checkNotificationSystem = () => {
+            attempts++;
+            if (window.NotificationSystem && typeof window.NotificationSystem.show === 'function') {
+                return window.NotificationSystem.show(message, type);
+            } else if (attempts < maxAttempts) {
+                setTimeout(checkNotificationSystem, 100);
+            } else {
+                // Fallback si le système de notifications global n'est pas disponible après 5 secondes
+                console.warn('Système de notifications global non disponible après 5 secondes, utilisation du fallback');
+                if (type === 'success') {
+                    alert('✅ ' + message);
+                } else if (type === 'error') {
+                    alert('❌ ' + message);
+                } else if (type === 'warning') {
+                    alert('⚠️ ' + message);
+                } else {
+                    alert('ℹ️ ' + message);
                 }
-            }, 300);
-        }
-    }, 5000);
+            }
+        };
+        
+        checkNotificationSystem();
+    }
 }
 
 // Fonction pour charger les modèles
@@ -100,7 +89,14 @@ function chargerModeles() {
                 });
             }
         })
-        .catch(error => console.error('Erreur lors du chargement des modèles:', error));
+        .catch(error => {
+            console.error('Erreur lors du chargement des modèles:', error);
+            if (window.NotificationSystem) {
+                window.NotificationSystem.error('Erreur lors du chargement des modèles', { 
+                    title: 'Chargement Modèles' 
+                });
+            }
+        });
 }
 
 // Fonction pour charger les marques
@@ -112,6 +108,11 @@ async function chargerMarques() {
         afficherMarques();
     } catch (error) {
         console.error('Erreur chargement marques:', error);
+        if (window.NotificationSystem) {
+            window.NotificationSystem.error('Erreur lors du chargement des marques', { 
+                title: 'Chargement Marques' 
+            });
+        }
     }
 }
 
@@ -124,6 +125,11 @@ async function chargerModelesAsync() {
         afficherModeles();
     } catch (error) {
         console.error('Erreur chargement modèles:', error);
+        if (window.NotificationSystem) {
+            window.NotificationSystem.error('Erreur lors du chargement des modèles', { 
+                title: 'Chargement Modèles' 
+            });
+        }
     }
 }
 
@@ -201,9 +207,26 @@ async function ajouterMarque() {
         if (response.ok) {
             input.value = '';
             await chargerMarques();
+            if (window.NotificationSystem) {
+                window.NotificationSystem.success(`Marque "${nom}" ajoutée avec succès`, { 
+                    title: 'Marque Ajoutée' 
+                });
+            }
+        } else {
+            const errorData = await response.json();
+            if (window.NotificationSystem) {
+                window.NotificationSystem.error(`Erreur lors de l'ajout de la marque : ${errorData.error || 'Erreur inconnue'}`, { 
+                    title: 'Échec Ajout Marque' 
+                });
+            }
         }
     } catch (error) {
         console.error('Erreur lors de l\'ajout de la marque:', error);
+        if (window.NotificationSystem) {
+            window.NotificationSystem.error('Une erreur est survenue lors de l\'ajout de la marque', { 
+                title: 'Erreur Réseau' 
+            });
+        }
     }
 }
 
@@ -243,14 +266,46 @@ async function ajouterModele() {
         if (response.ok) {
             input.value = '';
             await chargerModelesAsync();
+            if (window.NotificationSystem) {
+                window.NotificationSystem.success(`Modèle "${nom}" ajouté avec succès`, { 
+                    title: 'Modèle Ajouté' 
+                });
+            }
+        } else {
+            const errorData = await response.json();
+            if (window.NotificationSystem) {
+                window.NotificationSystem.error(`Erreur lors de l'ajout du modèle : ${errorData.error || 'Erreur inconnue'}`, { 
+                    title: 'Échec Ajout Modèle' 
+                });
+            }
         }
     } catch (error) {
         console.error('Erreur lors de l\'ajout du modèle:', error);
+        if (window.NotificationSystem) {
+            window.NotificationSystem.error('Une erreur est survenue lors de l\'ajout du modèle', { 
+                title: 'Erreur Réseau' 
+            });
+        }
     }
 }
 
 // Fonction pour supprimer une marque
 async function supprimerMarque(nom) {
+    const getCookie = window.DashboardUtils?.getCookie || function(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
     try {
         const response = await fetch(URL_MARQUES, {
             method: 'DELETE',
@@ -262,14 +317,46 @@ async function supprimerMarque(nom) {
 
         if (response.ok) {
             await chargerMarques();
+            if (window.NotificationSystem) {
+                window.NotificationSystem.success(`Marque "${nom}" supprimée avec succès`, { 
+                    title: 'Marque Supprimée' 
+                });
+            }
+        } else {
+            const errorData = await response.json();
+            if (window.NotificationSystem) {
+                window.NotificationSystem.error(`Erreur lors de la suppression de la marque : ${errorData.error || 'Erreur inconnue'}`, { 
+                    title: 'Échec Suppression Marque' 
+                });
+            }
         }
     } catch (error) {
         console.error('Erreur lors de la suppression de la marque:', error);
+        if (window.NotificationSystem) {
+            window.NotificationSystem.error('Une erreur est survenue lors de la suppression de la marque', { 
+                title: 'Erreur Réseau' 
+            });
+        }
     }
 }
 
 // Fonction pour supprimer un modèle
 async function supprimerModele(nom) {
+    const getCookie = window.DashboardUtils?.getCookie || function(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
     try {
         const response = await fetch(URL_MODELES, {
             method: 'DELETE',
@@ -281,9 +368,26 @@ async function supprimerModele(nom) {
 
         if (response.ok) {
             await chargerModelesAsync();
+            if (window.NotificationSystem) {
+                window.NotificationSystem.success(`Modèle "${nom}" supprimé avec succès`, { 
+                    title: 'Modèle Supprimé' 
+                });
+            }
+        } else {
+            const errorData = await response.json();
+            if (window.NotificationSystem) {
+                window.NotificationSystem.error(`Erreur lors de la suppression du modèle : ${errorData.error || 'Erreur inconnue'}`, { 
+                    title: 'Échec Suppression Modèle' 
+                });
+            }
         }
     } catch (error) {
         console.error('Erreur lors de la suppression du modèle:', error);
+        if (window.NotificationSystem) {
+            window.NotificationSystem.error('Une erreur est survenue lors de la suppression du modèle', { 
+                title: 'Erreur Réseau' 
+            });
+        }
     }
 }
 
@@ -341,20 +445,36 @@ function initPcManagement() {
         addPcBtn.addEventListener('click', function(e) {
             e.preventDefault();
             resetModalForAdd();
-            if (addPcModal) addPcModal.classList.remove('hidden');
+            
+            // Utiliser la fonction universelle d'ouverture
+            if (window.openModal) {
+                window.openModal('addPcModal');
+            } else if (addPcModal) {
+                addPcModal.classList.remove('hidden');
+            }
         });
     }
 
     if (modalCloseButton && addPcModal) {
         modalCloseButton.addEventListener('click', function() {
-            addPcModal.classList.add('hidden');
+            // Utiliser la fonction universelle de fermeture
+            if (window.closeModal) {
+                window.closeModal('addPcModal');
+            } else {
+                addPcModal.classList.add('hidden');
+            }
         });
     }
 
     if (addPcModal) {
         addPcModal.addEventListener('click', function(event) {
             if (event.target === addPcModal) {
-                addPcModal.classList.add('hidden');
+                // Utiliser la fonction universelle de fermeture
+                if (window.closeModal) {
+                    window.closeModal('addPcModal');
+                } else {
+                    addPcModal.classList.add('hidden');
+                }
             }
         });
     }
@@ -412,7 +532,11 @@ function initPcManagement() {
             // Vérifier les champs obligatoires
             if (!marqueValue) {
                 console.error('Marque manquante! Element:', formMarque, 'Valeur:', marqueValue);
-                showPcNotification('La marque est obligatoire', 'error');
+                if (window.NotificationSystem) {
+                    window.NotificationSystem.error('La marque est obligatoire', { title: 'Validation' });
+                } else {
+                    showPcNotification('La marque est obligatoire', 'error');
+                }
                 showPcLoadingState(false);
                 if (formMarque) formMarque.focus();
                 return;
@@ -420,7 +544,11 @@ function initPcManagement() {
 
             if (!modelValue) {
                 console.error('Modèle manquant! Element:', formModel, 'Valeur:', modelValue);
-                showPcNotification('Le modèle est obligatoire', 'error');
+                if (window.NotificationSystem) {
+                    window.NotificationSystem.error('Le modèle est obligatoire', { title: 'Validation' });
+                } else {
+                    showPcNotification('Le modèle est obligatoire', 'error');
+                }
                 showPcLoadingState(false);
                 if (formModel) formModel.focus();
                 return;
@@ -428,7 +556,11 @@ function initPcManagement() {
 
             if (!serialValue) {
                 console.error('Serial manquant! Element:', formSerial, 'Valeur:', serialValue);
-                showPcNotification('Le numéro de série est obligatoire', 'error');
+                if (window.NotificationSystem) {
+                    window.NotificationSystem.error('Le numéro de série est obligatoire', { title: 'Validation' });
+                } else {
+                    showPcNotification('Le numéro de série est obligatoire', 'error');
+                }
                 showPcLoadingState(false);
                 if (formSerial) formSerial.focus();
                 return;
@@ -452,13 +584,21 @@ function initPcManagement() {
             }
 
             if (!url) {
-                showPcNotification('URL manquante pour la soumission du formulaire', 'error');
+                if (window.NotificationSystem) {
+                    window.NotificationSystem.error('URL manquante pour la soumission du formulaire', { title: 'Erreur Configuration' });
+                } else {
+                    showPcNotification('URL manquante pour la soumission du formulaire', 'error');
+                }
                 showPcLoadingState(false);
                 return;
             }
 
             if (!csrfToken) {
-                showPcNotification('Token CSRF manquant', 'error');
+                if (window.NotificationSystem) {
+                    window.NotificationSystem.error('Token CSRF manquant', { title: 'Erreur Sécurité' });
+                } else {
+                    showPcNotification('Token CSRF manquant', 'error');
+                }
                 showPcLoadingState(false);
                 return;
             }
@@ -477,17 +617,35 @@ function initPcManagement() {
                 console.log('Réponse du serveur:', result);
 
                 if (response.ok) {
-                    showPcNotification(result.message, 'success');
+                    if (window.NotificationSystem) {
+                        window.NotificationSystem.success(result.message, { 
+                            title: mode === 'edit' ? 'PC Modifié' : 'PC Ajouté' 
+                        });
+                    } else {
+                        showPcNotification(result.message, 'success');
+                    }
                     setTimeout(() => {
                         addPcModal.classList.add('hidden');
                         location.reload();
                     }, 1500);
                 } else {
-                    showPcNotification('Erreur : ' + (result.error || 'Erreur inconnue'), 'error');
+                    if (window.NotificationSystem) {
+                        window.NotificationSystem.error('Erreur : ' + (result.error || 'Erreur inconnue'), { 
+                            title: 'Échec de l\'opération' 
+                        });
+                    } else {
+                        showPcNotification('Erreur : ' + (result.error || 'Erreur inconnue'), 'error');
+                    }
                 }
             } catch (error) {
                 console.error('Erreur lors de la soumission du formulaire PC:', error);
-                showPcNotification('Une erreur est survenue lors de l\'envoi des données.', 'error');
+                if (window.NotificationSystem) {
+                    window.NotificationSystem.error('Une erreur est survenue lors de l\'envoi des données.', { 
+                        title: 'Erreur Réseau' 
+                    });
+                } else {
+                    showPcNotification('Une erreur est survenue lors de l\'envoi des données.', 'error');
+                }
             } finally {
                 showPcLoadingState(false);
             }
@@ -525,7 +683,12 @@ function initPcManagement() {
                             addPcForm.dataset.mode = 'edit';
                             addPcForm.dataset.pcId = pcId;
                         }
-                        if (addPcModal) addPcModal.classList.remove('hidden');
+                        // Utiliser la fonction universelle d'ouverture
+                        if (window.openModal) {
+                            window.openModal('addPcModal');
+                        } else if (addPcModal) {
+                            addPcModal.classList.remove('hidden');
+                        }
                     }
                 }
             } else if (e.target.closest('.btn-supprimer')) {
@@ -541,8 +704,22 @@ function initPcManagement() {
                         const url = window.supprimerPcUrl?.replace('0', pcId);
 
                         if (!csrfToken || !url) {
-                            showPcNotification('Données manquantes pour la suppression', 'error');
+                            if (window.NotificationSystem) {
+                                window.NotificationSystem.error('Données manquantes pour la suppression', { 
+                                    title: 'Erreur Configuration' 
+                                });
+                            } else {
+                                showPcNotification('Données manquantes pour la suppression', 'error');
+                            }
                             return;
+                        }
+
+                        // Afficher notification de chargement
+                        let loadingId = null;
+                        if (window.NotificationSystem) {
+                            loadingId = window.NotificationSystem.loading('Suppression en cours...', { 
+                                title: 'Suppression PC' 
+                            });
                         }
 
                         try {
@@ -553,14 +730,43 @@ function initPcManagement() {
                                 }
                             });
                             const result = await response.json();
+                            
+                            // Supprimer la notification de chargement
+                            if (loadingId && window.NotificationSystem) {
+                                window.NotificationSystem.remove(loadingId);
+                            }
+                            
                             if (response.ok) {
-                                showPcNotification(result.message, 'success');
+                                if (window.NotificationSystem) {
+                                    window.NotificationSystem.success(result.message, { 
+                                        title: 'PC Supprimé' 
+                                    });
+                                } else {
+                                    showPcNotification(result.message, 'success');
+                                }
                                 row.remove();
                             } else {
-                                showPcNotification('Erreur lors de la suppression : ' + result.error, 'error');
+                                if (window.NotificationSystem) {
+                                    window.NotificationSystem.error('Erreur lors de la suppression : ' + result.error, { 
+                                        title: 'Échec Suppression' 
+                                    });
+                                } else {
+                                    showPcNotification('Erreur lors de la suppression : ' + result.error, 'error');
+                                }
                             }
                         } catch (error) {
-                            showPcNotification('Une erreur est survenue lors de la suppression.', 'error');
+                            // Supprimer la notification de chargement en cas d'erreur
+                            if (loadingId && window.NotificationSystem) {
+                                window.NotificationSystem.remove(loadingId);
+                            }
+                            
+                            if (window.NotificationSystem) {
+                                window.NotificationSystem.error('Une erreur est survenue lors de la suppression.', { 
+                                    title: 'Erreur Réseau' 
+                                });
+                            } else {
+                                showPcNotification('Une erreur est survenue lors de la suppression.', 'error');
+                            }
                         }
                     }
                 }

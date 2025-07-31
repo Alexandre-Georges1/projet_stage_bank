@@ -129,27 +129,7 @@
                         <span class="text" style="color:#dc3545; font-weight:bold;">Se déconnecter</span>
                 </li>
             </ul>
-            <div class="user-circle" onclick="toggleUserInfo()" style="border-radius: 50%; width: 40px; height: 40px; background-color: #4CAF50; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;">
-    <span class="user-initials">
-        {% if connected_user %}{{ connected_user.prenom|first|upper }}{{ connected_user.nom|first|upper }}{% else %}??{% endif %}
-    </span>
-</div>
-
-<div class="user-info-dropdown" style="display: none; flex-direction: column; background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 8px; position: absolute; top: 50px; right: 0;">
-    <div class="user-circle" onclick="toggleUserInfo()" style="border-radius: 50%; width: 40px; height: 40px; background-color: #4CAF50; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; margin-bottom: 10px;">
-        <span class="user-initials">
-            {% if connected_user %}{{ connected_user.prenom|first|upper }}{{ connected_user.nom|first|upper }}{% else %}??{% endif %}
-        </span>
-    </div>
-    <div class="user-details" style="margin-left: 10px;">
-        <span class="user-name">
-            {% if connected_user %}{{ connected_user.prenom }} {{ connected_user.nom }}{% else %}Utilisateur Inconnu{% endif %}
-        </span><br>
-        <span class="user-role">
-            {% if connected_user %}{{ connected_user.fonction }}{% else %}Rôle Inconnu{% endif %}
-        </span><br><br>
-    </div>
-</div>
+    
         </div>
         
     </section>
@@ -162,6 +142,24 @@
                     <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
                 </div>
             </form>
+
+             <div class="user-profile-container">
+            <div class="user-info-display">
+                <div class="user-text-info">
+                    <div class="user-display-name">
+                        {% if connected_user %}{{ connected_user.prenom }} {{ connected_user.nom }}{% else %}Utilisateur Inconnu{% endif %}
+                    </div>
+                    <div class="user-display-role">
+                        {% if connected_user %}{{ connected_user.fonction }}{% else %}Rôle Inconnu{% endif %}
+                    </div>
+                </div>
+                <div class="user-circle">
+                    <span class="user-initials">
+                        {% if connected_user %}{{ connected_user.prenom|first|upper }}{{ connected_user.nom|first|upper }}{% else %}??{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
                  <div class="notification-container">
         <button class="notification-btn" id="notificationBtn">
             <i class='bx bxs-bell'></i>
@@ -197,10 +195,11 @@
         </div>
         {% endfor %}
     </div>
+    
 </div>
 
     </div>
-
+       
         </nav>
         <main>
             <!-- Inclusion de toutes les vues du dashboard -->
@@ -244,6 +243,8 @@
 
 <script src="{% static 'js/core/dashboard-core.js' %}"></script>
 <script src="{% static 'js/core/notifications.js' %}"></script>
+<script src="{% static 'js/modules/notification.js' %}"></script>
+<script src="{% static 'js/modules/modal.js' %}"></script>
 <script src="{% static 'js/modules/pc-management.js' %}"></script>
 <script src="{% static 'js/modules/user-management.js' %}"></script>
 <script src="{% static 'js/modules/rachat-management.js' %}"></script>

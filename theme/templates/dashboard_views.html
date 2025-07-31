@@ -128,32 +128,32 @@
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
-            <table>
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr>
-                        <th>marque</th>
-                        <th>model</th>
-                        <th>processeur</th>
-                        <th>RAM</th>
-                        <th>Disque</th>
-                        <th>Numéro de série</th>
-                        <th>date d'achat</th>
-                        <th>Actions</th>
+                        <th style="width: 12%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Marque</th>
+                        <th style="width: 12%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Modèle</th>
+                        <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Processeur</th>
+                        <th style="width: 8%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">RAM</th>
+                        <th style="width: 10%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Disque</th>
+                        <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">N° de série</th>
+                        <th style="width: 12%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Date d'achat</th>
+                        <th style="width: 16%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for pc in pcs %}
-                    <tr data-pc-id="{{ pc.pk }}">
-                        <td>{{ pc.marque }}</td>
-                        <td>{{ pc.modele }}</td>
-                        <td>{{ pc.processeur }}</td>
-                        <td>{{ pc.ram }}</td>
-                        <td>{{ pc.disque_dur }}</td>
-                        <td>{{ pc.numero_serie }}</td>
-                        <td>{{ pc.date_achat|date:"Y-m-d" }}</td>
-                        <td>
-                            <button class="btn-modifier" aria-label="Modifier"><i class="fas fa-edit"></i></button>
-                            <button class="btn-supprimer" aria-label="Supprimer"><i class="fas fa-trash-alt"></i></button>
+                    <tr data-pc-id="{{ pc.pk }}" style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ pc.marque }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle;">{{ pc.modele }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle; font-size: 14px;">{{ pc.processeur }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle; font-weight: 500;">{{ pc.ram }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ pc.disque_dur }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle; font-family: monospace; font-size: 13px;">{{ pc.numero_serie }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ pc.date_achat|date:"d/m/Y" }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
+                            <button class="btn-modifier" aria-label="Modifier" style="margin: 0 2px;"><i class="fas fa-edit"></i></button>
+                            <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 2px;"><i class="fas fa-trash-alt"></i></button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -233,38 +233,38 @@
             </div>
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Nom</th>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Prénom</th>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Login</th>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Mot de passe</th>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Matricule</th>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Téléphone</th>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Email</th>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Departement</th>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Date d'embauche</th>
-                        <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0;">Fonction</th>
-                        <th style="padding: 12px 16px; text-align: center; border-bottom: 1px solid #e0e0e0;">Actions</th>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="width: 10%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Nom</th>
+                        <th style="width: 10%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Prénom</th>
+                        <th style="width: 10%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Login</th>
+                        <th style="width: 8%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Mot de passe</th>
+                        <th style="width: 8%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Matricule</th>
+                        <th style="width: 10%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Téléphone</th>
+                        <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Email</th>
+                        <th style="width: 10%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Département</th>
+                        <th style="width: 9%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Date embauche</th>
+                        <th style="width: 10%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Fonction</th>
+                        <th style="width: 10%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for employe in employes %}
-                    <tr data-user-id="{{ employe.pk }}">
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.nom }}</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.prenom }}</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.login }}</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">******</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.matricule }}</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.telephone }}</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.email }}</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.Département }}</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.date_embauche|date:"Y-m-d" }}</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0;">{{ employe.fonction }}</td>
-                        <td style="padding: 16px 16px; border-bottom: 1px solid #f0f0f0; text-align: center;">
-                            <button class="btn-modifier" aria-label="Modifier" style="margin: 0 4px;">
+                    <tr data-user-id="{{ employe.pk }}" style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ employe.nom }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ employe.prenom }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle; color: #666;">{{ employe.login }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle; color: #999;">******</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle; font-family: monospace;">{{ employe.matricule }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ employe.telephone }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle; color: #0066cc;">{{ employe.email }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle;">{{ employe.Département }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ employe.date_embauche|date:"d/m/Y" }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle;">{{ employe.fonction }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
+                            <button class="btn-modifier" aria-label="Modifier" style="margin: 0 2px;">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 4px;">
+                            <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 2px;">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </td>
@@ -435,31 +435,31 @@
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
-            <table>
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr>
-                        <th>Employé</th>
-                        <th>Département</th>
-                        <th>Matériel demandé</th>
-                        <th>Date de demande</th>
-                        <th>Commentaires</th>
-                        <th>Actions</th>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="width: 20%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Employé</th>
+                        <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Département</th>
+                        <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Matériel demandé</th>
+                        <th style="width: 12%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Date de demande</th>
+                        <th style="width: 20%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Commentaires</th>
+                        <th style="width: 18%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for demande in demandes_peripheriques_en_attente %}
-                    <tr data-demande-id="{{ demande.id_demande }}">
-                        <td>{{ demande.employe.prenom }} {{ demande.employe.nom }}</td>
-                        <td>{{ demande.employe.Département }}</td>
-                        <td>{{ demande.get_materiel_display }}</td>
-                        <td>{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
-                        <td>{{ demande.commentaires|default:"Aucun commentaire" }}</td>
-                        <td>
+                    <tr data-demande-id="{{ demande.id_demande }}" style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ demande.employe.prenom }} {{ demande.employe.nom }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle;">{{ demande.employe.Département }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle; color: #0066cc;">{{ demande.get_materiel_display }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle; font-size: 14px; color: #666;">{{ demande.commentaires|default:"Aucun commentaire" }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
                             <div class="action-buttons">
-                                <button class="btn-valider-demande" data-demande-id="{{ demande.id_demande }}" data-action="approuver">
+                                <button class="btn-valider-demande" data-demande-id="{{ demande.id_demande }}" data-action="approuver" style="margin: 0 2px;">
                                     <i class="fas fa-check"></i> Approuver
                                 </button>
-                                <button class="btn-refuser-demande" data-demande-id="{{ demande.id_demande }}" data-action="refuser">
+                                <button class="btn-refuser-demande" data-demande-id="{{ demande.id_demande }}" data-action="refuser" style="margin: 0 2px;">
                                     <i class="fas fa-times"></i> Refuser
                                 </button>
                             </div>
@@ -485,40 +485,40 @@
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
-            <table>
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr>
-                        <th>Employé</th>
-                        <th>Matériel</th>
-                        <th>Statut</th>
-                        <th>Date de validation</th>
-                        <th>Traité par</th>
-                        <th>Commentaires</th>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="width: 18%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Employé</th>
+                        <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Matériel</th>
+                        <th style="width: 12%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Statut</th>
+                        <th style="width: 15%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Date de validation</th>
+                        <th style="width: 18%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Traité par</th>
+                        <th style="width: 22%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Commentaires</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for demande in demandes_peripheriques_traitees %}
-                    <tr>
-                        <td>{{ demande.employe.prenom }} {{ demande.employe.nom }}</td>
-                        <td>{{ demande.get_materiel_display }}</td>
-                        <td>
-                            <span class="{{ demande.get_statut_display_class }}">
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ demande.employe.prenom }} {{ demande.employe.nom }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle; color: #0066cc;">{{ demande.get_materiel_display }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
+                            <span class="{{ demande.get_statut_display_class }}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">
                                 {{ demande.get_statut_display }}
                             </span>
                         </td>
-                        <td>{{ demande.date_modification|date:"d/m/Y H:i" }}</td>
-                        <td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ demande.date_modification|date:"d/m/Y H:i" }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle;">
                             {% if demande.traite_par %}
                                 {{ demande.traite_par.prenom }} {{ demande.traite_par.nom }}
                             {% else %}
-                                -
+                                <span style="color: #999;">-</span>
                             {% endif %}
                         </td>
-                        <td>{{ demande.commentaires|default:"-" }}</td>
+                        <td style="padding: 16px 8px; vertical-align: middle; font-size: 14px; color: #666;">{{ demande.commentaires|default:"-" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" style="text-align: center; color: #888;">
+                        <td colspan="6" style="text-align: center; color: #888; padding: 30px;">
                             Aucune validation effectuée
                         </td>
                     </tr>
@@ -639,34 +639,34 @@
             </div>
             <div class="table-data">
                 <div class="order">
-                    <table>
+                    <table style="width: 100%; border-collapse: collapse;">
                         <thead>
-                            <tr>
-                                <th>Nom</th>
-                                <th>Prenom</th>
-                                <th>Marque PC</th>
-                                <th>Modèle PC</th>
-                                <th>Numéro Série PC</th>
-                                <th>Date d'Attribution</th>
-                                <th>Actions</th>
+                            <tr style="background-color: #f8f9fa;">
+                                <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Nom</th>
+                                <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Prénom</th>
+                                <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Marque PC</th>
+                                <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Modèle PC</th>
+                                <th style="width: 20%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">N° Série PC</th>
+                                <th style="width: 12%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Date Attribution</th>
+                                <th style="width: 8%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for attribution in pcs_attribues %}
-                            <tr data-attribution-id="{{ attribution.id }}">
-                                <td> {{ attribution.employe.nom }}</td>
-                                <td>{{ attribution.employe.prenom }}</td>
-                                <td>{{ attribution.marque }}</td>
-                                <td>{{ attribution.modele }}</td>
-                                <td>{{ attribution.numero_serie }}</td>	
-                                <td>{{ attribution.date_attribution|date:"d M Y" }}</td>
-                                <td>
-                                    <button class="btn-bordereau" data-attribution-id="{{ attribution.id }}" data-telephone="{{ attribution.employe.telephone }}" data-email="{{ attribution.employe.email }}" data-employe-id="{{ attribution.employe.pk }}">Bordereau</button>
+                            <tr data-attribution-id="{{ attribution.id }}" style="border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ attribution.employe.nom }}</td>
+                                <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ attribution.employe.prenom }}</td>
+                                <td style="padding: 16px 8px; vertical-align: middle;">{{ attribution.marque }}</td>
+                                <td style="padding: 16px 8px; vertical-align: middle;">{{ attribution.modele }}</td>
+                                <td style="padding: 16px 8px; vertical-align: middle; font-family: monospace; font-size: 13px;">{{ attribution.numero_serie }}</td>	
+                                <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ attribution.date_attribution|date:"d/m/Y" }}</td>
+                                <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
+                                    <button class="btn-bordereau" data-attribution-id="{{ attribution.id }}" data-telephone="{{ attribution.employe.telephone }}" data-email="{{ attribution.employe.email }}" data-employe-id="{{ attribution.employe.pk }}" style="background-color: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Bordereau</button>
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="5">Aucun PC attribué.</td>
+                                <td colspan="7" style="text-align: center; padding: 30px; color: #888;">Aucun PC attribué.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -963,29 +963,30 @@
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
-            <table>
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr>
-                        <th>Marque</th>
-                        <th>Model</th>
-                        <th>Ram</th>
-                        <th>Disque dur</th>
-                        <th>processeur</th>
-                        <th>Date d'achat</th>
-                        <th>Date d'attribution</th>
-                        <th>Status</th>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="width: 12%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Marque</th>
+                        <th style="width: 12%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Modèle</th>
+                        <th style="width: 8%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">RAM</th>
+                        <th style="width: 12%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Disque dur</th>
+                        <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Processeur</th>
+                        <th style="width: 11%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Date achat</th>
+                        <th style="width: 11%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Date attribution</th>
+                        <th style="width: 10%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Statut</th>
+                        <th style="width: 9%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr id="racheterPcRow">
-                        <td id="racheterMarque"></td>
-                        <td id="racheterModele"></td>
-                        <td id="racheterRam"></td>
-                        <td id="racheterDisqueDur"></td>
-                        <td id="racheterProcesseur"></td>
-                        <td id="racheterDateAchat"></td>
-                        <td id="racheterDateAttribution"></td>
-                        <td id="racheterStatut">
+                    <tr id="racheterPcRow" style="border-bottom: 1px solid #f0f0f0;">
+                        <td id="racheterMarque" style="padding: 16px 8px; vertical-align: middle; font-weight: 500;"></td>
+                        <td id="racheterModele" style="padding: 16px 8px; vertical-align: middle;"></td>
+                        <td id="racheterRam" style="padding: 16px 8px; text-align: center; vertical-align: middle; font-weight: 500;"></td>
+                        <td id="racheterDisqueDur" style="padding: 16px 8px; text-align: center; vertical-align: middle;"></td>
+                        <td id="racheterProcesseur" style="padding: 16px 8px; vertical-align: middle; font-size: 14px;"></td>
+                        <td id="racheterDateAchat" style="padding: 16px 8px; text-align: center; vertical-align: middle;"></td>
+                        <td id="racheterDateAttribution" style="padding: 16px 8px; text-align: center; vertical-align: middle;"></td>
+                        <td id="racheterStatut" style="padding: 16px 8px; text-align: center; vertical-align: middle;">
                             {% if Pc_attribué.status == "en attente" %}
                                 <span class="statut-en-attente">En attente</span>
                             {% elif Pc_attribué.status == "non envoyé" %}
@@ -998,8 +999,8 @@
                                 <span>{{ Pc_attribué.status }}</span>
                             {% endif %}
                         </td>
-                        <td>  
-                            <button type="submit" class="btn-Envoyer-Demande_de_rachat" >Envoyer demande </button>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">  
+                            <button type="submit" class="btn-Envoyer-Demande_de_rachat" style="background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Envoyer demande</button>
                         </td>
                     </tr>
                 </tbody>

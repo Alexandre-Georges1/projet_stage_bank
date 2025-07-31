@@ -4,6 +4,24 @@
  * ===============================
  */
 
+// Fonction de notification unifiée pour le module User Management
+function showUserNotification(message, type = 'success', title = null) {
+    // Vérifier si le système de notifications est disponible
+    if (window.NotificationSystem && typeof window.NotificationSystem.show === 'function') {
+        return window.NotificationSystem.show(message, type, title ? { title } : {});
+    } else {
+        // Fallback avec alert coloré
+        const icons = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️'
+        };
+        const icon = icons[type] || 'ℹ️';
+        alert(`${icon} ${title ? title + ': ' : ''}${message}`);
+    }
+}
+
 // Fonction principale d'initialisation de la gestion des utilisateurs
 function initUserManagement() {
     // Attribution de PC
@@ -59,7 +77,7 @@ function initPcAssignment() {
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
             
             if (!employeSelect || !pcNumeroSerieSelect || !csrfToken) {
-                alert("Éléments manquants dans le formulaire.");
+                showUserNotification("Éléments manquants dans le formulaire.", 'error', 'Erreur Formulaire');
                 return;
             }
 
@@ -67,7 +85,7 @@ function initPcAssignment() {
             const numeroSerie = pcNumeroSerieSelect.value;
             
             if (!employeId || !numeroSerie || !dateAttribution) {
-                alert("Veuillez remplir tous les champs obligatoires.");
+                showUserNotification("Veuillez remplir tous les champs obligatoires.", 'warning', 'Champs Manquants');
                 return;
             }
 
@@ -88,15 +106,16 @@ function initPcAssignment() {
                 });
                 const result = await response.json();
                 if (response.ok) {
-                    alert(result.message || "PC attribué avec succès !");
+                    showUserNotification(result.message || "PC attribué avec succès !", 'success', 'Attribution Réussie');
                     const modal = document.getElementById('assignPcModal');
                     if (modal) modal.classList.add('hidden');
                     location.reload();
                 } else {
-                    alert(result.error || "Erreur lors de l'attribution du PC.");
+                    showUserNotification(result.error || "Erreur lors de l'attribution du PC.", 'error', 'Échec Attribution');
                 }
             } catch (error) {
                 console.error(error);
+                showUserNotification("Une erreur est survenue lors de l'attribution.", 'error', 'Erreur Réseau');
             }
         });
     }
@@ -162,7 +181,7 @@ function initUserCrud() {
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
 
             if (!csrfToken) {
-                alert('Token CSRF manquant');
+                showUserNotification('Token CSRF manquant', 'error', 'Erreur Sécurité');
                 return;
             }
 
@@ -190,7 +209,7 @@ function initUserCrud() {
             }
 
             if (!url) {
-                alert('URL manquante pour la soumission du formulaire');
+                showUserNotification('URL manquante pour la soumission du formulaire', 'error', 'Erreur Configuration');
                 return;
             }
 
@@ -295,10 +314,10 @@ function initUserCrud() {
                             });
                             const result = await response.json();
                             if (response.ok) {
-                                alert(result.message);
+                                showUserNotification(result.message, 'success', 'Utilisateur Supprimé');
                                 row.remove();
                             } else {
-                                alert('Erreur lors de la suppression : ' + result.error);
+                                showUserNotification('Erreur lors de la suppression : ' + result.error, 'error', 'Échec Suppression');
                             }
                         } catch (error) {
                             console.error('Erreur lors de la suppression de l\'utilisateur:', error);
@@ -321,7 +340,7 @@ function initEmployeeManagement() {
 
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
             if (!csrfToken) {
-                alert('Token CSRF manquant');
+                showUserNotification('Token CSRF manquant', 'error', 'Erreur Sécurité');
                 return;
             }
 
@@ -353,13 +372,13 @@ function initEmployeeManagement() {
                 try {
                     result = JSON.parse(text);
                 } catch (jsonError) {
-                    alert('Erreur inattendue (réponse non JSON) : ' + text);
+                    showUserNotification('Erreur inattendue (réponse non JSON) : ' + text, 'error', 'Erreur Format');
                     return;
                 }
 
                 if (response.ok) {
                     // Afficher un message de succès avec icône
-                    showEmployeeNotification(result.message, 'success');
+                    showUserNotification(result.message, 'success', 'Employé Ajouté');
                     nouvelEmployeForm.reset(); 
                     
                     // Délai avant rechargement pour que l'utilisateur voie le message
@@ -367,7 +386,7 @@ function initEmployeeManagement() {
                         location.reload();
                     }, 1500);
                 } else {
-                    showEmployeeNotification('Erreur : ' + (result.error || text), 'error');
+                    showUserNotification('Erreur : ' + (result.error || text), 'error', 'Échec Ajout Employé');
                 }
 
             } catch (error) {
@@ -741,14 +760,8 @@ function showCharacteristicsLoadingState(isLoading, submitButton) {
  * @param {string} type - Type de notification (success, error, info)
  */
 function showCharacteristicsNotification(message, type = 'info') {
-    // Réutiliser la même fonction que pour les employés
-    if (typeof showEmployeeNotification === 'function') {
-        showEmployeeNotification(message, type);
-    } else {
-        // Fallback vers une alerte simple
-        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
-        alert(`${icon} ${message}`);
-    }
+    // Utiliser la fonction de notification unifiée
+    showUserNotification(message, type, 'Caractéristiques');
 }
 
 // Export des fonctions pour utilisation dans d'autres modules
