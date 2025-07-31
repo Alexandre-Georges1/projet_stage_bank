@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique
+from django.contrib.auth.decorators import login_required
 
 
 def get_demandes_peripheriques():
@@ -84,7 +85,7 @@ def dashboard(request):
     return render(request, 'dashboard.html',context)
 
 
-  
+@login_required
 def dashboard_employe(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -115,7 +116,7 @@ def dashboard_employe(request):
     return render(request, 'page_employe/dashboard_employé.html', context)
 
 
-   
+@login_required  
 def dashboard_DCH(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -128,6 +129,9 @@ def dashboard_DCH(request):
             connected_user = Employe.objects.get(pk=request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
+            return redirect('connexion')
+    if not connected_user or connected_user.fonction != 'DCH':
+        return redirect('connexion') 
 
     context = {'employes': employes,
                 'pcs': pcs,
@@ -139,7 +143,7 @@ def dashboard_DCH(request):
     return render(request, 'page_DCH/dashboard_DCH.html', context)
 
 
-   
+@login_required
 def dashboard_MG(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -152,12 +156,15 @@ def dashboard_MG(request):
             connected_user = Employe.objects.get(pk=request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
+            return redirect('connexion')
+    if not connected_user or connected_user.fonction != 'MG':
+        return redirect('connexion') 
 
     context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
     return render(request, 'page_MGX/dashboard_MG.html', context)
 
 
-   
+@login_required  
 def dashboard_RMG(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -170,12 +177,15 @@ def dashboard_RMG(request):
             connected_user = Employe.objects.get(pk=request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
+            return redirect('connexion')
+    if not connected_user or connected_user.fonction != 'RMG':
+        return redirect('connexion') 
 
     context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
     return render(request, 'page_MGX/dashboard_RMG.html', context)
 
 
-   
+@login_required  
 def dashboard_DAF(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -188,13 +198,14 @@ def dashboard_DAF(request):
             connected_user = Employe.objects.get(pk=request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
+            return redirect('connexion')
+    if not connected_user or connected_user.fonction != 'DAF':
+        return redirect('connexion') 
 
     context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
     return render(request, 'page_DAF/dashboard_DAF.html', context)
 
-
-
-   
+@login_required
 def dashboard_RDOT(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -213,6 +224,9 @@ def dashboard_RDOT(request):
             connected_user = Employe.objects.get(pk=request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
+            return redirect('connexion')
+    if not connected_user or connected_user.fonction != 'RDOT':
+        return redirect('connexion') 
 
     context = {
                 'employes': employes,
@@ -228,8 +242,7 @@ def dashboard_RDOT(request):
                   }
     return render(request, 'page_DOT/dashboard_RDOT.html', context)
 
-
-    
+@login_required
 def dashboard_DOT(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -247,6 +260,10 @@ def dashboard_DOT(request):
             connected_user = Employe.objects.get(pk=request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
+            return redirect('connexion')
+    if not connected_user or connected_user.fonction != 'DOT':
+        return redirect('connexion')  # Ou vers une page d'erreur ou dashboard général
+
 
     context = {'employes': employes,
                 'pcs': pcs,
@@ -258,10 +275,12 @@ def dashboard_DOT(request):
                 'pc_en_rebu': pc_en_rebu,
                 'marques': marques,
                 'modeles': modeles,
-                'notifications': emails}
+                'notifications': emails} 
     return render(request, 'page_DOT/dashboard_DOT.html', context)
 
-  
+
+
+@login_required
 def Admin(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -279,6 +298,9 @@ def Admin(request):
             connected_user = Employe.objects.get(pk=request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
+            return redirect('connexion')
+    if not connected_user or connected_user.fonction != 'Admin':
+        return redirect('connexion') 
 
     context = {'employes': employes,
                 'pcs': pcs,

@@ -44,7 +44,7 @@ DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes', 'on')
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
 
-
+LOGIN_URL ='/connexion'
 # Application definition
 NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd" 
 

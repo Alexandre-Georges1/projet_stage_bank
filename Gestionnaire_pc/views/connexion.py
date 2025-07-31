@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import make_password,check_password
 from ..models import Employe
 
-   
+
 def connexion(request):
     if request.method == 'POST':
         username = request.POST.get('username')
