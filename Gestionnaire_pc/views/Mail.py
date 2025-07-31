@@ -2,7 +2,7 @@ from django.http import JsonResponse
 import json
 from django.core.mail import send_mail
 from django.conf import settings
-from ..models import Employe, Email, CaracteristiqueEnvoyee,Pc_attribué
+from ..models import Employe, Email, CaracteristiqueEnvoyee,Pc_attribué,Email_MGX, Email_DOT, Email_RDOT, Email_DAF
 
 
 def demander_caracteristique(request):
@@ -45,6 +45,7 @@ def demander_caracteristique(request):
                     destinataire=', '.join(recipient_list), 
                     expediteur=connected_user, 
                 )
+
           
             except Exception as e:
                 email_status = f"Erreur lors de l\'envoi de l\'e-mail : {e}"
@@ -70,8 +71,6 @@ def envoyer_caracteristiques(request):
             disque = data.get('disque')
             employe_concerne_id = data.get('employe_concerne') 
 
-            print(f"[DEBUG] Données reçues: {data}")
-
             employe_concerne = None
             if employe_concerne_id:
                 try:
@@ -84,12 +83,7 @@ def envoyer_caracteristiques(request):
                 try:
                     connected_user = Employe.objects.get(pk=request.session['user_id'])
                 except Employe.DoesNotExist:
-                    print("[DEBUG] Utilisateur connecté introuvable dans la session.")
                     pass 
-
-            print(f"[DEBUG] employe_concerne: {employe_concerne}")
-            print(f"[DEBUG] connected_user: {connected_user}")
-
             subject = f'Nouvelles Caractéristiques PC Envoyées : {employe_concerne.prenom if employe_concerne else "Général"} {employe_concerne.nom if employe_concerne else ""}'
             if connected_user:
                 subject = f'Nouvelles Caractéristiques PC Envoyées : {employe_concerne.prenom if employe_concerne else "Général"} {employe_concerne.nom if employe_concerne else ""} - Par {connected_user.prenom} {connected_user.nom}'
@@ -115,8 +109,13 @@ def envoyer_caracteristiques(request):
                     destinataire=', '.join(recipient_list),
                     expediteur=connected_user,
                 )
+                Email_MGX.objects.create(
+                    objet=subject,
+                    corps=message,
+                    destinataire=', '.join(recipient_list),
+                    expediteur=connected_user,
+                )
 
-                print("[DEBUG] Avant création CaracteristiqueEnvoyee")
                 caracteristique = CaracteristiqueEnvoyee.objects.create(
                     marque=marque,
                     modele=modele,
@@ -126,15 +125,10 @@ def envoyer_caracteristiques(request):
                     envoyeur=connected_user,
                     employe_concerne=employe_concerne, 
                 )
-                print(f"[DEBUG] CaracteristiqueEnvoyee créée: {caracteristique}")
-
             except Exception as e:
                 email_status = f"Erreur lors de l'envoi de l'e-mail ou de la création: {e}"
-                print(email_status) 
-
             return JsonResponse({'message': f'Caractéristiques envoyées avec succès! {email_status}'})
         except Exception as e:
-            print(f"[DEBUG] Exception globale: {e}")
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
 
@@ -176,7 +170,152 @@ def get_notifications(request):
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
 
-   
+def get_notifications_dot(request):
+    if request.method == 'GET':
+        try:
+            notifications = Email_DOT.objects.all().order_by('-date_envoi')[:10] 
+            notifications_data = []
+            for email in notifications:
+                notification_type = 'info'
+                if 'erreur' in email.objet.lower() or 'error' in email.objet.lower():
+                    notification_type = 'error'
+                elif 'succès' in email.objet.lower() or 'success' in email.objet.lower():
+                    notification_type = 'success'
+                elif 'demande' in email.objet.lower():
+                    notification_type = 'info'
+                elif 'caractéristiques' in email.objet.lower():
+                    notification_type = 'success'
+                
+                formatted_time = email.date_envoi.strftime("%Y-%m-%d %H:%M:%S")
+
+                sender_name = email.expediteur.nom if email.expediteur else 'Inconnu'
+                sender_email = email.expediteur.email if email.expediteur else ''
+
+                notifications_data.append({
+                    'id': email.id_email,
+                    'type': notification_type,
+                    'message': email.objet,
+                    'time': formatted_time,
+                    'sender_name': sender_name,
+                    'sender_email': sender_email,
+                    'read': email.is_read 
+                })
+            
+            return JsonResponse(notifications_data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
+
+def get_notifications_daf(request):
+    if request.method == 'GET':
+        try:
+            notifications = Email_DAF.objects.all().order_by('-date_envoi')[:10] 
+            notifications_data = []
+            for email in notifications:
+                notification_type = 'info'
+                if 'erreur' in email.objet.lower() or 'error' in email.objet.lower():
+                    notification_type = 'error'
+                elif 'succès' in email.objet.lower() or 'success' in email.objet.lower():
+                    notification_type = 'success'
+                elif 'demande' in email.objet.lower():
+                    notification_type = 'info'
+                elif 'caractéristiques' in email.objet.lower():
+                    notification_type = 'success'
+                
+                formatted_time = email.date_envoi.strftime("%Y-%m-%d %H:%M:%S")
+
+                sender_name = email.expediteur.nom if email.expediteur else 'Inconnu'
+                sender_email = email.expediteur.email if email.expediteur else ''
+
+                notifications_data.append({
+                    'id': email.id_email,
+                    'type': notification_type,
+                    'message': email.objet,
+                    'time': formatted_time,
+                    'sender_name': sender_name,
+                    'sender_email': sender_email,
+                    'read': email.is_read 
+                })
+            
+            return JsonResponse(notifications_data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
+def get_notifications_mgx(request):
+    if request.method == 'GET':
+        try:
+            notifications = Email_MGX.objects.all().order_by('-date_envoi')[:10] 
+            notifications_data = []
+            for email in notifications:
+                notification_type = 'info'
+                if 'erreur' in email.objet.lower() or 'error' in email.objet.lower():
+                    notification_type = 'error'
+                elif 'succès' in email.objet.lower() or 'success' in email.objet.lower():
+                    notification_type = 'success'
+                elif 'demande' in email.objet.lower():
+                    notification_type = 'info'
+                elif 'caractéristiques' in email.objet.lower():
+                    notification_type = 'success'
+                
+                formatted_time = email.date_envoi.strftime("%Y-%m-%d %H:%M:%S")
+
+                sender_name = email.expediteur.nom if email.expediteur else 'Inconnu'
+                sender_email = email.expediteur.email if email.expediteur else ''
+
+                notifications_data.append({
+                    'id': email.id_email,
+                    'type': notification_type,
+                    'message': email.objet,
+                    'time': formatted_time,
+                    'sender_name': sender_name,
+                    'sender_email': sender_email,
+                    'read': email.is_read 
+                })
+            
+            return JsonResponse(notifications_data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
+
+def get_notifications_rdot(request):
+    if request.method == 'GET':
+        try:
+            notifications = Email_RDOT.objects.all().order_by('-date_envoi')[:10] 
+            notifications_data = []
+            for email in notifications:
+                notification_type = 'info'
+                if 'erreur' in email.objet.lower() or 'error' in email.objet.lower():
+                    notification_type = 'error'
+                elif 'succès' in email.objet.lower() or 'success' in email.objet.lower():
+                    notification_type = 'success'
+                elif 'demande' in email.objet.lower():
+                    notification_type = 'info'
+                elif 'caractéristiques' in email.objet.lower():
+                    notification_type = 'success'
+                
+                formatted_time = email.date_envoi.strftime("%Y-%m-%d %H:%M:%S")
+
+                sender_name = email.expediteur.nom if email.expediteur else 'Inconnu'
+                sender_email = email.expediteur.email if email.expediteur else ''
+
+                notifications_data.append({
+                    'id': email.id_email,
+                    'type': notification_type,
+                    'message': email.objet,
+                    'time': formatted_time,
+                    'sender_name': sender_name,
+                    'sender_email': sender_email,
+                    'read': email.is_read 
+                })
+            
+            return JsonResponse(notifications_data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
 def mark_notification_as_read(request, email_id):
     if request.method == 'POST':
         try:

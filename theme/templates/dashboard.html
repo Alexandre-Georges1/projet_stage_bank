@@ -225,7 +225,20 @@
     window.supprimerUtilisateurUrl = "{% url 'supprimer_utilisateur' user_id=0 %}";
     window.supprimerPcUrl = "{% url 'supprimer_pc' pc_id=0 %}";
     window.enregistrerEmployeUrl = "{% url 'enregistrer_employe' %}";
-    window.getNotificationsUrl = "{% url 'get_notifications' %}"; 
+    
+    // URL de notifications dynamique selon le rôle de l'utilisateur
+    {% if connected_user.fonction == "DOT" %}
+        window.getNotificationsUrl = "{% url 'get_notifications_dot' %}";
+    {% elif connected_user.fonction == "RDOT" %}
+        window.getNotificationsUrl = "{% url 'get_notifications_rdot' %}";
+    {% elif connected_user.fonction == "DAF" %}
+        window.getNotificationsUrl = "{% url 'get_notifications_daf' %}";
+    {% elif connected_user.fonction == "MG" or connected_user.fonction == "RMG" %}
+        window.getNotificationsUrl = "{% url 'get_notifications_mgx' %}";
+    {% else %}
+        window.getNotificationsUrl = "{% url 'get_notifications' %}";
+    {% endif %}
+
     window.markNotificationAsReadUrl = "{% url 'mark_notification_as_read' email_id=0 %}";
     window.racheterPcUrl = "{% url 'racheter_pc' %}"; 
     window.envoyerBordereauEmployeUrl = "{% url 'envoyer_bordereau_employe' %}"; 

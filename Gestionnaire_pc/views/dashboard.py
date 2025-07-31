@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique
+from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique, Email_DOT, Email_DAF, Email_MGX, Email_RDOT
 from django.contrib.auth.decorators import login_required
 
 
@@ -149,7 +149,7 @@ def dashboard_MG(request):
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
-
+    emails = Email_MGX.objects.all()
     connected_user = None
     if 'user_id' in request.session:
         try:
@@ -160,7 +160,14 @@ def dashboard_MG(request):
     if not connected_user or connected_user.fonction != 'MG':
         return redirect('connexion') 
 
-    context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
+    context = {
+        'employes': employes, 
+        'pcs': pcs, 
+        'connected_user': connected_user,
+        'caracteristiques_envoyees': caracteristiques_envoyees, 
+        'pcs_attribues': pcs_attribues,
+        'notifications': emails
+          }
     return render(request, 'page_MGX/dashboard_MG.html', context)
 
 
@@ -170,7 +177,7 @@ def dashboard_RMG(request):
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
-
+    
     connected_user = None
     if 'user_id' in request.session:
         try:
@@ -191,7 +198,7 @@ def dashboard_DAF(request):
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
-
+    emails = Email_DAF.objects.all()
     connected_user = None
     if 'user_id' in request.session:
         try:
@@ -202,7 +209,12 @@ def dashboard_DAF(request):
     if not connected_user or connected_user.fonction != 'DAF':
         return redirect('connexion') 
 
-    context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
+    context = {
+        'employes': employes, 
+        'pcs': pcs,
+        'connected_user': connected_user, 
+        'caracteristiques_envoyees': caracteristiques_envoyees, 
+        'pcs_attribues': pcs_attribues}
     return render(request, 'page_DAF/dashboard_DAF.html', context)
 
 @login_required
@@ -214,8 +226,9 @@ def dashboard_RDOT(request):
     pc_en_service= Pc_attribué.objects.count()
     pc_total = PC.objects.count()
     pc_en_rebu = Pc_ancien.objects.count()
-    
-    # Ajouter les demandes de périphériques
+    emails = Email_RDOT.objects.all()
+    marques=marquePC.objects.all()
+    modeles=modelePC.objects.all()
     demandes_peripheriques_en_attente, demandes_peripheriques_traitees = get_demandes_peripheriques()
     
     connected_user = None
@@ -238,7 +251,10 @@ def dashboard_RDOT(request):
                 'pc_total': pc_total,
                 'pc_en_rebu': pc_en_rebu,
                 'demandes_peripheriques_en_attente': demandes_peripheriques_en_attente,
-                'demandes_peripheriques_traitees': demandes_peripheriques_traitees
+                'demandes_peripheriques_traitees': demandes_peripheriques_traitees,
+                'notifications': emails,
+                'marques': marques,
+                'modeles': modeles
                   }
     return render(request, 'page_DOT/dashboard_RDOT.html', context)
 
@@ -254,7 +270,7 @@ def dashboard_DOT(request):
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
     connected_user = None
-    emails = Email.objects.all()
+    emails = Email_DOT.objects.all()
     if 'user_id' in request.session:
         try:
             connected_user = Employe.objects.get(pk=request.session['user_id'])

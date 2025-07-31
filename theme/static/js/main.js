@@ -57,8 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Test du système de notifications après initialisation
     setTimeout(() => {
         if (window.NotificationSystem) {
-            console.log('✅ Système de notifications initialisé avec succès');
-            
             // Fonction de test disponible globalement
             window.testNotifications = function() {
                 window.NotificationSystem.success('Test de notification de succès', { title: 'Test' });
@@ -72,11 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.NotificationSystem.info('Test de notification d\'information', { title: 'Test' });
                 }, 3000);
             };
-            
-            console.log('🧪 Tapez "testNotifications()" dans la console pour tester le système');
-        } else {
-            console.error('❌ Système de notifications non disponible');
-        }
+        } 
 
         // Diagnostic des modales
         setTimeout(() => {
@@ -87,7 +81,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Fonction de diagnostic des modales
 function diagnoseModeaux() {
-    console.log('🔍 Diagnostic des modales...');
     
     // Chercher toutes les modales dans le DOM
     const modalOverlays = document.querySelectorAll('.modal-overlay, .modern-modal-overlay');
@@ -115,10 +108,8 @@ function diagnoseModeaux() {
     window.testModal = function(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
-            console.log(`🧪 Test d'ouverture de la modale: ${modalId}`);
             modal.classList.remove('hidden');
             setTimeout(() => {
-                console.log(`🔒 Fermeture automatique de la modale: ${modalId}`);
                 modal.classList.add('hidden');
             }, 3000);
         } else {
@@ -127,17 +118,8 @@ function diagnoseModeaux() {
     };
     
     window.listModals = function() {
-        const modals = document.querySelectorAll('.modal-overlay, .modern-modal-overlay');
-        console.log('📝 Liste des modales disponibles:');
-        modals.forEach((modal, index) => {
-            console.log(`  ${index + 1}. ${modal.id || 'Sans ID'} - ${modal.classList.contains('hidden') ? 'Cachée' : 'Visible'}`);
-        });
-        console.log('💡 Utilisez testModal("id") pour tester une modale');
+        const modals = document.querySelectorAll('.modal-overlay, .modern-modal-overlay')
     };
-    
-    console.log('🛠️ Fonctions de test disponibles:');
-    console.log('  - listModals() : Lister toutes les modales');
-    console.log('  - testModal("modalId") : Tester une modale spécifique');
 }
 
 // Export pour utilisation globale

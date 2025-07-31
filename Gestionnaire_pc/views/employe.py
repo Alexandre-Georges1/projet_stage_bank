@@ -2,7 +2,8 @@ from django.http import JsonResponse
 import json
 from django.core.mail import send_mail
 from django.conf import settings
-from ..models import Employe,Email  
+from ..models import Employe, Email, Email_RDOT ,Email_DOT, Email_MGX 
+
 
 def enregistrer_employe(request):
     if request.method == 'POST':
@@ -31,6 +32,24 @@ def enregistrer_employe(request):
                 destinataire=', '.join(recipient_list), 
                 expediteur=None, 
             )
+                Email_DOT.objects.create(
+                    objet=subject,
+                    corps=message,
+                    destinataire=', '.join(recipient_list),
+                    expediteur=None,
+                )
+                Email_RDOT.objects.create(
+                    objet=subject,
+                    corps=message,
+                    destinataire=', '.join(recipient_list),
+                    expediteur=None,
+                )
+                Email_MGX.objects.create(
+                    objet=subject,
+                    corps=message,
+                    destinataire=', '.join(recipient_list),
+                    expediteur=None,
+                )
             except Exception as e:
                 email_status = f"Erreur lors de l\'envoi de l\'e-mail : {e}"
                 print(email_status) 

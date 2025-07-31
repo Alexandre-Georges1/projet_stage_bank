@@ -43,5 +43,8 @@ urlpatterns = [
     path('restituer_pc/', views.restituer_pc, name='restituer_pc'),
     path('demande_achat_peripheriques/', views.demande_achat_peripheriques, name='demande_achat_peripheriques'),
     path('gerer_demandes_achat/', gerer_demandes_achat, name='gerer_demandes_achat'),
-
+    path('notifications_dot/', views.get_notifications_dot, name='get_notifications_dot'),
+    path('notifications_daf/', views.get_notifications_daf, name='get_notifications_daf'),
+    path('notifications_mgx/', views.get_notifications_mgx, name='get_notifications_mgx'),
+    path('notifications_rdot/', views.get_notifications_rdot, name='get_notifications_rdot'),
 ]

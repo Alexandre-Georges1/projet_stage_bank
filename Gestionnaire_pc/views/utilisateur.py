@@ -3,8 +3,7 @@ import json
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
-from ..models import Employe,Email
-
+from ..models import Employe,Email,Email_DOT, Email_MGX, Email_RDOT
 def ajouter_utilisateur(request):
     if request.method == 'POST':
         try:
@@ -30,11 +29,31 @@ def ajouter_utilisateur(request):
                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
                 email_status = "E-mail de notification envoyé avec succès."
                 Email.objects.create(
+                        objet=subject,
+                        corps=message,
+                        destinataire=', '.join(recipient_list), 
+                        expediteur=None, 
+                    )
+                Email_DOT.objects.create(
                     objet=subject,
                     corps=message,
-                    destinataire=', '.join(recipient_list), 
-                    expediteur=None, 
+                    destinataire=', '.join(recipient_list),
+                    expediteur=None,
                 )
+                Email_RDOT.objects.create(
+                    objet=subject,
+                    corps=message,
+                    destinataire=', '.join(recipient_list),
+                    expediteur=None,
+                )
+                Email_MGX.objects.create(
+                    objet=subject,
+                    corps=message,
+                    destinataire=', '.join(recipient_list),
+                    expediteur=None,
+                )
+
+
             except Exception as e:
                 email_status = f"Erreur lors de l\'envoi de l\'e-mail : {e}"
 

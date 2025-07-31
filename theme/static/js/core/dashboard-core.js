@@ -3,9 +3,6 @@
  * DASHBOARD CORE : Navigation et initialisation
  * ===============================
  */
-
-console.log("[DEBUG] dashboard-core.js chargé !");
-
 // Fonction principale de changement de vue
 function switchView(viewId) {
     // Cacher toutes les vues
