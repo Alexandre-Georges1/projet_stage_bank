@@ -13,8 +13,6 @@ function initBordereauManagement() {
    
     
     const bordereauButtons = document.querySelectorAll('.btn-bordereau');
-    console.log('Boutons bordereau trouvés:', bordereauButtons.length);
-    
     bordereauButtons.forEach(btn => {
         btn.addEventListener('click', function() {
             const row = this.closest('tr');
@@ -300,9 +298,6 @@ function toggleAcceptButton() {
     if (checkbox && button) {
         const wasDisabled = button.disabled;
         button.disabled = !checkbox.checked;
-        console.log('Bouton était désactivé:', wasDisabled);
-        console.log('Bouton maintenant désactivé:', button.disabled);
-        
         // Ajouter une classe visuelle pour le feedback
         if (checkbox.checked) {
             button.classList.remove('btn-disabled');
@@ -453,16 +448,10 @@ function showBordereauNotification(message, type = 'info') {
 }
 // Fonction spécifique pour initialiser les éléments de la vue bordereau
 function initBordereauViewElements() {
-    console.log('=== INIT BORDEREAU VIEW ELEMENTS ===');
-    
     const bordereauCheckbox = document.getElementById('acceptCheckbox');
     const acceptBordereauBtn = document.getElementById('acceptBordereauBtn');
     
-    console.log('Checkbox trouvée:', bordereauCheckbox);
-    console.log('Bouton trouvé:', acceptBordereauBtn);
-    
     if (bordereauCheckbox && acceptBordereauBtn) {
-        console.log('✅ Configuration des événements pour la vue bordereau...');
         
         // Supprimer les anciens événements pour éviter les doublons
         bordereauCheckbox.removeEventListener('change', handleCheckboxChange);
@@ -475,8 +464,6 @@ function initBordereauViewElements() {
         
         // Initialiser l'état du bouton
         toggleAcceptButton();
-        
-        console.log('✅ Configuration terminée');
         return true;
     } else {
         console.log('❌ Éléments non trouvés dans la vue bordereau');
@@ -486,7 +473,6 @@ function initBordereauViewElements() {
 
 // Fonction pour gérer le changement de la checkbox
 function handleCheckboxChange() {
-    console.log('🔄 Checkbox changée:', this.checked);
     toggleAcceptButton();
 }
 
@@ -503,7 +489,6 @@ function observeBordereauView() {
             if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 const target = mutation.target;
                 if (!target.classList.contains('hidden')) {
-                    console.log('🔍 Vue bordereau activée, initialisation des éléments...');
                     setTimeout(() => {
                         initBordereauViewElements();
                     }, 100);

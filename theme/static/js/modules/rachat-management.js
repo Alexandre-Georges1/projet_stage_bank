@@ -6,7 +6,6 @@
 
 // Fonction pour récupérer les informations du PC de rachat
 async function fetchRacheterPcInfo() {
-    console.log('fetchRacheterPcInfo déclenchée, envoi de la requête...');
     try {
         const response = await fetch(window.racheterPcUrl, {
             method: 'GET',
@@ -176,9 +175,6 @@ function initRachatManagement() {
                 action: action,
                 fonction: userFonction.toUpperCase()
             };
-            
-            console.log('[DEBUG] Envoi AJAX', url, payload);
-            
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
             if (!csrfToken) {
                 showRachatNotification('Token CSRF manquant', 'error');
@@ -195,7 +191,6 @@ function initRachatManagement() {
             })
             .then(r => r.json())
             .then(data => {
-                console.log('[DEBUG] Réponse AJAX', data);
                 if (data.status) {
                     row.querySelectorAll('.action-btn-demande').forEach(b => b.style.display = 'none');
                     row.insertAdjacentHTML('beforeend', '<td><span>'+data.status+'</span></td>');

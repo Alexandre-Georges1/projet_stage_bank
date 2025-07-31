@@ -23,7 +23,6 @@ class AchatPeripheriquesManager {
             // Vérifier que tous les éléments sont présents
             if (this.checkRequiredElements()) {
                 this.setupEventListeners();
-                console.log('AchatPeripheriquesManager initialisé avec succès');
             } else {
                 console.error(' AchatPeripheriquesManager: Échec de l\'initialisation - éléments manquants');
             }

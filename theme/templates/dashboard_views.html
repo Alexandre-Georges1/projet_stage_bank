@@ -53,7 +53,7 @@
                     <div class="flex items-center gap-4 mb-4">
                         <input type="text" id="inputMarque" placeholder="Ajouter une marque"
                                class="border rounded p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        <button type="button" onclick="ajouterMarque()"
+                        <button aria-label="Ajouter une marque" type="button" onclick="ajouterMarque()"
                                 class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
                             Ajouter
                         </button>
@@ -86,7 +86,7 @@
                     <div class="flex items-center gap-4 mb-4">
                         <input type="text" id="inputModele" placeholder="Ajouter un modèle"
                                class="border rounded p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        <button type="button" onclick="ajouterModele()"
+                        <button aria-label="Ajouter un modèle" type="button" onclick="ajouterModele()"
                                 class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
                             Ajouter
                         </button>
@@ -117,7 +117,7 @@
 <div id="catalogue-view" class="hidden">
     <h2>Catalogue des PC</h2>
     <div class="flex justify-between items-center mb-8">
-        <button id="new-user-btn" class="btn-ajouter-manuel">
+        <button aria-label="Ajouter un nouveau PC" id="new-user-btn" class="btn-ajouter-manuel">
             Ajouter PC
         </button>
     </div>
@@ -219,7 +219,7 @@
 <div id="utilisateur-view" class="hidden">
     <h1>Utilisateurs</h1>
     <div class="flex justify-between items-center mb-8">
-        <button id="add-user-btn" class="btn-ajouter-manuel" aria-label="Ajouter Utilisateur">
+        <button aria-label="Ouvrir le formulaire d'ajout d'utilisateur" id="add-user-btn" class="btn-ajouter-manuel" aria-label="Ajouter Utilisateur">
             <i class="fas fa-plus"></i>
             Ajouter Utilisateur
         </button>
@@ -316,7 +316,7 @@
                     <label for="nouvelFonction">Fonction:</label>
                     <input type="text" id="nouvelFonction" name="fonction" placeholder="Saisir la fonction" required>
                 </div>
-                <button type="submit" class="btn-ajouter-manuel">Informer l'arrivée</button>
+                <button aria-label="Informer l'arrivée" type="submit" class="btn-ajouter-manuel">Informer l'arrivée</button>
             </form>
         </div>
     </div>
@@ -349,7 +349,7 @@
                         <option value="Demande de caractéristique" selected>Demande de caractéristique</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-ajouter-manuel">Demander</button>
+                <button aria-label="Faire la demande" type="submit" class="btn-ajouter-manuel">Demander</button>
             </form>
         </div>
     </div>
@@ -388,7 +388,7 @@
                     <label for="commentairesAchat">Commentaires additionnels (optionnel):</label>
                     <textarea id="commentairesAchat" name="commentaires" rows="3" placeholder="Précisez vos besoins ou ajoutez des informations complémentaires..."></textarea>
                 </div>
-                <button type="submit" class="btn-ajouter-manuel">Faire la demande</button>
+                <button aria-label="Faire la demande" type="submit" class="btn-ajouter-manuel">Faire la demande</button>
             </form>
         </div>
     </div>
@@ -456,10 +456,10 @@
                         <td style="padding: 16px 8px; vertical-align: middle; font-size: 14px; color: #666;">{{ demande.commentaires|default:"Aucun commentaire" }}</td>
                         <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
                             <div class="action-buttons">
-                                <button class="btn-valider-demande" data-demande-id="{{ demande.id_demande }}" data-action="approuver" style="margin: 0 2px;">
+                                <button aria-label="Approuver la demande" class="btn-valider-demande" data-demande-id="{{ demande.id_demande }}" data-action="approuver" style="margin: 0 2px;">
                                     <i class="fas fa-check"></i> Approuver
                                 </button>
-                                <button class="btn-refuser-demande" data-demande-id="{{ demande.id_demande }}" data-action="refuser" style="margin: 0 2px;">
+                                <button aria-label="Refuser la demande" class="btn-refuser-demande" data-demande-id="{{ demande.id_demande }}" data-action="refuser" style="margin: 0 2px;">
                                     <i class="fas fa-times"></i> Refuser
                                 </button>
                             </div>
@@ -533,7 +533,7 @@
 <div id="Envoi-view" class="hidden">
     <h1>Envoi des caractéristiques</h1>
     <div class="flex justify-between items-center mb-8">
-        <button id="send-characteristics-btn" class="btn-ajouter-manuel">
+        <button aria-label="Envoyer Caractéristiques" id="send-characteristics-btn" class="btn-ajouter-manuel">
             <i class="fas fa-paper-plane"></i> Envoyer Caractéristiques
         </button>
     </div>
@@ -626,7 +626,7 @@
 <div id="attribuer-view" class="hidden">
     <h1>Attribution</h1>
     <div class="flex justify-between items-center mb-8">
-        <button id="assign-pc-btn" class="btn-ajouter-manuel">
+        <button aria-label="Attribuer un PC" id="assign-pc-btn" class="btn-ajouter-manuel">
             <i class="fas fa-plus"></i> Attribuer un PC
         </button>
     </div>
@@ -661,7 +661,7 @@
                                 <td style="padding: 16px 8px; vertical-align: middle; font-family: monospace; font-size: 13px;">{{ attribution.numero_serie }}</td>	
                                 <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ attribution.date_attribution|date:"d/m/Y" }}</td>
                                 <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
-                                    <button class="btn-bordereau" data-attribution-id="{{ attribution.id }}" data-telephone="{{ attribution.employe.telephone }}" data-email="{{ attribution.employe.email }}" data-employe-id="{{ attribution.employe.pk }}" style="background-color: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Bordereau</button>
+                                    <button aria-label="Bordereau" class="btn-bordereau" data-attribution-id="{{ attribution.id }}" data-telephone="{{ attribution.employe.telephone }}" data-email="{{ attribution.employe.email }}" data-employe-id="{{ attribution.employe.pk }}" style="background-color: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Bordereau</button>
                                 </td>
                             </tr>
                             {% empty %}
@@ -758,20 +758,20 @@
             <div style="text-align: center; margin-top: 20px;">
                 {% for b in bordereaux %}
                     {% if b.statut == 'lu et accepté' %}
-                        <button class="accept-bordereau-btn" disabled style="background-color: #28a745;">
+                        <button aria-label="Bordereau accepté" class="accept-bordereau-btn" disabled style="background-color: #28a745;">
                             Bordereau accepté
                         </button>
                         <p class="message-bordereau-accept" style="display: block; color: #28a745; font-weight: bold; margin-top: 10px;">
                             Bordereau lu et accepté le {{ b.date_statut|date:"d/m/Y à H:i" }}
                         </p>
                     {% else %}
-                        <button id="acceptBordereauBtn" class="btn-Envoyer-Demande accept-bordereau-btn" disabled>
+                        <button aria-label="Marquer comme Lu et Accepté" id="acceptBordereauBtn" class="btn-Envoyer-Demande accept-bordereau-btn" disabled>
                             Marquer comme Lu et Accepté
                         </button>
                         <p id="messageBordereauAccept" class="accepted-message message-bordereau-accept" style="display: none;"></p>
                     {% endif %}
                 {% empty %}
-                    <button id="acceptBordereauBtn" class="btn-Envoyer-Demande accept-bordereau-btn" disabled>
+                    <button aria-label="Marquer comme Lu et Accepté" id="acceptBordereauBtn" class="btn-Envoyer-Demande accept-bordereau-btn" disabled>
                         Marquer comme Lu et Accepté
                     </button>
                     <p id="messageBordereauAccept" class="accepted-message message-bordereau-accept" style="display: none;"></p>
@@ -814,10 +814,10 @@
                             <td>{{ pc.date_achat|date:"Y-m-d" }}</td>
                             <td>{{ pc.date_attribution|date:"Y-m-d" }}</td>
                             <td>
-                                <button class="action-btn-demande">Valider</button>
+                                <button aria-label="Valider la demande" class="action-btn-demande">Valider</button>
                             </td>
                             <td>
-                                <button class="action-btn-demande">Refuser</button>
+                                <button aria-label="Refuser la demande" class="action-btn-demande">Refuser</button>
                             </td>
                         </tr>
                         {% endif %}
@@ -887,7 +887,7 @@
                     </label>
                 </div>
 
-                <button type="submit" class="btn-restituer">
+                <button aria-label="Restituer le PC" type="submit" class="btn-restituer">
                     <i class="fas fa-undo"></i> Restituer le PC
                 </button>
             </form>
@@ -1000,7 +1000,7 @@
                             {% endif %}
                         </td>
                         <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">  
-                            <button type="submit" class="btn-Envoyer-Demande_de_rachat" style="background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Envoyer demande</button>
+                            <button aria-label="Envoyer demande de rachat" type="submit" class="btn-Envoyer-Demande_de_rachat" style="background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Envoyer demande</button>
                         </td>
                     </tr>
                 </tbody>

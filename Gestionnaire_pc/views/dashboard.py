@@ -85,7 +85,6 @@ def dashboard(request):
     return render(request, 'dashboard.html',context)
 
 
-@login_required
 def dashboard_employe(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -116,7 +115,6 @@ def dashboard_employe(request):
     return render(request, 'page_employe/dashboard_employé.html', context)
 
 
-@login_required  
 def dashboard_DCH(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -143,7 +141,6 @@ def dashboard_DCH(request):
     return render(request, 'page_DCH/dashboard_DCH.html', context)
 
 
-@login_required
 def dashboard_MG(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -171,7 +168,7 @@ def dashboard_MG(request):
     return render(request, 'page_MGX/dashboard_MG.html', context)
 
 
-@login_required  
+ 
 def dashboard_RMG(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -192,7 +189,6 @@ def dashboard_RMG(request):
     return render(request, 'page_MGX/dashboard_RMG.html', context)
 
 
-@login_required  
 def dashboard_DAF(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -217,7 +213,7 @@ def dashboard_DAF(request):
         'pcs_attribues': pcs_attribues}
     return render(request, 'page_DAF/dashboard_DAF.html', context)
 
-@login_required
+
 def dashboard_RDOT(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -258,7 +254,6 @@ def dashboard_RDOT(request):
                   }
     return render(request, 'page_DOT/dashboard_RDOT.html', context)
 
-@login_required
 def dashboard_DOT(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
@@ -296,7 +291,7 @@ def dashboard_DOT(request):
 
 
 
-@login_required
+
 def Admin(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()

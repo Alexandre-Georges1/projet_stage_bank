@@ -614,8 +614,6 @@ function initPcManagement() {
                 });
 
                 const result = await response.json();
-                console.log('Réponse du serveur:', result);
-
                 if (response.ok) {
                     if (window.NotificationSystem) {
                         window.NotificationSystem.success(result.message, { 

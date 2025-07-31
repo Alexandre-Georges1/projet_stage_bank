@@ -65,7 +65,7 @@
                 <label for="dateAchat">Date d'achat:</label>
                 <input type="date" id="dateAchat" name="dateAchat" required>
             </div>
-            <button type="submit" class="btn-ajouter-manuel modern-submit-btn">
+            <button aria-label="Ajouter PC" type="submit" class="btn-ajouter-manuel modern-submit-btn">
                 <i class="fas fa-plus"></i>
                 Ajouter PC
             </button>
@@ -85,11 +85,11 @@
         </div>
         <p class="modal-message">Êtes-vous sûr de vouloir supprimer cet élément ?</p>
         <div class="modal-actions">
-            <button onclick="fermerModal()" class="modern-btn-secondary">
+            <button aria-label="Annuler" onclick="fermerModal()" class="modern-btn-secondary">
                 <i class="fas fa-times"></i>
                 Annuler
             </button>
-            <button id="confirmDelete" class="modern-btn-danger">
+            <button aria-label="Confirmer la suppression" id="confirmDelete" class="modern-btn-danger">
                 <i class="fas fa-trash"></i>
                 Supprimer
             </button>
@@ -109,11 +109,11 @@
         </div>
         <input type="text" id="editInput" class="modern-input" placeholder="Entrez la nouvelle valeur..." />
         <div class="modal-actions">
-            <button onclick="fermerModal()" class="modern-btn-secondary">
+            <button aria-label="Annuler" onclick="fermerModal()" class="modern-btn-secondary">
                 <i class="fas fa-times"></i>
                 Annuler
             </button>
-            <button id="confirmEdit" class="modern-btn-primary">
+            <button aria-label="Modifier" id="confirmEdit" class="modern-btn-primary">
                 <i class="fas fa-check"></i>
                 Modifier
             </button>
@@ -156,8 +156,8 @@
                 <label for="assignDateAttribution">Date d'attribution:</label>
                 <input type="date" id="assignDateAttribution" name="date_attribution" required>
             </div>
-            
-            <button type="submit" class="btn-ajouter-manuel modern-submit-btn">
+
+            <button aria-label="Attribuer PC" type="submit" class="btn-ajouter-manuel modern-submit-btn">
                 <i class="fas fa-link"></i>
                 Attribuer PC
             </button>
@@ -229,7 +229,7 @@
                 <label for="addUserFonction">Fonction:</label>
                 <input type="text" id="addUserFonction" name="fonction" placeholder="Saisir la fonction" required>
             </div>
-            <button type="submit" class="btn-ajouter-manuel modern-submit-btn">
+            <button aria-label="Ajouter Utilisateur" type="submit" class="btn-ajouter-manuel modern-submit-btn">
                 <i class="fas fa-user-plus"></i>
                 Ajouter Utilisateur
             </button>
@@ -307,7 +307,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="btn-ajouter-manuel modern-submit-btn">
+            <button aria-label="Envoyer" type="submit" class="btn-ajouter-manuel modern-submit-btn">
                 <i class="fas fa-paper-plane"></i>
                 Envoyer
             </button>
@@ -421,7 +421,7 @@
 
         <!-- Boutons d'action -->
         <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; padding-top: 20px; border-top: 2px solid #d1fae5;">
-            <button class="btn-Envoyer-Demande" style="
+            <button aria-label="Envoyer la demande" class="btn-Envoyer-Demande" style="
                 background: linear-gradient(135deg, #10b981 0%, #059669 100%);
                 color: white;
                 border: none;
@@ -439,8 +439,8 @@
                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(16, 185, 129, 0.3)'">
                 Envoyer le bordereau
             </button>
-            
-            <button id="downloadBordereauBtn" class="btn-ajouter-manuel no-print" style="
+
+            <button aria-label="Télécharger le bordereau" id="downloadBordereauBtn" class="btn-ajouter-manuel no-print" style="
                 background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
                 color: white;
                 border: none;

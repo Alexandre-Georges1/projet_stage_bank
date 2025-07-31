@@ -12,8 +12,6 @@
 function openModernModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        console.log(`🔓 Ouverture de la modale: ${modalId}`);
-        
         // S'assurer que la modale est visible
         modal.style.display = 'flex';
         modal.style.opacity = '1';
@@ -40,8 +38,6 @@ function openModernModal(modalId) {
         
         // Bloquer le scroll du body
         document.body.style.overflow = 'hidden';
-        
-        console.log(`✅ Modale ${modalId} ouverte avec succès`);
     } else {
         console.error(`❌ Modale non trouvée: ${modalId}`);
     }
@@ -51,7 +47,7 @@ function openModernModal(modalId) {
 function closeModernModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        console.log(`🔒 Fermeture de la modale: ${modalId}`);
+     
         
         const modalContent = modal.querySelector('.modern-modal-content, .modal-content');
         
@@ -69,7 +65,7 @@ function closeModernModal(modalId) {
                 // Restaurer le scroll du body
                 document.body.style.overflow = '';
                 
-                console.log(`✅ Modale ${modalId} fermée avec succès`);
+        
             }, 300);
         } else {
             modal.classList.add('hidden');
@@ -78,7 +74,7 @@ function closeModernModal(modalId) {
             modal.style.visibility = 'hidden';
             document.body.style.overflow = '';
             
-            console.log(`✅ Modale ${modalId} fermée (sans animation)`);
+          
         }
     } else {
         console.error(`❌ Modale non trouvée pour fermeture: ${modalId}`);
@@ -192,9 +188,7 @@ function openModal(modalId) {
         console.error(`❌ Modale non trouvée: ${modalId}`);
         return false;
     }
-    
-    console.log(`🔓 Ouverture universelle de la modale: ${modalId}`);
-    
+      
     // Déterminer le type de modale
     const isModernModal = modal.classList.contains('modern-modal-overlay');
     const isOldModal = modal.classList.contains('modal-overlay');
@@ -216,7 +210,6 @@ function openModal(modalId) {
         }
         
         document.body.style.overflow = 'hidden';
-        console.log(`✅ Modale classique ${modalId} ouverte`);
     } else {
         // Fallback pour modales non typées
         modal.style.display = 'block';
@@ -224,8 +217,6 @@ function openModal(modalId) {
         modal.style.visibility = 'visible';
         modal.style.zIndex = '15000';
         modal.classList.remove('hidden');
-        
-        console.log(`✅ Modale générique ${modalId} ouverte`);
     }
     
     return true;
@@ -238,9 +229,7 @@ function closeModal(modalId) {
         console.error(`❌ Modale non trouvée pour fermeture: ${modalId}`);
         return false;
     }
-    
-    console.log(`🔒 Fermeture universelle de la modale: ${modalId}`);
-    
+      
     // Déterminer le type de modale
     const isModernModal = modal.classList.contains('modern-modal-overlay');
     const isOldModal = modal.classList.contains('modal-overlay');
@@ -254,8 +243,6 @@ function closeModal(modalId) {
         modal.style.opacity = '0';
         modal.style.visibility = 'hidden';
         document.body.style.overflow = '';
-        
-        console.log(`✅ Modale ${modalId} fermée`);
     }
     
     return true;

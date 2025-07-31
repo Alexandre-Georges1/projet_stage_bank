@@ -6,10 +6,11 @@
     <meta name="csrf-token" content="{{ csrf_token }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/dist/dashboard.css' %}?v=20250719190828">
-    
+    <meta 
+  name="description" 
+  content="Gérez facilement votre parc informatique avec notre application PC pour entreprises. Suivi, maintenance et analyse en temps réel.">
     <title>Dashboard</title>
 </head>
 <body>
@@ -17,7 +18,7 @@
         
         <div  class="brand">
             <div class="logo-container">
-                <img src="{% static 'logo_dashboard.png' %}" alt="Logo E-Machine - Gestion des PC" style="width: 60px; height: 60px;">
+                <img loading="lazy" src="{% static 'logo_dashboard.png' %}" alt="Logo E-Machine - Gestion des PC" style="width: 60px; height: 60px;">
             </div>
             <h1 class="brand">E-Machine</h1>
         </div>
@@ -139,7 +140,7 @@
             <form action="#" method="get">
                 <div class="form-input">
                     <input type="search" placeholder="Search..." name="q">
-                    <button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
+                    <button aria-label="Ouvrir la recherche" type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
                 </div>
             </form>
 
@@ -161,7 +162,7 @@
             </div>
         </div>
                  <div class="notification-container">
-        <button class="notification-btn" id="notificationBtn">
+        <button aria-label="Ouvrir les notifications" class="notification-btn" id="notificationBtn">
             <i class='bx bxs-bell'></i>
             <span class="notification-badge" id="notificationBadge">0</span>
         </button>
@@ -169,7 +170,7 @@
        <div class="notification-dropdown" id="notificationDropdown">
     <div class="notification-header">
         <span class="notification-title">Notifications</span>
-        <button class="clear-all" id="clearAllBtn">Tout effacer</button>
+        <button aria-label="Effacer toutes les notifications" class="clear-all" id="clearAllBtn">Tout effacer</button>
     </div>
     <div class="notification-list" id="notificationList">
         {% for notif in notifications %}

@@ -52,14 +52,11 @@ function isReallyVisible(el) {
     return visible;
 }
 function initNavigation() {
-    console.log('DOMContentLoaded fired');
     const menuItems = document.querySelectorAll('#sidebar .side-menu li');
     // Gestion des clics sur le menu
     menuItems.forEach(menuItem => {
         menuItem.addEventListener('click', function() {
-            console.log('Clic sur un élément du menu !', this.id);
             const viewId = this.id.replace('-btn', '-view');
-            console.log('viewId calculé :', viewId);
             switchView(viewId);
         });
     });
@@ -83,7 +80,6 @@ function initNavigation() {
         // Forcer l'activation du bouton menu
         menuItems.forEach(item => item.classList.remove('active'));
         firstVisibleMenu.classList.add('active');
-        console.log('Initial view switched to first visible menu:', firstViewId);
     } else if (menuItems.length > 0) {
         // Fallback : si aucun menu visible détecté, prendre le premier de la liste
         const fallbackViewId = menuItems[0].id.replace('-btn', '-view');

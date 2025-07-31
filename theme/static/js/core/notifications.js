@@ -225,11 +225,9 @@ function initNotifications() {
 
     // Charger dynamiquement selon l'URL définie par le template
     if (window.getNotificationsUrl) {
-        console.log('🔄 Chargement des notifications via:', window.getNotificationsUrl);
         fetch(window.getNotificationsUrl)
             .then(response => response.json())
             .then(data => {
-                console.log('📥 Notifications reçues:', data.length);
                 window.notificationManager.clearAllNotifications();
                 data.forEach(notif => {
                     window.notificationManager.addNotification(
@@ -246,7 +244,6 @@ function initNotifications() {
                 console.warn('⚠️ Erreur lors du chargement des notifications AJAX:', error);
                 // Fallback sur les données Django si AJAX échoue
                 if (window.notificationsData && Array.isArray(window.notificationsData)) {
-                    console.log('🔄 Utilisation du fallback Django');
                     window.notificationManager.clearAllNotifications();
                     window.notificationsData.forEach(notif => {
                         window.notificationManager.addNotification(
@@ -261,7 +258,6 @@ function initNotifications() {
                 }
             });
     } else if (window.notificationsData && Array.isArray(window.notificationsData)) {
-        console.log('📥 Chargement des notifications depuis Django');
         window.notificationManager.clearAllNotifications();
         window.notificationsData.forEach(notif => {
             window.notificationManager.addNotification(
@@ -284,12 +280,10 @@ window.DashboardNotifications = {
 
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔔 Système de notifications initialisé');
     initNotifications();
     
     // Rafraîchissement automatique toutes les 30 secondes si URL dynamique disponible
     if (window.getNotificationsUrl) {
         setInterval(refreshNotifications, 30000); // 30 secondes
-        console.log('⏰ Rafraîchissement automatique activé');
     }
 });
