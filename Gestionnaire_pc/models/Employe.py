@@ -50,15 +50,15 @@ def create_employe_special(sender, instance, created, **kwargs):
         fonction = instance.fonction.strip().lower()
         code = get_random_string(8).upper()
 
-        if fonction == 'dot':
+        if fonction == 'DOT' or fonction == 'dot':
             EmployeDOT.objects.create(employe=instance, DOT_code=code)
-        elif fonction == 'mgx':
+        elif fonction == 'MGX' or fonction == 'mgx' or fonction == 'MG':
             EmployeMGX.objects.create(employe=instance, MGX_code=code)
-        elif fonction == 'dch':
+        elif fonction == 'DCH' or fonction == 'dch':
             EmployeDCH.objects.create(employe=instance, DCH_code=code)
-        elif fonction == 'rmg':
+        elif fonction == 'RMG' or fonction == 'rmg':
             EmployeRMG.objects.create(employe=instance, RMG_code=code)
-        elif fonction == 'rdaf':
+        elif fonction == 'RDAF' or fonction == 'rdaf':
             EmployeRDAF.objects.create(employe=instance, RDAF_code=code)
-        elif fonction == 'rdot':
+        elif fonction == 'RDOT' or fonction == 'rdot':
             EmployeRDOT.objects.create(employe=instance, RDOT_code=code)

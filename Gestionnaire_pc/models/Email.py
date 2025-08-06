@@ -13,7 +13,7 @@ class Email_DOT(models.Model):
     objet = models.CharField(max_length=255)
     corps=models.TextField(default='text')
     date_envoi = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)  # Indique si l'email a été lu ou non
+    is_read = models.BooleanField(default=False)  
     expediteur = models.ForeignKey('Employe', on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_emails_dot')
 
 class Email_MGX(models.Model):
@@ -23,7 +23,7 @@ class Email_MGX(models.Model):
     corps=models.TextField(default='text')
     date_envoi = models.DateTimeField(auto_now_add=True)
     expediteur = models.ForeignKey('Employe', on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_emails_mgx')
-    is_read = models.BooleanField(default=False)  # Indique si l'email a été lu ou non
+    is_read = models.BooleanField(default=False)  
 class Email_RMG(models.Model):
     id_email = models.AutoField(primary_key=True)
     destinataire = models.EmailField(max_length=191)
@@ -31,7 +31,7 @@ class Email_RMG(models.Model):
     corps=models.TextField(default='text')
     date_envoi = models.DateTimeField(auto_now_add=True)
     expediteur = models.ForeignKey('Employe', on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_emails_rmg')
-    is_read = models.BooleanField(default=False)  # Indique si l'email a été lu ou non
+    is_read = models.BooleanField(default=False) 
 class Email_DCH(models.Model):
     id_email = models.AutoField(primary_key=True)
     destinataire = models.EmailField(max_length=191)
@@ -39,7 +39,7 @@ class Email_DCH(models.Model):
     corps=models.TextField(default='text')
     date_envoi = models.DateTimeField(auto_now_add=True)
     expediteur = models.ForeignKey('Employe', on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_emails_dch')
-    is_read = models.BooleanField(default=False)  # Indique si l'email a été lu ou non
+    is_read = models.BooleanField(default=False)  
 class Email_RDOT(models.Model):
     id_email = models.AutoField(primary_key=True)
     destinataire = models.EmailField(max_length=191)
@@ -47,7 +47,7 @@ class Email_RDOT(models.Model):
     corps=models.TextField(default='text')
     date_envoi = models.DateTimeField(auto_now_add=True)
     expediteur = models.ForeignKey('Employe', on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_emails_rdot')
-    is_read = models.BooleanField(default=False)  # Indique si l'email a été lu ou non
+    is_read = models.BooleanField(default=False)  
 class Email_DAF(models.Model):
     id_email = models.AutoField(primary_key=True)
     destinataire = models.EmailField(max_length=191)
@@ -55,4 +55,4 @@ class Email_DAF(models.Model):
     corps=models.TextField(default='text')
     date_envoi = models.DateTimeField(auto_now_add=True)
     expediteur = models.ForeignKey('Employe', on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_emails_daf')
-    is_read = models.BooleanField(default=False)  # Indique si l'email a été lu ou non
+    is_read = models.BooleanField(default=False) 
