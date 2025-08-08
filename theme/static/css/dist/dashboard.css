@@ -1445,6 +1445,7 @@ body {
 /* ========================================
    MODALES ET OVERLAYS
 ======================================== */
+/*
 .modal-overlay {
     position: fixed !important;
     top: 0;
@@ -1471,7 +1472,8 @@ body {
     opacity: 0 !important;
     visibility: hidden !important;
 }
-
+    */
+/*
 .modal-content {
     background-color: #ffffff;
     padding: 30px;
@@ -1519,8 +1521,9 @@ body {
     font-size: 26px;
     font-weight: 600;
 }
-
+*/
 /* Modal alternative pour compatibilité */
+/*
 .modal {
     position: fixed;
     top: 0;
@@ -1533,7 +1536,7 @@ body {
     align-items: center;
     z-index: 1000;
 }
-
+*/
 /* ========================================
    FORMULAIRES
 ======================================== */
@@ -1586,7 +1589,7 @@ body {
     box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
 }
 
-.btn-ajouter-manuel:hover {
+/*.btn-ajouter-manuel:hover {
     background-color: #2d6f2f;
     box-shadow: 0 6px 20px rgba(0, 255, 98, 0.272);
 }
@@ -1596,7 +1599,7 @@ body {
     box-shadow: 0 2px 10px rgba(0, 255, 76, 0.348);
     transform: translateY(1px);
 }
-
+*/
 /* Boutons Modifier et Supprimer */
 .btn-modifier,
 .btn-supprimer {
@@ -1765,11 +1768,11 @@ table .btn-supprimer {
 	font-size: 16px;
 }
 
-.btn-ajouter-manuel:hover {
+/*.btn-ajouter-manuel:hover {
 	background-color: #45a049;
 } 
 
-
+*/
 @media screen and (max-width: 576px) {
 	#content nav form .form-input input {
 		display: none;

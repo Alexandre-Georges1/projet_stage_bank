@@ -197,29 +197,6 @@ class NotificationManager {
     }
 }
 
-// Fonction de rafraîchissement des notifications
-function refreshNotifications() {
-    if (window.getNotificationsUrl) {
-        fetch(window.getNotificationsUrl)
-            .then(response => response.json())
-            .then(data => {
-                window.notificationManager.clearAllNotifications();
-                data.forEach(notif => {
-                    window.notificationManager.addNotification(
-                        notif.type,
-                        notif.message,
-                        notif.time,
-                        notif.id,
-                        notif.sender_name,
-                        notif.sender_email
-                    );
-                });
-            })
-            .catch(error => console.warn('Erreur lors du rafraîchissement:', error));
-    }
-}
-
-// Fonction d'initialisation des notifications
 function initNotifications() {
     window.notificationManager = new NotificationManager();
 
@@ -277,13 +254,3 @@ window.DashboardNotifications = {
     NotificationManager,
     initNotifications
 };
-
-// Initialisation au chargement de la page
-document.addEventListener('DOMContentLoaded', function() {
-    initNotifications();
-    
-    // Rafraîchissement automatique toutes les 30 secondes si URL dynamique disponible
-    if (window.getNotificationsUrl) {
-        setInterval(refreshNotifications, 30000); // 30 secondes
-    }
-});
