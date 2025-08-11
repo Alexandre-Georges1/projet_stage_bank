@@ -68,328 +68,188 @@ function showPcNotification(message, type = 'success') {
     }
 }
 
-// Fonction pour charger les modèles
-function chargerModeles() {
-    fetch('/gestion_modeles/')
-        .then(response => response.json())
-        .then(data => {
-            const liste = document.getElementById('liste-modeles');
-            if (liste) {
-                liste.innerHTML = '';
-                data.modeles.forEach(modele => {
-                    const li = document.createElement('li');
-                    li.textContent = modele.nom + " ";
-                    
-                    const btn = document.createElement('button');
-                    btn.textContent = " ";
-                    btn.onclick = () => supprimerModele(modele.nom);
-                    
-                    li.appendChild(btn);
-                    liste.appendChild(li);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Erreur lors du chargement des modèles:', error);
-            if (window.NotificationSystem) {
-                window.NotificationSystem.error('Erreur lors du chargement des modèles', { 
-                    title: 'Chargement Modèles' 
-                });
-            }
-        });
+/* ===================== UNIFICATION MARQUES & MODELES ===================== */
+function getCsrfToken(name='csrftoken') {
+    if (window.DashboardUtils?.getCookie) return window.DashboardUtils.getCookie(name);
+    const cookies = document.cookie.split(';');
+    for (let c of cookies) {
+        c = c.trim();
+        if (c.startsWith(name + '=')) return decodeURIComponent(c.substring(name.length + 1));
+    }
+    return null;
 }
 
-// Fonction pour charger les marques
-async function chargerMarques() {
+function normalizeMarque(obj){
+    return { nom: obj?.nom_marque || obj?.nom || '' };
+}
+function normalizeModele(obj){
+    return { nom: obj?.nom_modele || obj?.nom || '' };
+}
+
+async function loadMarques(){
     try {
-        const response = await fetch(URL_MARQUES);
-        const data = await response.json();
-        marques = data.marques;
-        afficherMarques();
-    } catch (error) {
-        console.error('Erreur chargement marques:', error);
-        if (window.NotificationSystem) {
-            window.NotificationSystem.error('Erreur lors du chargement des marques', { 
-                title: 'Chargement Marques' 
-            });
-        }
+        const r = await fetch(URL_MARQUES);
+        const data = await r.json();
+        const arr = Array.isArray(data.marques) ? data.marques : [];
+        marques = arr.map(normalizeMarque).filter(m=>m.nom);
+        renderMarques();
+    } catch(e){
+        console.error('loadMarques error', e);
+        window.NotificationSystem?.error('Chargement des marques échoué', { title:'Marques' });
     }
 }
 
-// Fonction pour charger les modèles de façon asynchrone
-async function chargerModelesAsync() {
+async function loadModeles(){
     try {
-        const response = await fetch(URL_MODELES);
-        const data = await response.json();
-        modeles = data.modeles;
-        afficherModeles();
-    } catch (error) {
-        console.error('Erreur chargement modèles:', error);
-        if (window.NotificationSystem) {
-            window.NotificationSystem.error('Erreur lors du chargement des modèles', { 
-                title: 'Chargement Modèles' 
-            });
-        }
+        const r = await fetch(URL_MODELES);
+        const data = await r.json();
+        const arr = Array.isArray(data.modeles) ? data.modeles : [];
+        modeles = arr.map(normalizeModele).filter(m=>m.nom);
+        renderModeles();
+    } catch(e){
+        console.error('loadModeles error', e);
+        window.NotificationSystem?.error('Chargement des modèles échoué', { title:'Modèles' });
     }
 }
 
-// Fonction pour afficher les marques
-function afficherMarques() {
+function renderMarques(){
     const tbody = document.getElementById('tableMarques');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    marques.forEach((marque, index) => {
-        const tr = document.createElement('tr');
+    if(!tbody) return;
+    tbody.innerHTML='';
+    marques.forEach((m,i)=>{
+        const tr=document.createElement('tr');
         tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${marque.nom_marque}</td>
-            <td>
-                <button onclick="supprimerMarque('${marque.nom_marque}')">🗑</button>
-            </td>
-        `;
+            <td>${i+1}</td>
+            <td>${m.nom}</td>
+            <td><button type="button" class="btn-remove-marque" data-nom="${m.nom}">🗑</button></td>`;
         tbody.appendChild(tr);
     });
 }
 
-// Fonction pour afficher les modèles
-function afficherModeles() {
+function renderModeles(){
     const tbody = document.getElementById('tableModeles');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    modeles.forEach((modele, index) => {
-        const tr = document.createElement('tr');
+    if(!tbody) return;
+    tbody.innerHTML='';
+    modeles.forEach((m,i)=>{
+        const tr=document.createElement('tr');
         tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${modele.nom_modele}</td>
-            <td>
-                <button onclick="supprimerModele('${modele.nom_modele}')">🗑</button>
-            </td>
-        `;
+            <td>${i+1}</td>
+            <td>${m.nom}</td>
+            <td><button type="button" class="btn-remove-modele" data-nom="${m.nom}">🗑</button></td>`;
         tbody.appendChild(tr);
     });
 }
 
-// Fonction pour ajouter une marque
-async function ajouterMarque() {
-    const input = document.getElementById('inputMarque');
-    if (!input) return;
-    
+async function ajouterMarque(){
+    const input=document.getElementById('inputMarque');
+    if(!input) return;
     const nom = input.value.trim();
-    if (!nom) return;
-
-    const getCookie = window.DashboardUtils?.getCookie || function(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    };
-
+    if(!nom) return;
+    if(marques.some(m=>m.nom.toLowerCase()===nom.toLowerCase())){
+        return window.NotificationSystem?.warning('Marque déjà existante',{title:'Doublon'});
+    }
     try {
-        const response = await fetch(URL_MARQUES, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
+        const r = await fetch(URL_MARQUES, {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()},
             body: JSON.stringify({ nom })
         });
-
-        if (response.ok) {
-            input.value = '';
-            await chargerMarques();
-            if (window.NotificationSystem) {
-                window.NotificationSystem.success(`Marque "${nom}" ajoutée avec succès`, { 
-                    title: 'Marque Ajoutée' 
-                });
-            }
+        const data = await r.json().catch(()=>({}));
+        if(r.ok){
+            input.value='';
+            await loadMarques();
+            window.NotificationSystem?.success(`Marque "${nom}" ajoutée`, {title:'Succès'});
         } else {
-            const errorData = await response.json();
-            if (window.NotificationSystem) {
-                window.NotificationSystem.error(`Erreur lors de l'ajout de la marque : ${errorData.error || 'Erreur inconnue'}`, { 
-                    title: 'Échec Ajout Marque' 
-                });
-            }
+            window.NotificationSystem?.error(data.error||'Ajout marque échoué',{title:'Erreur'});
         }
-    } catch (error) {
-        console.error('Erreur lors de l\'ajout de la marque:', error);
-        if (window.NotificationSystem) {
-            window.NotificationSystem.error('Une erreur est survenue lors de l\'ajout de la marque', { 
-                title: 'Erreur Réseau' 
-            });
-        }
+    } catch(e){
+        console.error(e);
+        window.NotificationSystem?.error('Erreur réseau ajout marque',{title:'Erreur Réseau'});
     }
 }
 
-// Fonction pour ajouter un modèle
-async function ajouterModele() {
-    const input = document.getElementById('inputModele');
-    if (!input) return;
-    
+async function ajouterModele(){
+    const input=document.getElementById('inputModele');
+    if(!input) return;
     const nom = input.value.trim();
-    if (!nom) return;
-
-    const getCookie = window.DashboardUtils?.getCookie || function(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    };
-    
-
+    if(!nom) return;
+    if(modeles.some(m=>m.nom.toLowerCase()===nom.toLowerCase())){
+        return window.NotificationSystem?.warning('Modèle déjà existant',{title:'Doublon'});
+    }
     try {
-        const response = await fetch(URL_MODELES, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                 'X-CSRFToken': getCookie('csrftoken') },
+        const r = await fetch(URL_MODELES, {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()},
             body: JSON.stringify({ nom })
         });
-
-        if (response.ok) {
-            input.value = '';
-            await chargerModelesAsync();
-            if (window.NotificationSystem) {
-                window.NotificationSystem.success(`Modèle "${nom}" ajouté avec succès`, { 
-                    title: 'Modèle Ajouté' 
-                });
-            }
+        const data = await r.json().catch(()=>({}));
+        if(r.ok){
+            input.value='';
+            await loadModeles();
+            window.NotificationSystem?.success(`Modèle "${nom}" ajouté`, {title:'Succès'});
         } else {
-            const errorData = await response.json();
-            if (window.NotificationSystem) {
-                window.NotificationSystem.error(`Erreur lors de l'ajout du modèle : ${errorData.error || 'Erreur inconnue'}`, { 
-                    title: 'Échec Ajout Modèle' 
-                });
-            }
+            window.NotificationSystem?.error(data.error||'Ajout modèle échoué',{title:'Erreur'});
         }
-    } catch (error) {
-        console.error('Erreur lors de l\'ajout du modèle:', error);
-        if (window.NotificationSystem) {
-            window.NotificationSystem.error('Une erreur est survenue lors de l\'ajout du modèle', { 
-                title: 'Erreur Réseau' 
-            });
-        }
+    } catch(e){
+        console.error(e);
+        window.NotificationSystem?.error('Erreur réseau ajout modèle',{title:'Erreur Réseau'});
     }
 }
 
-// Fonction pour supprimer une marque
-async function supprimerMarque(nom) {
-    const getCookie = window.DashboardUtils?.getCookie || function(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    };
-
+async function supprimerMarque(nom){
     try {
-        const response = await fetch(URL_MARQUES, {
-            method: 'DELETE',
-            headers: { 
-                'Content-Type': 'application/json',
-                 'X-CSRFToken': getCookie('csrftoken') },
+        const r = await fetch(URL_MARQUES, {
+            method:'DELETE',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()},
             body: JSON.stringify({ nom })
         });
-
-        if (response.ok) {
-            await chargerMarques();
-            if (window.NotificationSystem) {
-                window.NotificationSystem.success(`Marque "${nom}" supprimée avec succès`, { 
-                    title: 'Marque Supprimée' 
-                });
-            }
+        const data = await r.json().catch(()=>({}));
+        if(r.ok){
+            marques = marques.filter(m=>m.nom!==nom);
+            renderMarques();
+            window.NotificationSystem?.success(`Marque "${nom}" supprimée`,{title:'Supprimée'});
         } else {
-            const errorData = await response.json();
-            if (window.NotificationSystem) {
-                window.NotificationSystem.error(`Erreur lors de la suppression de la marque : ${errorData.error || 'Erreur inconnue'}`, { 
-                    title: 'Échec Suppression Marque' 
-                });
-            }
+            window.NotificationSystem?.error(data.error||'Suppression marque échouée',{title:'Erreur'});
         }
-    } catch (error) {
-        console.error('Erreur lors de la suppression de la marque:', error);
-        if (window.NotificationSystem) {
-            window.NotificationSystem.error('Une erreur est survenue lors de la suppression de la marque', { 
-                title: 'Erreur Réseau' 
-            });
-        }
+    } catch(e){
+        console.error(e);
+        window.NotificationSystem?.error('Erreur réseau suppression marque',{title:'Erreur Réseau'});
     }
 }
 
-// Fonction pour supprimer un modèle
-async function supprimerModele(nom) {
-    const getCookie = window.DashboardUtils?.getCookie || function(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    };
-
+async function supprimerModele(nom){
     try {
-        const response = await fetch(URL_MODELES, {
-            method: 'DELETE',
-            headers: { 
-                'Content-Type': 'application/json',
-                 'X-CSRFToken': getCookie('csrftoken') },
+        const r = await fetch(URL_MODELES, {
+            method:'DELETE',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()},
             body: JSON.stringify({ nom })
         });
-
-        if (response.ok) {
-            await chargerModelesAsync();
-            if (window.NotificationSystem) {
-                window.NotificationSystem.success(`Modèle "${nom}" supprimé avec succès`, { 
-                    title: 'Modèle Supprimé' 
-                });
-            }
+        const data = await r.json().catch(()=>({}));
+        if(r.ok){
+            modeles = modeles.filter(m=>m.nom!==nom);
+            renderModeles();
+            window.NotificationSystem?.success(`Modèle "${nom}" supprimé`,{title:'Supprimé'});
         } else {
-            const errorData = await response.json();
-            if (window.NotificationSystem) {
-                window.NotificationSystem.error(`Erreur lors de la suppression du modèle : ${errorData.error || 'Erreur inconnue'}`, { 
-                    title: 'Échec Suppression Modèle' 
-                });
-            }
+            window.NotificationSystem?.error(data.error||'Suppression modèle échouée',{title:'Erreur'});
         }
-    } catch (error) {
-        console.error('Erreur lors de la suppression du modèle:', error);
-        if (window.NotificationSystem) {
-            window.NotificationSystem.error('Une erreur est survenue lors de la suppression du modèle', { 
-                title: 'Erreur Réseau' 
-            });
-        }
+    } catch(e){
+        console.error(e);
+        window.NotificationSystem?.error('Erreur réseau suppression modèle',{title:'Erreur Réseau'});
     }
 }
+
+// Délégation événements suppression (évite inline onclick)
+document.addEventListener('click', (e)=>{
+    const btnMarque = e.target.closest('.btn-remove-marque');
+    if(btnMarque) supprimerMarque(btnMarque.dataset.nom);
+    const btnModele = e.target.closest('.btn-remove-modele');
+    if(btnModele) supprimerModele(btnModele.dataset.nom);
+});
+
+// Aliases pour compatibilité avec le reste du code
+function chargerMarques(){ return loadMarques(); }
+function chargerModeles(){ return loadModeles(); }
+function chargerModelesAsync(){ return loadModeles(); }
 
 // Fonction principale d'initialisation de la gestion des PCs
 function initPcManagement() {

@@ -386,7 +386,7 @@
                 </div>
                 <div class="form-group">
                     <label for="commentairesAchat">Commentaires additionnels (optionnel):</label>
-                    <textarea id="commentairesAchat" name="commentaires" rows="3" placeholder="Précisez vos besoins ou ajoutez des informations complémentaires..."></textarea>
+                    <textarea id="commentairesAchat" name="commentaires" rows="6" style="width:100%; min-height:160px; padding:12px 14px; border:1px solid #d0d0d0; border-radius:8px; resize:vertical; font-size:14px; line-height:1.4;" placeholder="Précisez vos besoins ou ajoutez des informations complémentaires..."></textarea>
                 </div>
                 <button aria-label="Faire la demande" type="submit" class="btn-ajouter-manuel">Faire la demande</button>
             </form>
@@ -745,8 +745,9 @@
             <!-- Politique -->
             <div class="politique-box">
                 <a href="{% url 'politique_confidentialite' %}"><h2> Politique de Confidentialité et d'Utilisation</h2></a>
-                <p>
-                    En acceptant ce bordereau, vous reconnaissez avoir pris connaissance et accepté les termes de notre politique de confidentialité et d'utilisation des équipements. Cela inclut la gestion des données personnelles, l'utilisation des ressources informatiques de l'entreprise et les responsabilités liées à la sécurité des informations.
+                <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;">
+                    En acceptant ce bordereau, vous reconnaissez avoir pris connaissance et accepté les termes de notre politique de confidentialité et d'utilisation des équipements. Cela inclut notamment : la gestion et la protection des données personnelles, l'utilisation appropriée et responsable des ressources informatiques de l'entreprise, ainsi que vos engagements en matière de sécurité, de conservation et de restitution du matériel.
+                    <span style="display:inline-block; margin-top:6px;">Toute utilisation non conforme ou négligente peut engager votre responsabilité conformément aux procédures internes.</span>
                 </p>
                 <label class="checkbox-label">
                     <input type="checkbox" id="acceptCheckbox">
@@ -877,12 +878,12 @@
 
                 <div class="form-group">
                     <label for="commentairesRestitution">Commentaires additionnels (optionnel):</label>
-                    <textarea id="commentairesRestitution" name="commentaires" rows="4" placeholder="Ajoutez des informations complémentaires si nécessaire..."></textarea>
+                    <textarea id="commentairesRestitution" name="commentaires" rows="6" style="width:100%; min-height:160px; padding:12px 14px; border:1px solid #d0d0d0; border-radius:8px; resize:vertical; font-size:14px; line-height:1.4;" placeholder="Ajoutez des informations complémentaires si nécessaire..."></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="confirmerRestitution" name="confirmer" required>
+                <div class="form-group" style="display:flex; align-items:flex-start; gap:10px; margin-top:10px;">
+                    <input type="checkbox" id="confirmerRestitution" name="confirmer" required style="margin-top:4px;">
+                    <label for="confirmerRestitution" style="cursor:pointer; line-height:1.4; font-size:14px;">
                         Je confirme vouloir restituer ce PC et comprends que cette action est irréversible.
                     </label>
                 </div>
