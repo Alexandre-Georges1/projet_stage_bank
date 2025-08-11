@@ -36,16 +36,23 @@ class NotificationManager {
         }
     }
 
-    toggleDropdown() {
-        if (!this.notificationDropdown) return;
-        
-        this.notificationDropdown.classList.toggle('show');
-        // Marquer toutes les notifications comme lues quand on ouvre le dropdown
-        if (this.notificationDropdown.classList.contains('show')) {
-            this.markAllAsRead();
-        }
-    }
+    // ...existing code...
+toggleDropdown() {
+    if (!this.notificationDropdown || !this.notificationBtn) return;
 
+    const willShow = !this.notificationDropdown.classList.contains('show');
+    this.notificationDropdown.classList.toggle('show');
+
+    if (willShow) {
+        // Calculer position près de la cloche
+        const rect = this.notificationBtn.getBoundingClientRect();
+        // marge depuis le haut (scrollY + hauteur bouton + 10px)
+        const top = rect.bottom + 10 + window.scrollY;
+        const right = window.innerWidth - rect.right - 4;
+        this.notificationDropdown.style.top = `${top}px`;
+        this.notificationDropdown.style.right = `${right}px`;
+    }
+}
     closeDropdown() {
         if (this.notificationDropdown) {
             this.notificationDropdown.classList.remove('show');

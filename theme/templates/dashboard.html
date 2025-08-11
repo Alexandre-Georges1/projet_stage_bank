@@ -1,16 +1,15 @@
+ {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-    {% load static %}
     <link rel="stylesheet" href="{% static 'css/dist/dashboard.css' %}?v=20250719190828">
-    <meta 
-  name="description" 
-  content="Gérez facilement votre parc informatique avec notre application PC pour entreprises. Suivi, maintenance et analyse en temps réel.">
+    <link rel="icon" type="image/x-icon" sizes="32x32" href="{% static 'favicon.ico' %}">
+    <meta name="description" content="Gérez facilement votre parc informatique avec notre application PC pour entreprises. Suivi, maintenance et analyse en temps réel.">
     <title>Dashboard</title>
 </head>
 <body>
@@ -42,9 +41,7 @@
             <li class="active" id="dashboard-btn">
                     <i class='bx bxs-dashboard'></i>
                     <span class="text">Tableau de Bord</span>
-            </li>
-            
-            
+            </li>  
             <li id="catalogue-ancien-btn">
                 <i class="fas fa-folder"></i> 
                     <span class="text">Catalogue ancien</span>
@@ -130,7 +127,6 @@
                         <span class="text" style="color:#dc3545; font-weight:bold;">Se déconnecter</span>
                 </li>
             </ul>
-    
         </div>
         
     </section>
@@ -144,7 +140,7 @@
                 </div>
             </form>
 
-             <div class="user-profile-container">
+        <div class="user-profile-container">
             <div class="user-info-display">
                 <div class="user-text-info">
                     <div class="user-display-name">
@@ -161,46 +157,19 @@
                 </div>
             </div>
         </div>
-                 <div class="notification-container">
+    <div class="notification-container">
         <button aria-label="Ouvrir les notifications" class="notification-btn" id="notificationBtn">
             <i class='bx bxs-bell'></i>
             <span class="notification-badge" id="notificationBadge">0</span>
         </button>
-        
-       <div class="notification-dropdown" id="notificationDropdown">
+    <div class="notification-dropdown" id="notificationDropdown">
     <div class="notification-header">
         <span class="notification-title">Notifications</span>
         <button aria-label="Effacer toutes les notifications" class="clear-all" id="clearAllBtn">Tout effacer</button>
     </div>
     <div class="notification-list" id="notificationList">
-        {% for notif in notifications %}
-        <div class="notification-item" style="{% if not notif.is_read %}font-weight: bold;{% endif %}">
-            <div class="notification-content">
-                <div class="notification-icon info">
-                    <i class='bx bx-envelope'></i>
-                </div>
-                <div class="notification-details">
-                    <div class="notification-message">
-                        <strong>Objet : {{ notif.objet }}</strong><br>
-                        {{ notif.corps|truncatechars:60 }}<br>
-                        De : {% if notif.expediteur %}{{ notif.expediteur.prenom }} {{ notif.expediteur.nom }}{% else %}Inconnu{% endif %}
-                    </div>
-                    <div class="notification-time">{{ notif.date_envoi|date:'Y-m-d H:i:s' }}</div>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="empty-state">
-            <i class='bx bx-bell-off'></i>
-            <div>Aucune notification</div>
-        </div>
-        {% endfor %}
-    </div>
-    
-</div>
-
-    </div>
-       
+        <!-- Inclusion dynamique avec JavaScript -->
+    </div>   
         </nav>
         <main>
             <!-- Inclusion de toutes les vues du dashboard -->
@@ -224,7 +193,6 @@
     window.addUserUrl = "{% url 'ajouter_utilisateur' %}";
     window.modifierUtilisateurUrl = "{% url 'modifier_utilisateur' user_id=0 %}";
     window.supprimerUtilisateurUrl = "{% url 'supprimer_utilisateur' user_id=0 %}";
-    window.supprimerPcUrl = "{% url 'supprimer_pc' pc_id=0 %}";
     window.enregistrerEmployeUrl = "{% url 'enregistrer_employe' %}";
     
     // URL de notifications dynamique selon le rôle de l'utilisateur
@@ -251,9 +219,7 @@
 
 <script src="{% static 'js/core/utilities.js' %}"></script>
 <!-- Token CSRF caché pour JavaScript -->
-<form style="display: none;">
-    {% csrf_token %}
-</form>
+
 
 <script src="{% static 'js/core/dashboard-core.js' %}"></script>
 <script src="{% static 'js/core/notifications.js' %}"></script>
