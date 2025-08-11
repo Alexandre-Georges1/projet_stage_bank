@@ -622,10 +622,11 @@ function initPcManagement() {
                     } else {
                         showPcNotification(result.message, 'success');
                     }
+                    // Délai augmenté pour laisser le temps de lire la notification (3s au lieu de 1.5s)
                     setTimeout(() => {
                         addPcModal.classList.add('hidden');
                         location.reload();
-                    }, 1500);
+                    }, 3000);
                 } else {
                     if (window.NotificationSystem) {
                         window.NotificationSystem.error('Erreur : ' + (result.error || 'Erreur inconnue'), { 
@@ -666,7 +667,14 @@ function initPcManagement() {
                         const ram = cells[3].textContent;
                         const disque = cells[4].textContent;
                         const serial = cells[5].textContent;
-                        const dateAchat = cells[6].textContent;
+                        const dateAchatRaw = cells[6].textContent.trim();
+                        const dateAchat = (function(raw){
+                            if(!raw) return '';
+                            if(/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw; // déjà ISO
+                            const m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); // d/m/Y
+                            if(m) return `${m[3]}-${m[2]}-${m[1]}`;
+                            return '';
+                        })(dateAchatRaw);
 
                         if (modalTitle) modalTitle.textContent = 'Modifier un PC';
                         if (formMarque) formMarque.value = marque;
@@ -697,74 +705,73 @@ function initPcManagement() {
                     const model = row.cells[1]?.textContent || '';
                     const serial = row.cells[5]?.textContent || '';
                     
-                    if (confirm('Voulez-vous vraiment supprimer le PC : ' + marque + ' ' + model + ' (N° de série: ' + serial + ') ?')) {
-                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-                        const url = window.supprimerPcUrl?.replace('0', pcId);
+                    // Suppression sans demande de confirmation (exigence)
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+                    const url = window.supprimerPcUrl?.replace('0', pcId);
 
-                        if (!csrfToken || !url) {
-                            if (window.NotificationSystem) {
-                                window.NotificationSystem.error('Données manquantes pour la suppression', { 
-                                    title: 'Erreur Configuration' 
-                                });
-                            } else {
-                                showPcNotification('Données manquantes pour la suppression', 'error');
-                            }
-                            return;
-                        }
-
-                        // Afficher notification de chargement
-                        let loadingId = null;
+                    if (!csrfToken || !url) {
                         if (window.NotificationSystem) {
-                            loadingId = window.NotificationSystem.loading('Suppression en cours...', { 
-                                title: 'Suppression PC' 
+                            window.NotificationSystem.error('Données manquantes pour la suppression', { 
+                                title: 'Erreur Configuration' 
                             });
+                        } else {
+                            showPcNotification('Données manquantes pour la suppression', 'error');
                         }
+                        return;
+                    }
 
-                        try {
-                            const response = await fetch(url, {
-                                method: 'POST', 
-                                headers: {
-                                    'X-CSRFToken': csrfToken
-                                }
-                            });
-                            const result = await response.json();
-                            
-                            // Supprimer la notification de chargement
-                            if (loadingId && window.NotificationSystem) {
-                                window.NotificationSystem.remove(loadingId);
+                    // Afficher notification de chargement
+                    let loadingId = null;
+                    if (window.NotificationSystem) {
+                        loadingId = window.NotificationSystem.loading('Suppression en cours...', { 
+                            title: 'Suppression PC' 
+                        });
+                    }
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST', 
+                            headers: {
+                                'X-CSRFToken': csrfToken
                             }
-                            
-                            if (response.ok) {
-                                if (window.NotificationSystem) {
-                                    window.NotificationSystem.success(result.message, { 
-                                        title: 'PC Supprimé' 
-                                    });
-                                } else {
-                                    showPcNotification(result.message, 'success');
-                                }
-                                row.remove();
-                            } else {
-                                if (window.NotificationSystem) {
-                                    window.NotificationSystem.error('Erreur lors de la suppression : ' + result.error, { 
-                                        title: 'Échec Suppression' 
-                                    });
-                                } else {
-                                    showPcNotification('Erreur lors de la suppression : ' + result.error, 'error');
-                                }
-                            }
-                        } catch (error) {
-                            // Supprimer la notification de chargement en cas d'erreur
-                            if (loadingId && window.NotificationSystem) {
-                                window.NotificationSystem.remove(loadingId);
-                            }
-                            
+                        });
+                        const result = await response.json();
+                        
+                        // Supprimer la notification de chargement
+                        if (loadingId && window.NotificationSystem) {
+                            window.NotificationSystem.remove(loadingId);
+                        }
+                        
+                        if (response.ok) {
                             if (window.NotificationSystem) {
-                                window.NotificationSystem.error('Une erreur est survenue lors de la suppression.', { 
-                                    title: 'Erreur Réseau' 
+                                window.NotificationSystem.success(result.message, { 
+                                    title: 'PC Supprimé' 
                                 });
                             } else {
-                                showPcNotification('Une erreur est survenue lors de la suppression.', 'error');
+                                showPcNotification(result.message, 'success');
                             }
+                            row.remove();
+                        } else {
+                            if (window.NotificationSystem) {
+                                window.NotificationSystem.error('Erreur lors de la suppression : ' + result.error, { 
+                                    title: 'Échec Suppression' 
+                                });
+                            } else {
+                                showPcNotification('Erreur lors de la suppression : ' + result.error, 'error');
+                            }
+                        }
+                    } catch (error) {
+                        // Supprimer la notification de chargement en cas d'erreur
+                        if (loadingId && window.NotificationSystem) {
+                            window.NotificationSystem.remove(loadingId);
+                        }
+                        
+                        if (window.NotificationSystem) {
+                            window.NotificationSystem.error('Une erreur est survenue lors de la suppression.', { 
+                                title: 'Erreur Réseau' 
+                            });
+                        } else {
+                            showPcNotification('Une erreur est survenue lors de la suppression.', 'error');
                         }
                     }
                 }

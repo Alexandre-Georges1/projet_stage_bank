@@ -189,6 +189,7 @@ function initUserCrud() {
                 nom: addUserName?.value || '',
                 prenom: addUserPrenom?.value || '',
                 login: addUserLogin?.value || '',
+            
                 matricule: addUserMatricule?.value || '',
                 telephone: addUserTelephone?.value || '',
                 departement: addUserDepartement?.value || '',
@@ -252,77 +253,88 @@ function initUserCrud() {
     // Gestion des boutons Modifier et Supprimer dans le tableau Utilisateurs
     const userTable = document.querySelector('#utilisateur-view table tbody');
     if (userTable) {
-        userTable.addEventListener('click', async function(e) {
-            if (e.target.closest('.btn-modifier')) {
-                const row = e.target.closest('tr');
-                if (row) {
-                    const userId = row.dataset.userId;
-                    const cells = row.querySelectorAll('td');
-                    
-                    if (cells.length >= 10) {
-                        const nom = cells[0].textContent;
-                        const prenom = cells[1].textContent;
-                        const login = cells[2].textContent;
-                        const matricule = cells[4].textContent;
-                        const telephone = cells[5].textContent;
-                        const email = cells[6].textContent;
-                        const departement = cells[7].textContent;
-                        const dateEmbauche = cells[8].textContent;
-                        const fonction = cells[9].textContent;
-                        
-                        if (addUserModalTitle) addUserModalTitle.textContent = 'Modifier un Utilisateur';
-                        if (addUserName) addUserName.value = nom;
-                        if (addUserPrenom) addUserPrenom.value = prenom;
-                        if (addUserLogin) addUserLogin.value = login;
-                        if (addUserMatricule) addUserMatricule.value = matricule;
-                        if (addUserTelephone) addUserTelephone.value = telephone;
-                        if (addUserEmail) addUserEmail.value = email;
-                        if (addUserDepartement) addUserDepartement.value = departement;
-                        if (addUserDateEmbauche) addUserDateEmbauche.value = dateEmbauche;
-                        if (addUserFonction) addUserFonction.value = fonction;
-                        if (addUserSubmitBtn) addUserSubmitBtn.textContent = 'Enregistrer les modifications';
+        // Helper conversion date (d/m/Y => YYYY-MM-DD)
+        const toISODate = (raw) => {
+            if (!raw) return '';
+            const t = raw.trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t; // déjà ISO
+            const m = t.match(/^(\d{2})[\/](\d{2})[\/](\d{4})$/); // d/m/Y
+            if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+            return '';
+        };
 
-                        if (addUserForm) {
-                            addUserForm.dataset.mode = 'edit';
-                            addUserForm.dataset.userId = userId;
-                        }
+        userTable.addEventListener('click', async (e) => {
+            const editBtn = e.target.closest('.btn-modifier');
+            const deleteBtn = e.target.closest('.btn-supprimer');
 
-                        if (addUserModal) addUserModal.classList.remove('hidden');
-                    }
+            if (editBtn) {
+                const row = editBtn.closest('tr');
+                if (!row) return;
+                const userId = row.dataset.userId;
+                const cells = row.querySelectorAll('td');
+
+                // Indices basés sur l'ordre actuel affiché (password masqué en col 3) :
+                // 0 Nom,1 Prénom,2 Login,3 ******,4 Matricule,5 Téléphone,6 Email,7 Département,8 Date,9 Fonction
+                if (cells.length < 10) {
+                    console.warn('Nombre de colonnes inattendu pour la ligne utilisateur', cells.length);
                 }
-            } else if (e.target.closest('.btn-supprimer')) {
-                const row = e.target.closest('tr');
-                if (row) {
-                    const userId = row.dataset.userId;
-                    const nom = row.cells[0]?.textContent || '';
-                    const prenom = row.cells[1]?.textContent || '';
-                    
-                    if (confirm('Voulez-vous vraiment supprimer l\'utilisateur : ' + nom + ' ' + prenom + ' ?')) {
-                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-                        const url = window.supprimerUtilisateurUrl?.replace('0', userId);
-                        
-                        if (!csrfToken || !url) {
-                            return;
-                        }
 
-                        try {
-                            const response = await fetch(url, {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRFToken': csrfToken
-                                }
-                            });
-                            const result = await response.json();
-                            if (response.ok) {
-                                showUserNotification(result.message, 'success', 'Utilisateur Supprimé');
-                                row.remove();
-                            } else {
-                                showUserNotification('Erreur lors de la suppression : ' + result.error, 'error', 'Échec Suppression');
-                            }
-                        } catch (error) {
-                            console.error('Erreur lors de la suppression de l\'utilisateur:', error);
-                        }
+                const nom = cells[0]?.textContent.trim() || '';
+                const prenom = cells[1]?.textContent.trim() || '';
+                const login = cells[2]?.textContent.trim() || '';
+                const matricule = cells[4]?.textContent.trim() || '';
+                const telephone = cells[5]?.textContent.trim() || '';
+                const email = cells[6]?.textContent.trim() || '';
+                const departement = cells[7]?.textContent.trim() || '';
+                const rawDate = cells[8]?.textContent.trim() || '';
+                const fonction = cells[9]?.textContent.trim() || '';
+                const dateISO = toISODate(rawDate);
+
+                if (addUserModalTitle) addUserModalTitle.textContent = 'Modifier un Utilisateur';
+                if (addUserName) addUserName.value = nom;
+                if (addUserPrenom) addUserPrenom.value = prenom;
+                if (addUserLogin) addUserLogin.value = login;
+                if (addUserMatricule) addUserMatricule.value = matricule;
+                if (addUserTelephone) addUserTelephone.value = telephone;
+                if (addUserEmail) { addUserEmail.disabled = false; addUserEmail.value = email; }
+                if (addUserDepartement) addUserDepartement.value = departement;
+                if (addUserDateEmbauche) addUserDateEmbauche.value = dateISO; // format accepté par input date
+                if (addUserFonction) addUserFonction.value = fonction;
+                if (addUserSubmitBtn) addUserSubmitBtn.textContent = 'Enregistrer les modifications';
+
+                if (addUserForm) {
+                    addUserForm.dataset.mode = 'edit';
+                    addUserForm.dataset.userId = userId;
+                }
+                if (addUserModal) addUserModal.classList.remove('hidden');
+                return;
+            }
+
+            if (deleteBtn) {
+                const row = deleteBtn.closest('tr');
+                if (!row) return;
+                const userId = row.dataset.userId;
+                const nom = row.cells[0]?.textContent || '';
+                const prenom = row.cells[1]?.textContent || '';
+
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+                const url = window.supprimerUtilisateurUrl?.replace('0', userId);
+                if (!csrfToken || !url) return;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrfToken }
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        showUserNotification(result.message, 'success', 'Utilisateur Supprimé');
+                        row.remove();
+                    } else {
+                        showUserNotification('Erreur lors de la suppression : ' + result.error, 'error', 'Échec Suppression');
                     }
+                } catch (err) {
+                    console.error('Erreur suppression utilisateur:', err);
                 }
             }
         });

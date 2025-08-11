@@ -17,7 +17,8 @@ def ajouter_utilisateur(request):
                 telephone=data.get('telephone'),
                 Département=data.get('departement'),
                 date_embauche=data.get('dateEmbauche'),
-                fonction=data.get('fonction')
+                fonction=data.get('fonction'),
+                email=data.get('email') or 'employe@gmail.com'
             )
 
             subject = f'Nouvel Employé Ajouté : {employe.prenom} {employe.nom}'
@@ -92,6 +93,9 @@ def modifier_utilisateur(request, user_id):
             employe.Département = data.get('departement', employe.Département)
             employe.date_embauche = data.get('dateEmbauche', employe.date_embauche)
             employe.fonction = data.get('fonction', employe.fonction)
+            # Mise à jour de l'email (oubliée auparavant)
+            if 'email' in data:
+                employe.email = data.get('email') or employe.email
             
             employe.save()
             return JsonResponse({'message': 'Utilisateur modifié avec succès!'})

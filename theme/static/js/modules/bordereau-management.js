@@ -37,7 +37,8 @@ function initBordereauManagement() {
                 'bordereauPrenom': rowData.prenom,
                 'bordereauSerie': rowData.numeroSerie,
                 'bordereauDesc': `${rowData.marque} ${rowData.modele}`,
-                'bordereauTelephone': rowData.telephone
+                'bordereauTelephone': rowData.telephone,
+                'bordereauEmail': rowData.email || 'Non renseigné'
             };
 
             Object.entries(elements).forEach(([id, value]) => {
@@ -55,6 +56,7 @@ function initBordereauManagement() {
                 bordereauModal.dataset.modelePc = rowData.modele;
                 bordereauModal.dataset.numeroSeriePc = rowData.numeroSerie;
                 bordereauModal.dataset.telephoneEmploye = rowData.telephone;
+                bordereauModal.dataset.emailEmploye = rowData.email;
 
                 // Attacher l'écouteur d'événements au bouton Envoyer demande
                 const btnEnvoyerDemande = bordereauModal.querySelector('.btn-Envoyer-Demande');
@@ -158,6 +160,7 @@ async function handleEnvoyerDemande(bordereauModal) {
         numero_serie_pc: bordereauModal.dataset.numeroSeriePc,
         description_pc: bordereauModal.dataset.marquePc + ' ' + bordereauModal.dataset.modelePc,
         telephone_employe: bordereauModal.dataset.telephoneEmploye,
+        email_employe: bordereauModal.dataset.emailEmploye || ''
     };
 
     try {
@@ -192,12 +195,12 @@ async function handleEnvoyerDemande(bordereauModal) {
 function handleDownloadBordereau() {
     const modal = document.getElementById('bordereauModal');
     const printBtn = document.getElementById('downloadBordereauBtn');
-    
+
     if (!modal || !printBtn) return;
 
     // Masquer le bouton avant impression
     printBtn.style.display = 'none';
-    const printContents = modal.querySelector('.modal-content')?.innerHTML || '';
+    const printContents = modal.querySelector('.modern-modal-content')?.innerHTML || '';
     const win = window.open('', '', 'height=600,width=800');
     
     if (win) {
@@ -292,7 +295,7 @@ window.handleAcceptBordereau = handleAcceptBordereau;
 
 // Fonction pour gérer l'activation du bouton
 function toggleAcceptButton() {
-    const checkbox = document.getElementById('acceptCheckbox'); // Corrigé: ID correct du HTML
+    const checkbox = document.getElementById('acceptCheckbox'); 
     const button = document.getElementById('acceptBordereauBtn');
     
     if (checkbox && button) {
@@ -465,10 +468,7 @@ function initBordereauViewElements() {
         // Initialiser l'état du bouton
         toggleAcceptButton();
         return true;
-    } else {
-        console.log('❌ Éléments non trouvés dans la vue bordereau');
-        return false;
-    }
+    } 
 }
 
 // Fonction pour gérer le changement de la checkbox
