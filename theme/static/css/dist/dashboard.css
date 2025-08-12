@@ -2097,3 +2097,22 @@ table .btn-supprimer {
         transform: translate(-50%, -50%) rotate(360deg);
     }
 }
+
+/* ========= Table inline search filters ========= */
+.table-data .order table thead tr.search-row td {
+    padding: 6px 8px;
+    background: #f8fafc;
+}
+.table-filter-input {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 13px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+.table-filter-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+}

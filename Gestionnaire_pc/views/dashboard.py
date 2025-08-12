@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique, Email_DOT, Email_DAF, Email_MGX, Email_RDOT, Pc_ancien_attribue
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 
 
 def get_demandes_peripheriques():
@@ -45,29 +45,11 @@ def dashboard(request):
     if 'user_id' in request.session:
         try:
             connected_user = Employe.objects.get(pk=request.session['user_id'])
-            # Récupérer les demandes d'achat de périphériques de l'utilisateur connecté
             demandes_achat = DemandeAchatPeripherique.objects.filter(
                 employe=connected_user
             ).order_by('-date_demande')
-            
-            # DEBUG: Affichage des informations de débogage
-            print(f"DEBUG - Utilisateur connecté: {connected_user.nom} {connected_user.prenom} (ID: {connected_user.id_employe})")
-            print(f"DEBUG - Nombre de demandes d'achat trouvées: {demandes_achat.count()}")
-            for demande in demandes_achat:
-                print(f"DEBUG - Demande: {demande.materiel} - {demande.statut} - {demande.date_demande}")
-            print(f"DEBUG - Nombre total de PC attribués: {pcs_attribues.count()}")
-            
-            # DEBUG: Vérification spécifique pour cet utilisateur
-            pcs_de_cet_employe = Pc_attribué.objects.filter(employe__id_employe=connected_user.id_employe)
-            print(f"DEBUG - PC trouvés pour cet employé: {pcs_de_cet_employe.count()}")
-            
-            for pc in pcs_attribues:
-                print(f"DEBUG - PC: {pc.marque} {pc.modele} attribué à employé ID: {pc.employe.id_employe} ({pc.employe.nom} {pc.employe.prenom})")
-                if pc.employe.id_employe == connected_user.id_employe:
-                    print(f"DEBUG - *** CORRESPONDANCE TROUVÉE! ***")
         except Employe.DoesNotExist:
             del request.session['user_id']
-
     context = {
         'employes': employes,
         'pcs': pcs,
@@ -91,7 +73,11 @@ def dashboard(request):
     return render(request, 'dashboard.html',context)
 
 
+@never_cache
 def dashboard_employe(request):
+    if 'user_id' not in request.session:
+        return redirect('connexion')
+
     employes = Employe.objects.all().order_by('nom', 'prenom')
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
@@ -99,15 +85,19 @@ def dashboard_employe(request):
     employe = None
     bordereaux = []
     demandes_achat = []
-    if 'user_id' in request.session:
-        try:
-            employe = Employe.objects.get(pk=request.session['user_id'])
-            connected_user = employe
-            bordereaux = Bordereau.objects.filter(employe=employe)
-            # Utiliser la fonction helper pour récupérer les demandes
-            demandes_achat = get_user_demandes_achat(request.session['user_id'])
-        except Employe.DoesNotExist:
+    try:
+        employe = Employe.objects.get(pk=request.session['user_id'])
+        connected_user = employe
+        roles_autorises = {'Employe', 'Utilisateur', 'Autre'}
+        if connected_user.fonction not in roles_autorises:
+            return redirect('connexion')
+
+        bordereaux = Bordereau.objects.filter(employe=employe)
+        demandes_achat = get_user_demandes_achat(request.session['user_id'])
+    except Employe.DoesNotExist:
+        if 'user_id' in request.session:
             del request.session['user_id']
+        return redirect('connexion')
 
     context = {
         'employes': employes,

@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse   
 from django.urls import reverse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password,check_password
 from ..models import Employe
 
@@ -24,7 +24,7 @@ def connexion(request):
                     response_data['general_dashboard_url'] = reverse('dashboard_employe')
                 elif employe.fonction in ['Admin', 'admin']:
                     response_data['redirect_url'] = reverse('custom_admin')
-                elif employe.fonction in ['Employe', 'Utilisateur', 'Stagiaire', 'Autre']:
+                elif employe.fonction in ['Employe', 'Utilisateur','Autre']:
                     response_data['redirect_url'] = reverse('dashboard_employe')
                 else:
                     response_data['success'] = False
@@ -78,7 +78,7 @@ def connexion(request):
                         'error': f"Erreur création compte: {str(e)}"
                     }, status=500)
 
-                # Préparer la réponse
+                
                 response_data = {
                     'success': True,
                     'message': 'Authentifié via LDAP',
@@ -111,13 +111,24 @@ def connexion(request):
 
 
 def deconnexion(request):
-    if request.method == 'POST':
+   
+    # Purge l'auth Django si utilisée (LDAP)
+    try:
+        logout(request)
+    except Exception:
+        pass
+
+    # Supprime la clé de session personnalisée si présente
+    if 'user_id' in request.session:
         try:
-            del request.session['user_id']  
-            return JsonResponse({'message': 'Déconnexion réussie!'})
+            del request.session['user_id']
         except KeyError:
-            return JsonResponse({'error': 'Aucun utilisateur connecté.'}, status=400)
-    return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+            pass
+
+    if request.method == 'POST':
+        return JsonResponse({'message': 'Déconnexion réussie!'})
+    # Par défaut, pour GET (et autres), on redirige vers la connexion
+    return redirect('connexion')
 
 def politique_confidentialite(request):
     return render(request, 'politique_confidentialité.html')
