@@ -3,37 +3,37 @@
 <!-- Vue Tableau de Bord -->
 <div id="dashboard-view" class="hidden">
     <h1>Tableau de Bord</h1>
-    <ul class="box-info">
-        <li>
-            <i class="fas fa-desktop text-purple-600 text-xl mr-2"></i>
+    <ul class="dashboard-cards">
+        <li class="dashboard-card type-stock">
+            <i class="fas fa-desktop"></i>
             <span class="text">
-                <h3>{{pc_total}}</h3>
-                <p>PC disponible</p>
+                <h3>{{ pc_total }}</h3>
+                <p>PC disponibles</p>
             </span>
         </li>
-        <li>
+        <li class="dashboard-card type-rebut">
             <i class="fa-solid fa-laptop"></i>
             <span class="text">
-                <h3>{{pc_en_rebu}}</h3>
-                <p>PC Mis en Rebu</p>
+                <h3>{{ pc_en_rebu }}</h3>
+                <p>PC mis en rebut</p>
             </span>
         </li>
-        <li>
+        <li class="dashboard-card type-rebut-attr">
             <i class="fa-solid fa-laptop"></i>
             <span class="text">
                 <h3>{{ pc_en_rebu_attribue }}</h3>
-                <p>PC Mis en Rebu attribué </p>
+                <p>PC en rebut attribués</p>
             </span>
         </li>
-        <li>
-            <i class="fas fa-desktop text-purple-600 text-xl mr-2"></i>
+        <li class="dashboard-card type-service">
+            <i class="fas fa-desktop"></i>
             <span class="text">
-                <h3>{{pc_en_service}}</h3>
+                <h3>{{ pc_en_service }}</h3>
                 <p>PC en service</p>
             </span>
         </li>
-        <li>
-            <i class="fas fa-desktop text-purple-600 text-xl mr-2"></i>
+        <li class="dashboard-card type-total">
+            <i class="fas fa-desktop"></i>
             <span class="text">
                 <h3>{{ pc_total_global }}</h3>
                 <p>Total des PC</p>
