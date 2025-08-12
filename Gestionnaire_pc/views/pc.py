@@ -1,9 +1,11 @@
 from django.http import JsonResponse    
+from django.utils import timezone
+from django.db import transaction
 from django.core.mail import send_mail
 from django.conf import settings
 import json
-from ..models import Employe,PC,Pc_attribué,marquePC,modelePC,Email,DemandeAchatPeripherique
-from datetime import datetime
+from ..models import Employe,PC,Pc_attribué,Pc_ancien,marquePC,modelePC,Email,DemandeAchatPeripherique, Pc_ancien_attribue
+from datetime import datetime, timedelta
 
   
 def ajouter_pc(request):
@@ -180,6 +182,108 @@ def gestion_marques(request):
             marque.delete()
             return JsonResponse({'message': 'Marque supprimée.'})
         return JsonResponse({'error': 'Marque introuvable'}, status=404)
+
+
+# Ajouter un PC directement dans Pc_ancien (manuel)
+def ajouter_pc_ancien(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        if request.content_type and 'application/json' in request.content_type:
+            data = json.loads(request.body)
+        else:
+            data = request.POST
+
+        marque = data.get('marque') or data.get('brand')
+        modele = data.get('model')
+        processeur = data.get('processeur')
+        ram = data.get('ram')
+        disque_dur = data.get('disque')
+        numero_serie = data.get('serial')
+        date_achat = data.get('dateAchat')
+        employe_id = data.get('employe_id')
+
+        employe = None
+        if employe_id:
+            try:
+                employe = Employe.objects.get(id_employe=int(employe_id))
+            except Employe.DoesNotExist:
+                return JsonResponse({'error': "Employé introuvable"}, status=404)
+
+        if not (marque and modele and numero_serie):
+            return JsonResponse({'error': 'Champs requis manquants (marque, modèle, numéro de série).'}, status=400)
+
+        # Création du snapshot dans Pc_ancien
+        pc_a = Pc_ancien.objects.create(
+            marque=marque,
+            modele=modele,
+            numero_serie=numero_serie,
+            processeur=processeur or '',
+            ram=ram or '',
+            disque_dur=disque_dur or '',
+            date_achat=date_achat or None,
+            employe=employe,
+        )
+
+        return JsonResponse({'message': 'PC ancien ajouté avec succès', 'id': pc_a.id_ancien})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+# Attribuer un PC ancien à un employé
+def assign_pc_ancien(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        data = json.loads(request.body)
+        ancien_id = data.get('ancien_id')
+        employe_id = data.get('employe_id')
+        date_attr = data.get('date_attribution')
+        date_fin = data.get('date_fin_attribution')
+
+        if not (ancien_id and employe_id):
+            return JsonResponse({'error': 'ancien_id et employe_id sont requis'}, status=400)
+
+        try:
+            pc_a = Pc_ancien.objects.get(id_ancien=int(ancien_id))
+        except Pc_ancien.DoesNotExist:
+            return JsonResponse({'error': 'PC ancien introuvable'}, status=404)
+
+        try:
+            employe = Employe.objects.get(id_employe=int(employe_id))
+        except Employe.DoesNotExist:
+            return JsonResponse({'error': 'Employé introuvable'}, status=404)
+
+        pc_a.employe = employe
+        pc_a.save(update_fields=['employe'])
+
+        # Créer un enregistrement d'attribution dédié
+        from datetime import datetime as _dt
+        if date_attr:
+            try:
+                date_attribution = _dt.strptime(date_attr, '%Y-%m-%d').date()
+            except Exception:
+                return JsonResponse({'error': "date_attribution invalide (YYYY-MM-DD)"}, status=400)
+        else:
+            date_attribution = timezone.localdate()
+
+        date_fin_attribution = None
+        if date_fin:
+            try:
+                date_fin_attribution = _dt.strptime(date_fin, '%Y-%m-%d').date()
+            except Exception:
+                return JsonResponse({'error': "date_fin_attribution invalide (YYYY-MM-DD)"}, status=400)
+
+        Pc_ancien_attribue.objects.create(
+            pc_ancien=pc_a,
+            employe=employe,
+            date_attribution=date_attribution,
+            date_fin_attribution=date_fin_attribution,
+        )
+
+        return JsonResponse({'message': 'PC ancien attribué avec succès'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 
 
@@ -364,3 +468,48 @@ Demande :
             return JsonResponse({'error': f'Erreur lors de l\'envoi de la demande: {str(e)}'}, status=400)
 
     return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
+
+# Amortissement manuel des PCs (déplacement des PCs de plus de 4 ans vers Pc_ancien)
+def amortir_pcs(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        today = timezone.localdate()
+        cutoff = today - timedelta(days=4*365)
+
+        moved = 0
+        with transaction.atomic():
+            pcs = list(PC.objects.select_for_update().filter(date_achat__isnull=False, date_achat__lte=cutoff))
+            for pc in pcs:
+                # Les PC de la table PC ne sont pas attribués; on ne met pas d'employé
+                Pc_ancien.objects.create(
+                    marque=pc.marque.nom_marque,
+                    modele=pc.modele.nom_modele,
+                    numero_serie=pc.numero_serie,
+                    processeur=pc.processeur,
+                    ram=pc.ram,
+                    disque_dur=pc.disque_dur,
+                    date_achat=pc.date_achat,
+                )
+                pc.delete()
+                moved += 1
+
+            # Amortir aussi les PCs attribués dont la date d'attribution dépasse 4 ans
+            attribues = list(Pc_attribué.objects.select_for_update().filter(date_attribution__isnull=False, date_attribution__lte=cutoff))
+            for pa in attribues:
+                Pc_ancien.objects.create(
+                    marque=pa.marque,
+                    modele=pa.modele,
+                    numero_serie=pa.numero_serie,
+                    processeur=pa.processeur,
+                    ram=pa.ram,
+                    disque_dur=pa.disque_dur,
+                    date_achat=pa.date_achat,
+                    employe=pa.employe,
+                )
+                pa.delete()
+                moved += 1
+        return JsonResponse({'ok': True, 'moved': moved})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)

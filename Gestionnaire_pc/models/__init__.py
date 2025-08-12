@@ -5,5 +5,6 @@ from .Email import Email, Email_RDOT, Email_DOT, Email_MGX, Email_RMG, Email_DCH
 from .caracteristiqueRecue import CaracteristiqueRecue
 from .caracteristiqueEnvoyé import CaracteristiqueEnvoyee
 from .Pc_ancien import Pc_ancien
+from .Pc_ancien_attribue import Pc_ancien_attribue
 from .Bordereau import Bordereau
 from .DemandeAchatPeripherique import DemandeAchatPeripherique

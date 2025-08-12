@@ -19,6 +19,13 @@
             </span>
         </li>
         <li>
+            <i class="fa-solid fa-laptop"></i>
+            <span class="text">
+                <h3>{{ pc_en_rebu_attribue }}</h3>
+                <p>PC Mis en Rebu attribué </p>
+            </span>
+        </li>
+        <li>
             <i class="fas fa-desktop text-purple-600 text-xl mr-2"></i>
             <span class="text">
                 <h3>{{pc_en_service}}</h3>
@@ -173,6 +180,19 @@
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
+            <!-- Actions Pc_ancien: amortir / ajouter / attribuer -->
+            <div class="flex items-center gap-3 mb-8" style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+                <button aria-label="Amortir maintenant" id="btn-amortir-maintenant" class="btn-ajouter-manuel" data-url="{% url 'amortir_pcs' %}">
+                    <i class="fas fa-history"></i> Amortir maintenant
+                </button>
+                <button aria-label="Ajouter un PC ancien" id="btn-ajouter-pc-ancien" class="btn-ajouter-manuel">
+                    <i class="fas fa-box-archive"></i> Ajouter PC ancien
+                </button>
+                <button aria-label="Attribuer un PC ancien" id="btn-assigner-pc-ancien" class="btn-ajouter-manuel">
+                    <i class="fas fa-user-check"></i> Attribuer PC ancien
+                </button>
+                <span id="amortirResult" style="margin-left:10px; font-size:14px; color:#555;"></span>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -190,20 +210,14 @@
                 <tbody>
                     {% for pc_arch in pcs_anciens %}
                     <tr>
-                        <td>{{ pc_arch.pc.marque }}</td>
-                        <td>{{ pc_arch.pc.modele }}</td>
-                        <td>{{ pc_arch.pc.processeur }}</td>
-                        <td>{{ pc_arch.pc.ram }}</td>
-                        <td>{{ pc_arch.pc.disque_dur }}</td>
-                        <td>{{ pc_arch.pc.numero_serie }}</td>
-                        <td>{{ pc_arch.pc.date_achat|date:"Y-m-d" }}</td>
-                        <td>
-                            {% if pc_arch.pc.employe %}
-                                {{ pc_arch.pc.employe.nom }} {{ pc_arch.pc.employe.prenom }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
+                        <td>{{ pc_arch.marque }}</td>
+                        <td>{{ pc_arch.modele }}</td>
+                        <td>{{ pc_arch.processeur }}</td>
+                        <td>{{ pc_arch.ram }}</td>
+                        <td>{{ pc_arch.disque_dur }}</td>
+                        <td>{{ pc_arch.numero_serie }}</td>
+                        <td>{{ pc_arch.date_achat|date:"Y-m-d" }}</td>
+                        <td>{% if pc_arch.employe %}{{ pc_arch.employe.nom }} {{ pc_arch.employe.prenom }}{% else %}-{% endif %}</td>
                         <td>{{ pc_arch.date_ajout|date:"Y-m-d" }}</td>
                     </tr>
                     {% empty %}
@@ -213,7 +227,44 @@
             </table>
         </div>
     </div>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>PC anciens attribués</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Marque</th>
+                        <th>Modèle</th>
+                        <th>N° de série</th>
+                        <th>Employé</th>
+                        <th>Date d'attribution</th>
+                        <th>Date fin d'attribution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in pcs_anciens_attribues %}
+                    <tr>
+                        <td>{{ a.pc_ancien.marque }}</td>
+                        <td>{{ a.pc_ancien.modele }}</td>
+                        <td>{{ a.pc_ancien.numero_serie }}</td>
+                        <td>{% if a.employe %}{{ a.employe.nom }} {{ a.employe.prenom }}{% else %}-{% endif %}</td>
+                        <td>{{ a.date_attribution|date:"Y-m-d" }}</td>
+                        <td>{{ a.date_fin_attribution|date:"Y-m-d" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6">Aucune attribution de PC ancien.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+</div>
+
+   
+    
 
 <!-- Vue Utilisateurs -->
 <div id="utilisateur-view" class="hidden">
@@ -1010,3 +1061,4 @@
         </div>
     </div>
 </div>
+<!-- Script amortissement manuel chargé globalement depuis dashboard.html -->

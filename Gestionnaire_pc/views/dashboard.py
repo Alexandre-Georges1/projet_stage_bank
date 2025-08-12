@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique, Email_DOT, Email_DAF, Email_MGX, Email_RDOT
+from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique, Email_DOT, Email_DAF, Email_MGX, Email_RDOT, Pc_ancien_attribue
 from django.contrib.auth.decorators import login_required
 
 
@@ -27,11 +27,14 @@ def dashboard(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi') 
-    pcs_anciens = Pc_ancien.objects.select_related('pc__employe').all().order_by('-date_ajout')
+    pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')  
+    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('pc_ancien','employe').order_by('-date_attribution')
     pc_total = PC.objects.count()  
     pc_en_service = Pc_attribué.objects.count()
     pc_en_rebu = Pc_ancien.objects.count()
+    # Nombre de PC archivés qui sont (encore) attribués à quelqu'un via l'historique des PC anciens
+    pc_en_rebu_attribue = Pc_ancien_attribue.objects.filter(employe__isnull=False, date_fin_attribution__isnull=True).count()
     marques = marquePC.objects.all()
     modeles = modelePC.objects.all()
     emails = Email.objects.all()
@@ -70,10 +73,12 @@ def dashboard(request):
         'pcs': pcs,
         'caracteristiques_envoyees': caracteristiques_envoyees,
         'pcs_anciens': pcs_anciens,
-        'pcs_attribues': pcs_attribues,  
+    'pcs_attribues': pcs_attribues,  
+    'pcs_anciens_attribues': pcs_anciens_attribues,
         'pc_total':pc_total,
         'pc_en_service': pc_en_service,
-        'pc_en_rebu': pc_en_rebu,
+    'pc_en_rebu': pc_en_rebu,
+    'pc_en_rebu_attribue': pc_en_rebu_attribue,
         'marques': marques,
         'modeles': modeles,
         'notifications': emails,
@@ -222,9 +227,12 @@ def dashboard_RDOT(request):
     pc_en_service= Pc_attribué.objects.count()
     pc_total = PC.objects.count()
     pc_en_rebu = Pc_ancien.objects.count()
+    pc_en_rebu_attribue = Pc_ancien_attribue.objects.filter(employe__isnull=False, date_fin_attribution__isnull=True).count()
     emails = Email_RDOT.objects.all()
     marques=marquePC.objects.all()
+    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('pc_ancien','employe').order_by('-date_attribution')
     modeles=modelePC.objects.all()
+    pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     demandes_peripheriques_en_attente, demandes_peripheriques_traitees = get_demandes_peripheriques()
     
     connected_user = None
@@ -249,8 +257,11 @@ def dashboard_RDOT(request):
                 'demandes_peripheriques_en_attente': demandes_peripheriques_en_attente,
                 'demandes_peripheriques_traitees': demandes_peripheriques_traitees,
                 'notifications': emails,
+                'pcs_anciens': pcs_anciens,
+                'pcs_anciens_attribues': pcs_anciens_attribues,
                 'marques': marques,
-                'modeles': modeles
+                'modeles': modeles,
+                'pc_en_rebu_attribue': pc_en_rebu_attribue
                   }
     return render(request, 'page_DOT/dashboard_RDOT.html', context)
 
@@ -260,8 +271,11 @@ def dashboard_DOT(request):
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
     pc_total = PC.objects.count()  
+    pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pc_en_service= Pc_attribué.objects.count()
     pc_en_rebu= Pc_ancien.objects.count()
+    pc_en_rebu_attribue = Pc_ancien_attribue.objects.filter(employe__isnull=False, date_fin_attribution__isnull=True).count()
+    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('pc_ancien','employe').order_by('-date_attribution')
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
     connected_user = None
@@ -283,10 +297,13 @@ def dashboard_DOT(request):
                 'pcs_attribues': pcs_attribues,
                 'pc_total': pc_total, 
                 'pc_en_service': pc_en_service,
+                'pcs_anciens': pcs_anciens,
                 'pc_en_rebu': pc_en_rebu,
+                'pcs_anciens_attribues': pcs_anciens_attribues,
                 'marques': marques,
                 'modeles': modeles,
-                'notifications': emails} 
+                'notifications': emails,
+                'pc_en_rebu_attribue': pc_en_rebu_attribue} 
     return render(request, 'page_DOT/dashboard_DOT.html', context)
 
 
@@ -300,6 +317,7 @@ def Admin(request):
     pc_total = PC.objects.count()  
     pc_en_service= Pc_attribué.objects.count()
     pc_en_rebu = Pc_ancien.objects.count()
+    pc_en_rebu_attribue = Pc_ancien_attribue.objects.filter(employe__isnull=False, date_fin_attribution__isnull=True).count()
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
     emails = Email.objects.all()
@@ -321,6 +339,7 @@ def Admin(request):
                 'pc_total': pc_total, 
                 'pc_en_service': pc_en_service,
                 'pc_en_rebu': pc_en_rebu,
+                'pc_en_rebu_attribue': pc_en_rebu_attribue,
                 'marques': marques,
                 'modeles': modeles,
                 'notifications':emails}

@@ -215,6 +215,9 @@
     window.restituerPcUrl = "{% url 'restituer_pc' %}";
     window.demandeAchatPeripheriquesUrl = "{% url 'demande_achat_peripheriques' %}";
     window.connectedUserFonction = "{{ connected_user.fonction|default:'' }}";
+    // URLs PC anciens
+    window.ajouterPcAncienUrl = "{% url 'ajouter_pc_ancien' %}";
+    window.assignPcAncienUrl = "{% url 'assign_pc_ancien' %}";
     </script>
 
 <script src="{% static 'js/core/utilities.js' %}"></script>
@@ -232,6 +235,8 @@
 <script src="{% static 'js/modules/restitution-management.js' %}"></script>
 <script src="{% static 'js/modules/achat-peripheriques-management.js' %}"></script>
 <script src="{% static 'validation-demandes-management.js' %}"></script>
+<script src="{% static 'js/modules/amortir.js' %}"></script>
+<script src="{% static 'js/modules/pc-anciens-management.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

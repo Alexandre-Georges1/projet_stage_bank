@@ -47,4 +47,7 @@ urlpatterns = [
     path('notifications_daf/', views.get_notifications_daf, name='get_notifications_daf'),
     path('notifications_mgx/', views.get_notifications_mgx, name='get_notifications_mgx'),
     path('notifications_rdot/', views.get_notifications_rdot, name='get_notifications_rdot'),
+    path('amortir-pcs/', views.amortir_pcs, name='amortir_pcs'),
+    path('pc-anciens/ajouter/', views.ajouter_pc_ancien, name='ajouter_pc_ancien'),
+    path('pc-anciens/assigner/', views.assign_pc_ancien, name='assign_pc_ancien'),
 ]

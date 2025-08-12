@@ -165,6 +165,786 @@
     </div>
 </div>
 
+<!-- Modal: Ajouter un PC Ancien -->
+<div id="addPcAncienModal" class="modern-modal-overlay hidden">
+    <div class="modern-modal-content">
+        <span class="modern-close-btn" data-close="addPcAncienModal">&times;</span>
+        <div class="modal-header">
+            <div class="modal-icon">
+                <i class="fas fa-box-archive"></i>
+            </div>
+            <h2>Ajouter un PC Ancien</h2>
+            <p class="modal-subtitle">Créer une entrée dans le catalogue des anciens PCs</p>
+        </div>
+        <form id="addPcAncienForm" method="post" action="{% url 'ajouter_pc_ancien' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="ancienMarque">Marque:</label>
+                <select id="ancienMarque" name="marque" required>
+                    <option value="" disabled selected>Sélectionner une marque</option>
+                    {% for marque in marques %}
+                    <option value="{{ marque.nom_marque }}">{{ marque.nom_marque }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ancienModele">Modèle:</label>
+                <select id="ancienModele" name="model" required>
+                    <option value="" disabled selected>Sélectionner un modèle</option>
+                    {% for modele in modeles %}
+                    <option value="{{ modele.nom_modele }}">{{ modele.nom_modele }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ancienProcesseur">Processeur:</label>
+                <select id="ancienProcesseur" name="processeur" required>
+                    <option value="" disabled selected>Sélectionner un Processeur</option>
+                    <option value="corei7">Core i7</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ancienRam">RAM:</label>
+                <select id="ancienRam" name="ram" required>
+                    <option value="" disabled selected>Sélectionner la RAM</option>
+                    <option value="8GB">8 GB</option>
+                    <option value="16GB">16 GB</option>
+                    <option value="32GB">32 GB</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ancienDisque">Disque Dur:</label>
+                <select id="ancienDisque" name="disque" required>
+                    <option value="" disabled selected>Sélectionner un Disque</option>
+                    <option value="256GB">256 GB</option>
+                    <option value="512GB">512 GB</option>
+                    <option value="1To">1 To</option>
+                    <option value="2To">2 To</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ancienSerial">Numéro de série:</label>
+                <input type="text" id="ancienSerial" name="serial" required>
+            </div>
+            <div class="form-group">
+                <label for="ancienDateAchat">Date d'achat:</label>
+                <input type="date" id="ancienDateAchat" name="dateAchat">
+            </div>
+            <div class="form-group">
+                <label for="ancienEmploye">Employé (optionnel):</label>
+                <select id="ancienEmploye" name="employe_id">
+                    <option value="" selected>-- Aucun --</option>
+                    {% for employe in employes %}
+                    <option value="{{ employe.id_employe }}">{{ employe.nom }} {{ employe.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button aria-label="Ajouter PC ancien" type="submit" class="btn-ajouter-manuel modern-submit-btn">
+                <i class="fas fa-plus"></i>
+                Ajouter PC ancien
+            </button>
+        </form>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</div>
+
+<!-- Modal: Attribuer un PC Ancien -->
+<div id="assignPcAncienModal" class="modern-modal-overlay hidden">
+    <div class="modern-modal-content small-modal">
+        <span class="modern-close-btn" data-close="assignPcAncienModal">&times;</span>
+        <div class="modal-header">
+            <div class="modal-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <h2>Attribuer un PC Ancien</h2>
+            <p class="modal-subtitle">Sélectionner un PC archivé et un employé</p>
+        </div>
+        <form id="assignPcAncienForm" method="post" action="{% url 'assign_pc_ancien' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="ancienPcSelect">PC archivé:</label>
+                <select id="ancienPcSelect" name="ancien_id" required>
+                    <option value="" disabled selected>-- Sélectionner --</option>
+                    {% for p in pcs_anciens %}
+                    <option value="{{ p.id_ancien }}">{{ p.marque }} {{ p.modele }} ({{ p.numero_serie }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ancienEmployeAssign">Employé:</label>
+                <select id="ancienEmployeAssign" name="employe_id" required>
+                    <option value="" disabled selected>-- Sélectionner --</option>
+                    {% for employe in employes %}
+                    <option value="{{ employe.id_employe }}">{{ employe.nom }} {{ employe.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ancienDateAttribution">Date d'attribution:</label>
+                <input type="date" id="ancienDateAttribution" name="date_attribution">
+            </div>
+            <div class="form-group">
+                <label for="ancienDateFinAttribution">Date de fin d'attribution (optionnel):</label>
+                <input type="date" id="ancienDateFinAttribution" name="date_fin_attribution">
+            </div>
+            <button aria-label="Attribuer PC ancien" type="submit" class="btn-ajouter-manuel modern-submit-btn">
+                <i class="fas fa-link"></i>
+                Attribuer
+            </button>
+        </form>
+    </div>
+</div>
+
 <!-- Modal d'ajout d'utilisateur -->
 <div id="addUserModal" class="modern-modal-overlay hidden">
     <div class="modern-modal-content">
