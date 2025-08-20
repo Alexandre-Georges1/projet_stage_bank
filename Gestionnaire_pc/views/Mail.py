@@ -45,12 +45,22 @@ def demander_caracteristique(request):
                     destinataire=', '.join(recipient_list), 
                     expediteur=connected_user, 
                 )
-
-          
+                Email_DOT.objects.create(
+                    objet=subject,
+                    corps=message,
+                    destinataire=', '.join(recipient_list), 
+                    expediteur=connected_user, 
+                )
+                Email_RDOT.objects.create(
+                    objet=subject,
+                    corps=message,
+                    destinataire=', '.join(recipient_list), 
+                    expediteur=connected_user, 
+                )
+              
             except Exception as e:
                 email_status = f"Erreur lors de l\'envoi de l\'e-mail : {e}"
                 print(email_status) 
-
             return JsonResponse({'message': f'Demande envoyée avec succès! {email_status}'})
         except Employe.DoesNotExist:
             return JsonResponse({'error': 'Employé non trouvé.'}, status=404)
@@ -115,6 +125,7 @@ def envoyer_caracteristiques(request):
                     destinataire=', '.join(recipient_list),
                     expediteur=connected_user,
                 )
+                
 
                 caracteristique = CaracteristiqueEnvoyee.objects.create(
                     marque=marque,

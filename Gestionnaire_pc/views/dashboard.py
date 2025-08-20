@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique, Email_DOT, Email_DAF, Email_MGX, Email_RDOT, Pc_ancien_attribue
-from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
 
 
 def get_demandes_peripheriques():
@@ -18,23 +18,20 @@ def get_user_demandes_achat(user_id):
             demandes_achat = DemandeAchatPeripherique.objects.filter(
                 employe=employe
             ).order_by('-date_demande')
-            print(f"DEBUG - Demandes d'achat trouvées pour {employe.nom}: {demandes_achat.count()}")
         except Employe.DoesNotExist:
             pass
     return demandes_achat
 
 def dashboard(request):
-    employes = Employe.objects.all().order_by('nom', 'prenom')
+    employes = Employe.objects.all()
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi') 
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')  
-    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('pc_ancien','employe').order_by('-date_attribution')
+    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('employe').order_by('-date_attribution')
     pc_total = PC.objects.count()  
     pc_en_service = Pc_attribué.objects.count()
     pc_en_rebu = Pc_ancien.objects.count()
-    pc_en_rebu_attribue = Pc_ancien_attribue.objects.filter(employe__isnull=False, date_fin_attribution__isnull=True).count()
-    pc_total_global = pc_total + pc_en_service + pc_en_rebu + pc_en_rebu_attribue
     marques = marquePC.objects.all()
     modeles = modelePC.objects.all()
     emails = Email.objects.all()
@@ -45,11 +42,18 @@ def dashboard(request):
     if 'user_id' in request.session:
         try:
             connected_user = Employe.objects.get(pk=request.session['user_id'])
+            # Récupérer les demandes d'achat de périphériques de l'utilisateur connecté
             demandes_achat = DemandeAchatPeripherique.objects.filter(
                 employe=connected_user
             ).order_by('-date_demande')
+            
+            for pc in pcs_attribues:
+                print(f"DEBUG - PC: {pc.marque} {pc.modele} attribué à employé ID: {pc.employe.id_employe} ({pc.employe.nom} {pc.employe.prenom})")
+                if pc.employe.id_employe == connected_user.id_employe:
+                    print(f"DEBUG - *** CORRESPONDANCE TROUVÉE! ***")
         except Employe.DoesNotExist:
             del request.session['user_id']
+
     context = {
         'employes': employes,
         'pcs': pcs,
@@ -59,9 +63,7 @@ def dashboard(request):
     'pcs_anciens_attribues': pcs_anciens_attribues,
         'pc_total':pc_total,
         'pc_en_service': pc_en_service,
-    'pc_en_rebu': pc_en_rebu,
-    'pc_total_global': pc_total_global,
-    'pc_en_rebu_attribue': pc_en_rebu_attribue,
+        'pc_en_rebu': pc_en_rebu,
         'marques': marques,
         'modeles': modeles,
         'notifications': emails,
@@ -73,31 +75,23 @@ def dashboard(request):
     return render(request, 'dashboard.html',context)
 
 
-@never_cache
 def dashboard_employe(request):
-    if 'user_id' not in request.session:
-        return redirect('connexion')
-
-    employes = Employe.objects.all().order_by('nom', 'prenom')
+    employes = Employe.objects.all()
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     connected_user = None
     employe = None
     bordereaux = []
     demandes_achat = []
-    try:
-        employe = Employe.objects.get(pk=request.session['user_id'])
-        connected_user = employe
-        roles_autorises = {'Employe', 'Utilisateur', 'Autre'}
-        if connected_user.fonction not in roles_autorises:
-            return redirect('connexion')
-
-        bordereaux = Bordereau.objects.filter(employe=employe)
-        demandes_achat = get_user_demandes_achat(request.session['user_id'])
-    except Employe.DoesNotExist:
-        if 'user_id' in request.session:
+    if 'user_id' in request.session:
+        try:
+            employe = Employe.objects.get(pk=request.session['user_id'])
+            connected_user = employe
+            bordereaux = Bordereau.objects.filter(employe=employe)
+            # Utiliser la fonction helper pour récupérer les demandes
+            demandes_achat = get_user_demandes_achat(request.session['user_id'])
+        except Employe.DoesNotExist:
             del request.session['user_id']
-        return redirect('connexion')
 
     context = {
         'employes': employes,
@@ -112,7 +106,7 @@ def dashboard_employe(request):
 
 
 def dashboard_DCH(request):
-    employes = Employe.objects.all().order_by('nom', 'prenom')
+    employes = Employe.objects.all()
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
@@ -138,7 +132,7 @@ def dashboard_DCH(request):
 
 
 def dashboard_MG(request):
-    employes = Employe.objects.all().order_by('nom', 'prenom')
+    employes = Employe.objects.all()
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
@@ -166,7 +160,7 @@ def dashboard_MG(request):
 
  
 def dashboard_RMG(request):
-    employes = Employe.objects.all().order_by('nom', 'prenom')
+    employes = Employe.objects.all()
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
@@ -186,7 +180,7 @@ def dashboard_RMG(request):
 
 
 def dashboard_DAF(request):
-    employes = Employe.objects.all().order_by('nom', 'prenom')
+    employes = Employe.objects.all()
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
@@ -211,18 +205,18 @@ def dashboard_DAF(request):
 
 
 def dashboard_RDOT(request):
-    employes = Employe.objects.all().order_by('nom', 'prenom')
+    employes = Employe.objects.all()
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
     pc_en_service= Pc_attribué.objects.count()
     pc_total = PC.objects.count()
+    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('employe').order_by('-date_attribution')
     pc_en_rebu = Pc_ancien.objects.count()
-    pc_en_rebu_attribue = Pc_ancien_attribue.objects.filter(employe__isnull=False, date_fin_attribution__isnull=True).count()
-    pc_total_global = pc_total + pc_en_service + pc_en_rebu + pc_en_rebu_attribue
+    pc_en_rebu_attribue = Pc_ancien_attribue.objects.count()
+    pc_total_global=pc_total + pc_en_rebu + pc_en_rebu_attribue + pc_en_service
     emails = Email_RDOT.objects.all()
     marques=marquePC.objects.all()
-    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('pc_ancien','employe').order_by('-date_attribution')
     modeles=modelePC.objects.all()
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     demandes_peripheriques_en_attente, demandes_peripheriques_traitees = get_demandes_peripheriques()
@@ -250,16 +244,16 @@ def dashboard_RDOT(request):
                 'demandes_peripheriques_traitees': demandes_peripheriques_traitees,
                 'notifications': emails,
                 'pcs_anciens': pcs_anciens,
-                'pcs_anciens_attribues': pcs_anciens_attribues,
-                'marques': marques,
-                'modeles': modeles,
+                'pc_en_rebu_attribue': pc_en_rebu_attribue,
                 'pc_total_global': pc_total_global,
-                'pc_en_rebu_attribue': pc_en_rebu_attribue
+                'marques': marques,
+                'pcs_anciens_attribues': pcs_anciens_attribues,
+                'modeles': modeles
                   }
     return render(request, 'page_DOT/dashboard_RDOT.html', context)
 
 def dashboard_DOT(request):
-    employes = Employe.objects.all().order_by('nom', 'prenom')
+    employes = Employe.objects.all()
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
@@ -267,11 +261,11 @@ def dashboard_DOT(request):
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pc_en_service= Pc_attribué.objects.count()
     pc_en_rebu= Pc_ancien.objects.count()
-    pc_en_rebu_attribue = Pc_ancien_attribue.objects.filter(employe__isnull=False, date_fin_attribution__isnull=True).count()
-    pc_total_global = pc_total + pc_en_service + pc_en_rebu + pc_en_rebu_attribue
-    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('pc_ancien','employe').order_by('-date_attribution')
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
+    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('employe').order_by('-date_attribution')
+    pc_en_rebu_attribue = Pc_ancien_attribue.objects.count()
+    pc_total_global=pc_total + pc_en_rebu + pc_en_rebu_attribue + pc_en_service
     connected_user = None
     emails = Email_DOT.objects.all()
     if 'user_id' in request.session:
@@ -281,7 +275,7 @@ def dashboard_DOT(request):
             del request.session['user_id']
             return redirect('connexion')
     if not connected_user or connected_user.fonction != 'DOT':
-        return redirect('connexion')  # Ou vers une page d'erreur ou dashboard général
+        return redirect('connexion')  
 
 
     context = {'employes': employes,
@@ -293,26 +287,26 @@ def dashboard_DOT(request):
                 'pc_en_service': pc_en_service,
                 'pcs_anciens': pcs_anciens,
                 'pc_en_rebu': pc_en_rebu,
-                'pcs_anciens_attribues': pcs_anciens_attribues,
                 'marques': marques,
-                'modeles': modeles,
-                'notifications': emails,
+                'pc_en_rebu_attribue': pc_en_rebu_attribue,
                 'pc_total_global': pc_total_global,
-                'pc_en_rebu_attribue': pc_en_rebu_attribue} 
+                'modeles': modeles,
+                'pcs_anciens_attribues': pcs_anciens_attribues,
+                'notifications': emails} 
     return render(request, 'page_DOT/dashboard_DOT.html', context)
 
 
 
 
 def Admin(request):
-    employes = Employe.objects.all().order_by('nom', 'prenom')
+    employes = Employe.objects.all()
     pcs = PC.objects.all()
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pc_total = PC.objects.count()  
     pc_en_service= Pc_attribué.objects.count()
     pc_en_rebu = Pc_ancien.objects.count()
-    pc_en_rebu_attribue = Pc_ancien_attribue.objects.filter(employe__isnull=False, date_fin_attribution__isnull=True).count()
+    pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('employe').order_by('-date_attribution')
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
     emails = Email.objects.all()
@@ -334,8 +328,8 @@ def Admin(request):
                 'pc_total': pc_total, 
                 'pc_en_service': pc_en_service,
                 'pc_en_rebu': pc_en_rebu,
-                'pc_en_rebu_attribue': pc_en_rebu_attribue,
                 'marques': marques,
                 'modeles': modeles,
+                'pcs_anciens_attribues': pcs_anciens_attribues,
                 'notifications':emails}
     return render(request, 'page_admin/custom-admin.html', context)

@@ -11,20 +11,14 @@ from datetime import datetime, timedelta
 def ajouter_pc(request):
     if request.method == 'POST':
         try:
-            print(f"[DEBUG] Request content type: {request.content_type}")
-            print(f"[DEBUG] Request body: {request.body}")
-            
             data = json.loads(request.body)
-            print(f"[DEBUG] Parsed data: {data}")
-
+           
             marque_name = data.get('marque')
-            print(f"[DEBUG] Marque: '{marque_name}'")
             if not marque_name:
                 return JsonResponse({'error': 'Marque manquante.'}, status=400)
             marque_instance, created = marquePC.objects.get_or_create(nom_marque=marque_name)
 
             modele_name = data.get('model')
-            print(f"[DEBUG] Modele: '{modele_name}'")
             if not modele_name:
                 return JsonResponse({'error': 'Modèle manquant.'}, status=400)
             modele_instance, created = modelePC.objects.get_or_create(nom_modele=modele_name)
@@ -35,8 +29,6 @@ def ajouter_pc(request):
             numero_serie = data.get('serial')
             date_achat = data.get('dateAchat')
             
-            print(f"[DEBUG] Autres champs - Processeur: '{processeur}', RAM: '{ram}', Disque: '{disque_dur}', Serial: '{numero_serie}', Date: '{date_achat}'")
-
             pc = PC.objects.create(
                 marque=marque_instance,
                 modele=modele_instance,
@@ -46,11 +38,8 @@ def ajouter_pc(request):
                 numero_serie=numero_serie,
                 date_achat=date_achat
             )
-            print(f"[DEBUG] PC créé avec succès: {pc.pk}")
             return JsonResponse({'message': 'PC ajouté avec succès!', 'id': pc.pk})
         except Exception as e:
-            print(f"[ERROR] Exception in ajouter_pc: {e}")
-            print(f"[ERROR] Exception type: {type(e)}")
             import traceback
             traceback.print_exc()
             return JsonResponse({'error': str(e)}, status=400)
@@ -101,10 +90,17 @@ def modifier_pc(request, pc_id):
 def assign_pc_via_form(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
+            if request.content_type and 'application/json' in request.content_type:
+                data = json.loads(request.body or '{}')
+            else:
+                data = request.POST
+
             employe_id = data.get('employe_id')
             date_attribution_str = data.get('date_attribution')
             numero_serie = data.get('numero_serie')
+
+            if not (employe_id and date_attribution_str and numero_serie):
+                return JsonResponse({'error': 'Champs requis manquants (employe_id, numero_serie, date_attribution).'}, status=400)
 
             try:
                 employe = Employe.objects.get(id_employe=employe_id)
@@ -113,6 +109,8 @@ def assign_pc_via_form(request):
             try:
                 pc = PC.objects.get(numero_serie=numero_serie)
             except PC.DoesNotExist:
+                if Pc_attribué.objects.filter(numero_serie=numero_serie, employe__id_employe=employe_id).exists():
+                    return JsonResponse({'message': 'PC déjà attribué (requête répétée ignorée).'}, status=200)
                 return JsonResponse({'error': 'Numéro de série inconnu ou non conforme au PC.'}, status=400)
             date_attribution = datetime.strptime(date_attribution_str, '%Y-%m-%d').date()
             Pc_attribué.objects.create(
@@ -151,6 +149,27 @@ def gestion_modeles(request):
             return JsonResponse({'message': 'Modèle ajouté.'})
         return JsonResponse({'error': 'Nom manquant'}, status=400)
 
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return JsonResponse({'error': 'Corps de requête invalide'}, status=400)
+        ancien = (data.get('old') or data.get('ancien') or '').strip()
+        nouveau = (data.get('nom') or data.get('new') or '').strip()
+        if not ancien or not nouveau:
+            return JsonResponse({'error': 'Champs requis: old et nom'}, status=400)
+        if ancien.lower() == nouveau.lower():
+            return JsonResponse({'message': 'Aucune modification nécessaire'})
+        obj = modelePC.objects.filter(nom_modele=ancien).first()
+        if not obj:
+            return JsonResponse({'error': 'Modèle introuvable'}, status=404)
+        # Empêcher doublon (case-insensible)
+        if modelePC.objects.filter(nom_modele__iexact=nouveau).exclude(pk=obj.pk).exists():
+            return JsonResponse({'error': 'Un modèle avec ce nom existe déjà'}, status=409)
+        obj.nom_modele = nouveau
+        obj.save(update_fields=['nom_modele'])
+        return JsonResponse({'message': 'Modèle modifié.'})
+
     elif request.method == 'DELETE':
         data = json.loads(request.body)
         nom = data.get('nom')
@@ -174,6 +193,27 @@ def gestion_marques(request):
             return JsonResponse({'message': 'Marque ajoutée.'})
         return JsonResponse({'error': 'Nom manquant'}, status=400)
 
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return JsonResponse({'error': 'Corps de requête invalide'}, status=400)
+        ancien = (data.get('old') or data.get('ancien') or '').strip()
+        nouveau = (data.get('nom') or data.get('new') or '').strip()
+        if not ancien or not nouveau:
+            return JsonResponse({'error': 'Champs requis: old et nom'}, status=400)
+        if ancien.lower() == nouveau.lower():
+            return JsonResponse({'message': 'Aucune modification nécessaire'})
+        obj = marquePC.objects.filter(nom_marque=ancien).first()
+        if not obj:
+            return JsonResponse({'error': 'Marque introuvable'}, status=404)
+        # Empêcher doublon (case-insensible)
+        if marquePC.objects.filter(nom_marque__iexact=nouveau).exclude(pk=obj.pk).exists():
+            return JsonResponse({'error': 'Une marque avec ce nom existe déjà'}, status=409)
+        obj.nom_marque = nouveau
+        obj.save(update_fields=['nom_marque'])
+        return JsonResponse({'message': 'Marque modifiée.'})
+
     elif request.method == 'DELETE':
         data = json.loads(request.body)
         nom = data.get('nom')
@@ -183,6 +223,138 @@ def gestion_marques(request):
             return JsonResponse({'message': 'Marque supprimée.'})
         return JsonResponse({'error': 'Marque introuvable'}, status=404)
 
+
+# =================== Gestion des attributions (modifier/supprimer) ===================
+def supprimer_attribution(request, attribution_id):
+    """Supprime une attribution Pc_attribué. Aucun prompt/confirmation côté serveur.
+    POST requis.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        pa = Pc_attribué.objects.get(pk=attribution_id)
+        pa.delete()
+        return JsonResponse({'message': 'Attribution supprimée avec succès!'})
+    except Pc_attribué.DoesNotExist:
+        return JsonResponse({'error': 'Attribution introuvable.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+def modifier_attribution(request, attribution_id):
+    """Modifie une attribution Pc_attribué.
+    Accepte JSON avec tout ou partie des champs: employe_id, marque, modele, numero_serie, processeur, ram, disque_dur, date_attribution (YYYY-MM-DD).
+    POST requis.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        pa = Pc_attribué.objects.get(pk=attribution_id)
+    except Pc_attribué.DoesNotExist:
+        return JsonResponse({'error': 'Attribution introuvable.'}, status=404)
+    try:
+        data = json.loads(request.body or '{}')
+    except Exception:
+        data = {}
+
+    try:
+        emp_id = data.get('employe_id')
+        if emp_id:
+            try:
+                emp = Employe.objects.get(id_employe=int(emp_id))
+                pa.employe = emp
+            except Employe.DoesNotExist:
+                return JsonResponse({'error': 'Employé introuvable.'}, status=404)
+
+        if 'marque' in data and data['marque']:
+            pa.marque = data['marque']
+        if 'modele' in data and data['modele']:
+            pa.modele = data['modele']
+        if 'numero_serie' in data and data['numero_serie']:
+            pa.numero_serie = data['numero_serie']
+        if 'processeur' in data and data['processeur']:
+            pa.processeur = data['processeur']
+        if 'ram' in data and data['ram']:
+            pa.ram = data['ram']
+        if 'disque_dur' in data and data['disque_dur']:
+            pa.disque_dur = data['disque_dur']
+        if 'date_attribution' in data and data['date_attribution']:
+            try:
+                pa.date_attribution = datetime.strptime(data['date_attribution'], '%Y-%m-%d').date()
+            except Exception:
+                return JsonResponse({'error': 'date_attribution invalide (YYYY-MM-DD).'}, status=400)
+
+        pa.save()
+        return JsonResponse({'message': 'Attribution modifiée avec succès!'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+def changer_pc_attribution(request, attribution_id):
+    """Change le PC attribué en affectant un autre PC disponible (table PC) à l'attribution.
+    POST JSON attendu: { numero_serie: str, date_attribution?: YYYY-MM-DD }
+    Effets:
+      - Le PC sélectionné est retiré du stock (PC.delete) et ses specs sont copiées dans Pc_attribué.
+      - L'ancien PC attribué est remis en stock (création dans PC) avec ses specs précédentes.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        pa = Pc_attribué.objects.get(pk=attribution_id)
+    except Pc_attribué.DoesNotExist:
+        return JsonResponse({'error': 'Attribution introuvable.'}, status=404)
+    try:
+        data = json.loads(request.body or '{}')
+    except Exception:
+        data = {}
+    numero_serie_nouveau = (data.get('numero_serie') or '').strip()
+    if not numero_serie_nouveau:
+        return JsonResponse({'error': 'numero_serie requis'}, status=400)
+    # Récupérer le nouveau PC en stock
+    try:
+        pc_new = PC.objects.get(numero_serie=numero_serie_nouveau)
+    except PC.DoesNotExist:
+        return JsonResponse({'error': 'PC sélectionné introuvable en stock.'}, status=404)
+
+    # Transaction pour garder la cohérence stock/attribution
+    try:
+        with transaction.atomic():
+            # Remettre l'ancien PC attribué en stock
+            # Rechercher/Créer les entités marque/modele nécessaires
+            m_obj, _ = marquePC.objects.get_or_create(nom_marque=pa.marque)
+            mo_obj, _ = modelePC.objects.get_or_create(nom_modele=pa.modele)
+            PC.objects.create(
+                marque=m_obj,
+                modele=mo_obj,
+                processeur=pa.processeur or '',
+                ram=pa.ram or '',
+                disque_dur=pa.disque_dur or '',
+                numero_serie=pa.numero_serie,
+                date_achat=pa.date_achat
+            )
+
+            # Mettre à jour l'attribution avec les specs du nouveau PC
+            pa.marque = pc_new.marque.nom_marque
+            pa.modele = pc_new.modele.nom_modele
+            pa.processeur = pc_new.processeur
+            pa.ram = pc_new.ram
+            pa.disque_dur = pc_new.disque_dur
+            pa.numero_serie = pc_new.numero_serie
+            # Optionnel: mettre à jour la date d'attribution si fournie
+            d_attr = data.get('date_attribution')
+            if d_attr:
+                try:
+                    pa.date_attribution = datetime.strptime(d_attr, '%Y-%m-%d').date()
+                except Exception:
+                    return JsonResponse({'error': 'date_attribution invalide (YYYY-MM-DD).'}, status=400)
+            pa.save()
+
+            # Retirer le nouveau PC du stock
+            pc_new.delete()
+
+        return JsonResponse({'message': 'PC attribué changé avec succès!'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 # Ajouter un PC directement dans Pc_ancien (manuel)
 def ajouter_pc_ancien(request):
@@ -254,10 +426,18 @@ def assign_pc_ancien(request):
         except Employe.DoesNotExist:
             return JsonResponse({'error': 'Employé introuvable'}, status=404)
 
-        pc_a.employe = employe
-        pc_a.save(update_fields=['employe'])
+        # Sauvegarder les données du PC ancien avant suppression
+        pc_data = {
+            'marque': pc_a.marque,
+            'modele': pc_a.modele,
+            'numero_serie': pc_a.numero_serie,
+            'processeur': pc_a.processeur,
+            'ram': pc_a.ram,
+            'disque_dur': pc_a.disque_dur,
+            'date_achat': pc_a.date_achat,
+        }
 
-        # Créer un enregistrement d'attribution dédié
+        # Traitement des dates
         from datetime import datetime as _dt
         if date_attr:
             try:
@@ -274,8 +454,18 @@ def assign_pc_ancien(request):
             except Exception:
                 return JsonResponse({'error': "date_fin_attribution invalide (YYYY-MM-DD)"}, status=400)
 
+        # Supprimer le PC ancien du catalogue
+        pc_a.delete()
+
+        # Créer l'attribution avec les données sauvegardées
         Pc_ancien_attribue.objects.create(
-            pc_ancien=pc_a,
+            marque=pc_data['marque'],
+            modele=pc_data['modele'],
+            numero_serie=pc_data['numero_serie'],
+            processeur=pc_data['processeur'],
+            ram=pc_data['ram'],
+            disque_dur=pc_data['disque_dur'],
+            date_achat=pc_data['date_achat'],
             employe=employe,
             date_attribution=date_attribution,
             date_fin_attribution=date_fin_attribution,
@@ -296,7 +486,6 @@ def restituer_pc(request):
             commentaires = request.POST.get('commentaires', '')
 
             user_id = request.session.get('user_id')
-            print(f"  user_id de session: {user_id}")
             
             if not user_id:
                 return JsonResponse({'error': 'Utilisateur non connecté.'}, status=401)
@@ -511,5 +700,140 @@ def amortir_pcs(request):
                 pa.delete()
                 moved += 1
         return JsonResponse({'ok': True, 'moved': moved})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+# Modifier un PC ancien (utilise la même modale que l'ajout, en mode édition)
+def modifier_pc_ancien(request, ancien_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        if request.content_type and 'application/json' in request.content_type:
+            data = json.loads(request.body)
+        else:
+            data = request.POST
+
+        try:
+            pc_a = Pc_ancien.objects.get(id_ancien=int(ancien_id))
+        except Pc_ancien.DoesNotExist:
+            return JsonResponse({'error': 'PC ancien introuvable'}, status=404)
+
+        marque = data.get('marque') or data.get('brand')
+        modele = data.get('model')
+        processeur = data.get('processeur')
+        ram = data.get('ram')
+        disque_dur = data.get('disque')
+        numero_serie = data.get('serial')
+        date_achat = data.get('dateAchat')
+        employe_id = data.get('employe_id')
+
+        # Validation minimale (comme l'ajout)
+        if not (marque and modele and numero_serie):
+            return JsonResponse({'error': 'Champs requis manquants (marque, modèle, numéro de série).'}, status=400)
+
+        employe = None
+        if employe_id:
+            try:
+                employe = Employe.objects.get(id_employe=int(employe_id))
+            except Employe.DoesNotExist:
+                return JsonResponse({'error': "Employé introuvable"}, status=404)
+
+        pc_a.marque = marque
+        pc_a.modele = modele
+        pc_a.numero_serie = numero_serie
+        pc_a.processeur = processeur or ''
+        pc_a.ram = ram or ''
+        pc_a.disque_dur = disque_dur or ''
+        pc_a.date_achat = date_achat or None
+        pc_a.employe = employe
+        pc_a.save()
+
+        return JsonResponse({'message': 'PC ancien modifié avec succès'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+# Supprimer un PC ancien
+def supprimer_pc_ancien(request, ancien_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        try:
+            pc_a = Pc_ancien.objects.get(id_ancien=int(ancien_id))
+        except Pc_ancien.DoesNotExist:
+            return JsonResponse({'error': 'PC ancien introuvable'}, status=404)
+
+        # La suppression en cascade retirera aussi les attributions liées (ForeignKey CASCADE)
+        pc_a.delete()
+        return JsonResponse({'message': 'PC ancien supprimé avec succès'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+# =================== PC anciens attribués: modifier / supprimer ===================
+def supprimer_pc_ancien_attribue(request, attribue_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        try:
+            obj = Pc_ancien_attribue.objects.get(pk=attribue_id)
+        except Pc_ancien_attribue.DoesNotExist:
+            return JsonResponse({'error': 'PC ancien attribué introuvable.'}, status=404)
+        obj.delete()
+        return JsonResponse({'message': 'PC ancien attribué supprimé avec succès'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+def modifier_pc_ancien_attribue(request, attribue_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        try:
+            obj = Pc_ancien_attribue.objects.get(pk=attribue_id)
+        except Pc_ancien_attribue.DoesNotExist:
+            return JsonResponse({'error': 'PC ancien attribué introuvable.'}, status=404)
+
+        if request.content_type and 'application/json' in request.content_type:
+            try:
+                data = json.loads(request.body or '{}')
+            except Exception:
+                data = {}
+        else:
+            data = request.POST
+
+        # Mise à jour des champs basiques
+        for field in ['marque', 'modele', 'numero_serie', 'processeur', 'ram', 'disque_dur']:
+            if field in data and data.get(field) is not None:
+                setattr(obj, field, data.get(field))
+
+        # Dates
+        from datetime import datetime as _dt
+        if 'date_attribution' in data and data.get('date_attribution'):
+            try:
+                obj.date_attribution = _dt.strptime(data.get('date_attribution'), '%Y-%m-%d').date()
+            except Exception:
+                return JsonResponse({'error': 'date_attribution invalide (YYYY-MM-DD).'}, status=400)
+        if 'date_fin_attribution' in data:
+            val = data.get('date_fin_attribution')
+            if val:
+                try:
+                    obj.date_fin_attribution = _dt.strptime(val, '%Y-%m-%d').date()
+                except Exception:
+                    return JsonResponse({'error': 'date_fin_attribution invalide (YYYY-MM-DD).'}, status=400)
+            else:
+                obj.date_fin_attribution = None
+
+        # Employé
+        emp_id = data.get('employe_id') or data.get('employe')
+        if emp_id:
+            try:
+                obj.employe = Employe.objects.get(id_employe=int(emp_id))
+            except Employe.DoesNotExist:
+                return JsonResponse({'error': 'Employé introuvable.'}, status=404)
+
+        obj.save()
+        return JsonResponse({'message': 'PC ancien attribué modifié avec succès'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)

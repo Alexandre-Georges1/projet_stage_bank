@@ -38,7 +38,6 @@ def envoyer_bordereau_employe(request):
 def bordereau_utilisateur(request):
     employe_connecte = None
     if 'user_id' in request.session:
-        print("USER ID EN SESSION :", request.session.get('user_id'))
         try:
             employe_connecte = Employe.objects.get(pk=request.session['user_id'])
         except Employe.DoesNotExist:

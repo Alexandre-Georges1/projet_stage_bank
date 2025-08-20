@@ -1,8 +1,3 @@
-/**
- * ===============================
- * MAIN : Point d'entrée principal du dashboard
- * ===============================
- */
 
 // Fonction principale d'initialisation
 function initDashboard() {

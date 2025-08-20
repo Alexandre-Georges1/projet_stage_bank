@@ -39,6 +39,10 @@ function initUserManagement() {
 
 // Initialisation de l'attribution de PC
 function initPcAssignment() {
+    // Garde globale pour éviter les attachements multiples si le script est chargé deux fois
+    if (window.__assignPcHandlersBound) return;
+    window.__assignPcHandlersBound = true;
+
     const assignPcBtn = document.getElementById('assign-pc-btn');
     const assignPcModal = document.getElementById('assignPcModal');
     const assignModalCloseButton = document.querySelector('#assignPcModal .modal-close-button');
@@ -71,6 +75,9 @@ function initPcAssignment() {
     if (assignPcform) {
         assignPcform.addEventListener('submit', async function(e) {
             e.preventDefault();
+            // Verrou anti double-soumission
+            if (assignPcform.dataset.submitting === '1') return;
+            assignPcform.dataset.submitting = '1';
             const employeSelect = document.getElementById('assignEmploye');
             const pcNumeroSerieSelect = document.getElementById('assignPcNumeroSerie');
             const dateAttribution = document.getElementById('assignDateAttribution')?.value;
@@ -116,6 +123,9 @@ function initPcAssignment() {
             } catch (error) {
                 console.error(error);
                 showUserNotification("Une erreur est survenue lors de l'attribution.", 'error', 'Erreur Réseau');
+            } finally {
+                // Relâcher le verrou de soumission
+                assignPcform.dataset.submitting = '0';
             }
         });
     }

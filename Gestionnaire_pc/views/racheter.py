@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from ..models import Pc_attribué, Employe, Email
+from ..models import Pc_attribué, Employe, Email, Email_RDOT, Email_DAF, Email_MGX
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -82,13 +82,30 @@ def demande_de_rachat(request):
             except Exception as e:
                 email_status = f"Erreur lors de l'envoi de l’e-mail : {e}"
 
-            # Enregistrement de l’e-mail
             Email.objects.create(
                 objet=subject,
                 destinataire='kaogeorges2006@gmail.com',
                 corps=message,
                 expediteur=connected_user
             ) 
+            Email_RDOT.objects.create(
+                objet=subject,
+                corps=message,
+                destinataire='kaogeorges2006@gmail.com',
+                expediteur=connected_user,
+            )
+            Email_DAF.objects.create(
+                objet=subject,
+                corps=message,
+                destinataire='kaogeorges2006@gmail.com',
+                expediteur=connected_user,
+            )
+            Email_MGX.objects.create(
+                objet=subject,
+                corps=message,
+                destinataire='kaogeorges2006@gmail.com',
+                expediteur=connected_user,
+            )
 
             # Mise à jour du statut du PC attribué à l'utilisateur connecté (status devient une chaîne)
             try:

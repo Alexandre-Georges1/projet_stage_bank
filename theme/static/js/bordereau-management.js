@@ -108,5 +108,4 @@ function handleAcceptBordereau() {
 window.toggleAcceptButton = toggleAcceptButton;
 window.handleAcceptBordereau = handleAcceptBordereau;
 
-// Debug au chargement
 

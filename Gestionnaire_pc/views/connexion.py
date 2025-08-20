@@ -24,7 +24,7 @@ def connexion(request):
                     response_data['general_dashboard_url'] = reverse('dashboard_employe')
                 elif employe.fonction in ['Admin', 'admin']:
                     response_data['redirect_url'] = reverse('custom_admin')
-                elif employe.fonction in ['Employe', 'Utilisateur','Autre']:
+                elif employe.fonction in ['Employe', 'Utilisateur','Autre','Stagiaire']:
                     response_data['redirect_url'] = reverse('dashboard_employe')
                 else:
                     response_data['success'] = False
@@ -86,7 +86,7 @@ def connexion(request):
                     'user_fonction': user_role
                 }
 
-                if user_role in ['DOT', 'DCH', 'MG' , 'RDOT', 'RMG', 'DAF', 'Admin']:
+                if user_role in ['DOT', 'DCH', 'MG' , 'RDOT', 'RMG', 'DAF', 'Admin','Stagiaire']:
                     response_data.update({
                         'choice_required': True,
                         'specific_dashboard_url': reverse(f'dashboard_{user_role}'),

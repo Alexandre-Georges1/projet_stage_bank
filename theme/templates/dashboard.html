@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="{% static 'css/dist/dashboard.css' %}?v=20250719190828">
-    <link rel="stylesheet" href="{% static 'css/dist/tableau_de_bord.css' %}?v=20250812">
+    <link rel="stylesheet" href="{% static 'css/dist/tableau_de_bord.css' %}?v=20250719190828">
     <link rel="icon" type="image/x-icon" sizes="32x32" href="{% static 'favicon.ico' %}">
     <meta name="description" content="Gérez facilement votre parc informatique avec notre application PC pour entreprises. Suivi, maintenance et analyse en temps réel.">
     <title>Dashboard</title>
@@ -187,6 +187,10 @@
     window.modifierPcUrl = "{% url 'modifier_pc' pc_id=0 %}";
     window.supprimerPcUrl = "{% url 'supprimer_pc' pc_id=0 %}";
     window.assignPcUrl = "{% url 'assign_pc_via_form' %}";
+    // URLs pour gérer les attributions (édition/suppression/changement de PC)
+    window.modifierAttributionUrl = "{% url 'modifier_attribution' attribution_id=0 %}";
+    window.supprimerAttributionUrl = "{% url 'supprimer_attribution' attribution_id=0 %}";
+    window.changerPcAttributionUrl = "{% url 'changer_pc_attribution' attribution_id=0 %}";
     window.envoyercaracteristiquesUrl="{% url 'envoyer_caracteristiques' %}";
     window.demandeCaracteristiqueUrl="{% url 'demander_caracteristique' %}";
     window.deconnexionUrl = "{% url 'deconnexion' %}";
@@ -219,6 +223,8 @@
     // URLs PC anciens
     window.ajouterPcAncienUrl = "{% url 'ajouter_pc_ancien' %}";
     window.assignPcAncienUrl = "{% url 'assign_pc_ancien' %}";
+    window.modifierPcAncienUrl = "{% url 'modifier_pc_ancien' ancien_id=0 %}";
+    window.supprimerPcAncienUrl = "{% url 'supprimer_pc_ancien' ancien_id=0 %}";
     </script>
 
 <script src="{% static 'js/core/utilities.js' %}"></script>
@@ -238,7 +244,6 @@
 <script src="{% static 'validation-demandes-management.js' %}"></script>
 <script src="{% static 'js/modules/amortir.js' %}"></script>
 <script src="{% static 'js/modules/pc-anciens-management.js' %}"></script>
-<script src="{% static 'js/modules/table-search.js' %}?v=20250812"></script>
 <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

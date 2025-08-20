@@ -50,4 +50,13 @@ urlpatterns = [
     path('amortir-pcs/', views.amortir_pcs, name='amortir_pcs'),
     path('pc-anciens/ajouter/', views.ajouter_pc_ancien, name='ajouter_pc_ancien'),
     path('pc-anciens/assigner/', views.assign_pc_ancien, name='assign_pc_ancien'),
+    path('pc-anciens/<int:ancien_id>/modifier/', views.modifier_pc_ancien, name='modifier_pc_ancien'),
+    path('pc-anciens/<int:ancien_id>/supprimer/', views.supprimer_pc_ancien, name='supprimer_pc_ancien'),
+    # Attributions: modifier / supprimer
+    path('attributions/<int:attribution_id>/supprimer/', views.supprimer_attribution, name='supprimer_attribution'),
+    path('attributions/<int:attribution_id>/modifier/', views.modifier_attribution, name='modifier_attribution'),
+    path('attributions/<int:attribution_id>/changer-pc/', views.changer_pc_attribution, name='changer_pc_attribution'),
+    # PC anciens attribués: modifier / supprimer
+    path('pc-anciens-attribues/<int:attribue_id>/supprimer/', views.supprimer_pc_ancien_attribue, name='supprimer_pc_ancien_attribue'),
+    path('pc-anciens-attribues/<int:attribue_id>/modifier/', views.modifier_pc_ancien_attribue, name='modifier_pc_ancien_attribue'),
 ]

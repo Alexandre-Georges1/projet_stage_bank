@@ -1,5 +1,5 @@
 <!-- Toutes les vues du dashboard -->
-
+{% load static %}
 <!-- Vue Tableau de Bord -->
 <div id="dashboard-view" class="hidden">
     <h1>Tableau de Bord</h1>
@@ -212,11 +212,14 @@
                         <th>Date d'achat</th>
                         <th>Employé</th>
                         <th>Date d'archivage</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for pc_arch in pcs_anciens %}
-                    <tr>
+                    <tr data-ancien-id="{{ pc_arch.id_ancien }}"
+                        {% if pc_arch.employe %}data-employe-id="{{ pc_arch.employe.id_employe }}"{% endif %}
+                        {% if pc_arch.date_achat %}data-date-achat="{{ pc_arch.date_achat|date:'Y-m-d' }}"{% endif %}>
                         <td>{{ pc_arch.marque }}</td>
                         <td>{{ pc_arch.modele }}</td>
                         <td>{{ pc_arch.processeur }}</td>
@@ -226,6 +229,10 @@
                         <td>{{ pc_arch.date_achat|date:"Y-m-d" }}</td>
                         <td>{% if pc_arch.employe %}{{ pc_arch.employe.nom }} {{ pc_arch.employe.prenom }}{% else %}-{% endif %}</td>
                         <td>{{ pc_arch.date_ajout|date:"Y-m-d" }}</td>
+                        <td>
+                            <button class="btn-modifier" aria-label="Modifier" style="margin: 0 2px;"><i class="fas fa-edit"></i></button>
+                            <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 2px;"><i class="fas fa-trash-alt"></i></button>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr><td colspan="9">Aucun PC archivé.</td></tr>
@@ -248,17 +255,25 @@
                         <th>Employé</th>
                         <th>Date d'attribution</th>
                         <th>Date fin d'attribution</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for a in pcs_anciens_attribues %}
-                    <tr>
-                        <td>{{ a.pc_ancien.marque }}</td>
-                        <td>{{ a.pc_ancien.modele }}</td>
-                        <td>{{ a.pc_ancien.numero_serie }}</td>
+                    <tr data-ancien-attribue-id="{{ a.id_attribue_ancien }}"
+                        {% if a.employe %}data-employe-id="{{ a.employe.id_employe }}"{% endif %}
+                        data-date-attr="{{ a.date_attribution|date:'Y-m-d' }}"
+                        {% if a.date_fin_attribution %}data-date-fin="{{ a.date_fin_attribution|date:'Y-m-d' }}"{% endif %}>
+                        <td>{{ a.marque }}</td>
+                        <td>{{ a.modele }}</td>
+                        <td>{{ a.numero_serie }}</td>
                         <td>{% if a.employe %}{{ a.employe.nom }} {{ a.employe.prenom }}{% else %}-{% endif %}</td>
                         <td>{{ a.date_attribution|date:"Y-m-d" }}</td>
                         <td>{{ a.date_fin_attribution|date:"Y-m-d" }}</td>
+                        <td>
+                            <button class="btn-modifier" aria-label="Modifier" style="margin: 0 2px;"><i class="fas fa-edit"></i></button>
+                            <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 2px;"><i class="fas fa-trash-alt"></i></button>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr><td colspan="6">Aucune attribution de PC ancien.</td></tr>
@@ -711,7 +726,7 @@
                         </thead>
                         <tbody>
                             {% for attribution in pcs_attribues %}
-                            <tr data-attribution-id="{{ attribution.id }}" style="border-bottom: 1px solid #f0f0f0;">
+                            <tr data-attribution-id="{{ attribution.pk }}" style="border-bottom: 1px solid #f0f0f0;">
                                 <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ attribution.employe.nom }}</td>
                                 <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ attribution.employe.prenom }}</td>
                                 <td style="padding: 16px 8px; vertical-align: middle;">{{ attribution.marque }}</td>
@@ -719,7 +734,15 @@
                                 <td style="padding: 16px 8px; vertical-align: middle; font-family: monospace; font-size: 13px;">{{ attribution.numero_serie }}</td>	
                                 <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ attribution.date_attribution|date:"d/m/Y" }}</td>
                                 <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
-                                    <button aria-label="Bordereau" class="btn-bordereau" data-attribution-id="{{ attribution.id }}" data-telephone="{{ attribution.employe.telephone }}" data-email="{{ attribution.employe.email }}" data-employe-id="{{ attribution.employe.pk }}" style="background-color: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Bordereau</button>
+                                    <div class="action-buttons" style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <button class="btn-modifier btn-modifier-attribution" aria-label="Modifier l'attribution" title="Modifier" style="margin: 0 2px;">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-supprimer btn-supprimer-attribution" aria-label="Supprimer l'attribution" title="Supprimer" style="margin: 0 2px;">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        <button aria-label="Bordereau" class="btn-bordereau" data-attribution-id="{{ attribution.pk }}" data-telephone="{{ attribution.employe.telephone }}" data-email="{{ attribution.employe.email }}" data-employe-id="{{ attribution.employe.pk }}" style="background-color: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Bordereau</button>
+                                    </div>
                                 </td>
                             </tr>
                             {% empty %}

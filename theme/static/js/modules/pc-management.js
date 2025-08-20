@@ -121,7 +121,10 @@ function renderMarques(){
         tr.innerHTML = `
             <td>${i+1}</td>
             <td>${m.nom}</td>
-            <td><button type="button" class="btn-remove-marque" data-nom="${m.nom}">🗑</button></td>`;
+            <td>
+                <button type="button" class="btn-edit-marque" data-nom="${m.nom}" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" class="btn-remove-marque" data-nom="${m.nom}" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+            </td>`;
         tbody.appendChild(tr);
     });
 }
@@ -135,7 +138,10 @@ function renderModeles(){
         tr.innerHTML = `
             <td>${i+1}</td>
             <td>${m.nom}</td>
-            <td><button type="button" class="btn-remove-modele" data-nom="${m.nom}">🗑</button></td>`;
+            <td>
+                <button type="button" class="btn-edit-modele" data-nom="${m.nom}" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" class="btn-remove-modele" data-nom="${m.nom}" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+            </td>`;
         tbody.appendChild(tr);
     });
 }
@@ -238,12 +244,70 @@ async function supprimerModele(nom){
     }
 }
 
+async function modifierMarque(oldNom){
+    const nouveau = prompt('Nouveau nom de la marque :', oldNom);
+    if (nouveau===null) return; // annulé
+    const nom = nouveau.trim();
+    if (!nom) return window.NotificationSystem?.warning('Nom invalide',{title:'Validation'});
+    if (marques.some(m=>m.nom.toLowerCase()===nom.toLowerCase())){
+        return window.NotificationSystem?.warning('Cette marque existe déjà',{title:'Doublon'});
+    }
+    try{
+        const r = await fetch(URL_MARQUES, {
+            method:'PUT',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()},
+            body: JSON.stringify({ old: oldNom, nom })
+        });
+        const data = await r.json().catch(()=>({}));
+        if(r.ok){
+            await loadMarques();
+            window.NotificationSystem?.success('Marque modifiée',{title:'Succès'});
+        }else{
+            window.NotificationSystem?.error(data.error||'Modification échouée',{title:'Erreur'});
+        }
+    }catch(e){
+        console.error(e);
+        window.NotificationSystem?.error('Erreur réseau modification',{title:'Erreur Réseau'});
+    }
+}
+
+async function modifierModele(oldNom){
+    const nouveau = prompt('Nouveau nom du modèle :', oldNom);
+    if (nouveau===null) return; // annulé
+    const nom = nouveau.trim();
+    if (!nom) return window.NotificationSystem?.warning('Nom invalide',{title:'Validation'});
+    if (modeles.some(m=>m.nom.toLowerCase()===nom.toLowerCase())){
+        return window.NotificationSystem?.warning('Ce modèle existe déjà',{title:'Doublon'});
+    }
+    try{
+        const r = await fetch(URL_MODELES, {
+            method:'PUT',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()},
+            body: JSON.stringify({ old: oldNom, nom })
+        });
+        const data = await r.json().catch(()=>({}));
+        if(r.ok){
+            await loadModeles();
+            window.NotificationSystem?.success('Modèle modifié',{title:'Succès'});
+        }else{
+            window.NotificationSystem?.error(data.error||'Modification échouée',{title:'Erreur'});
+        }
+    }catch(e){
+        console.error(e);
+        window.NotificationSystem?.error('Erreur réseau modification',{title:'Erreur Réseau'});
+    }
+}
+
 // Délégation événements suppression (évite inline onclick)
 document.addEventListener('click', (e)=>{
     const btnMarque = e.target.closest('.btn-remove-marque');
     if(btnMarque) supprimerMarque(btnMarque.dataset.nom);
     const btnModele = e.target.closest('.btn-remove-modele');
     if(btnModele) supprimerModele(btnModele.dataset.nom);
+    const btnEditMarque = e.target.closest('.btn-edit-marque');
+    if(btnEditMarque) modifierMarque(btnEditMarque.dataset.nom);
+    const btnEditModele = e.target.closest('.btn-edit-modele');
+    if(btnEditModele) modifierModele(btnEditModele.dataset.nom);
 });
 
 // Aliases pour compatibilité avec le reste du code
@@ -638,6 +702,122 @@ function initPcManagement() {
             }
         });
     }
+
+    // Actions sur la liste des attributions (modifier/supprimer)
+    const attributionsTable = document.querySelector('#attribuer-view table tbody');
+    if (attributionsTable) {
+        attributionsTable.addEventListener('click', async function(e){
+            const row = e.target.closest('tr');
+            if (!row) return;
+            const attributionId = row.dataset.attributionId;
+            if (e.target.closest('.btn-modifier-attribution')) {
+                if (!attributionId) { window.NotificationSystem?.error('Identifiant d\'attribution manquant', { title:'Erreur' }); return; }
+                e.preventDefault();
+                // Réutiliser la modale d'attribution existante (assignPcModal) en mode édition
+                const tds = row.querySelectorAll('td');
+                const nom = tds[0]?.textContent?.trim() || '';
+                const prenom = tds[1]?.textContent?.trim() || '';
+                const marque = tds[2]?.textContent?.trim() || '';
+                const modele = tds[3]?.textContent?.trim() || '';
+                const numero = tds[4]?.textContent?.trim() || '';
+                const dateFr = tds[5]?.textContent?.trim() || '';
+                const toIso = (fr) => { const m = fr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ''; };
+                const dateIso = toIso(dateFr);
+
+                const modal = document.getElementById('assignPcModal');
+                const form = document.getElementById('assignPcform');
+                if (!modal || !form) { window.NotificationSystem?.error('Modale d\'attribution introuvable', { title: 'Erreur' }); return; }
+                form.dataset.mode = 'edit-attribution';
+                form.dataset.attributionId = attributionId;
+
+                // Champs de la modale d'attribution
+                const empSelect = document.getElementById('assignEmploye');
+                const pcSelectWrap = document.getElementById('assignPcNumeroSerie')?.closest('.form-group');
+                const pcSelect = document.getElementById('assignPcNumeroSerie');
+                const dateInput = document.getElementById('assignDateAttribution');
+
+                // Pré-remplissage
+                if (empSelect) {
+                    let matched = false;
+                    empSelect.querySelectorAll('option').forEach(opt => {
+                        const txt = opt.textContent?.trim() || '';
+                        if (txt === `${nom} ${prenom}`) { opt.selected = true; matched = true; }
+                    });
+                    if (!matched) empSelect.value = '';
+                }
+                if (dateInput) dateInput.value = dateIso || '';
+
+                // En mode édition: afficher le select PC pour permettre un changement éventuel
+                if (pcSelectWrap) pcSelectWrap.style.display = '';
+                if (pcSelect) {
+                    pcSelect.disabled = false;
+                    pcSelect.required = false; // en édition, garder vide signifie conserver le PC actuel
+                    // Ajouter une option "Conserver le PC actuel" si absente
+                    let placeholder = pcSelect.querySelector('option[data-edit-placeholder="1"]');
+                    if (!placeholder) {
+                        placeholder = document.createElement('option');
+                        placeholder.value = '';
+                        placeholder.textContent = '— Conserver le PC actuel —';
+                        placeholder.setAttribute('data-edit-placeholder', '1');
+                        pcSelect.insertBefore(placeholder, pcSelect.firstChild);
+                    }
+                    pcSelect.value = '';
+                }
+
+                // Afficher une info du PC actuellement attribué
+                if (pcSelectWrap) {
+                    let info = pcSelectWrap.querySelector('#currentAttribPcInfo');
+                    if (!info) {
+                        info = document.createElement('div');
+                        info.id = 'currentAttribPcInfo';
+                        info.className = 'form-hint';
+                        pcSelectWrap.appendChild(info);
+                    }
+                    info.textContent = `PC actuel : ${marque} ${modele} (${numero})`;
+                }
+
+                // Titre et bouton du formulaire
+                const headerTitle = modal.querySelector('.modal-header h2');
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (headerTitle) headerTitle.textContent = "Modifier l'attribution";
+                if (submitBtn) submitBtn.textContent = 'Enregistrer';
+
+                // Ouvrir la modale
+                if (window.openModal) window.openModal('assignPcModal'); else modal.classList.remove('hidden');
+        } else if (e.target.closest('.btn-supprimer-attribution')) {
+                e.preventDefault();
+                try {
+            if (!attributionId) { window.NotificationSystem?.error('Identifiant d\'attribution manquant', { title:'Erreur' }); return; }
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCsrfToken();
+                    const url = window.supprimerAttributionUrl?.replace('0', attributionId);
+                    if (!csrfToken || !url) {
+                        window.NotificationSystem?.error('Données manquantes pour la suppression', { title: 'Erreur' });
+                        return;
+                    }
+                    // Suppression directe sans confirmation
+                    let loadingId = null;
+                    if (window.NotificationSystem?.loading) {
+                        loadingId = window.NotificationSystem.loading('Suppression en cours...', { title: 'Attribution' });
+                    }
+                    const resp = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrfToken }
+                    });
+                    const data = await resp.json().catch(()=>({}));
+                    if (loadingId && window.NotificationSystem?.remove) window.NotificationSystem.remove(loadingId);
+                    if (resp.ok) {
+                        row.remove();
+                        window.NotificationSystem?.success(data.message || 'Attribution supprimée', { title: 'Supprimée' });
+                    } else {
+                        window.NotificationSystem?.error(data.error || 'Échec de la suppression', { title: 'Erreur' });
+                    }
+                } catch (err) {
+                    console.error(err);
+                    window.NotificationSystem?.error('Erreur lors de la suppression', { title: 'Erreur Réseau' });
+                }
+            }
+        });
+    }
 }
 
 window.DashboardPcManagement = {
@@ -647,6 +827,148 @@ window.DashboardPcManagement = {
     chargerModelesAsync,
     ajouterMarque,
     ajouterModele,
+    modifierMarque,
+    modifierModele,
     supprimerMarque,
     supprimerModele
 };
+
+// Soumission du formulaire de modification d'attribution
+document.addEventListener('DOMContentLoaded', function(){
+    const form = document.getElementById('assignPcform');
+    if (!form) return;
+    const assignModal = document.getElementById('assignPcModal');
+    const headerNode = assignModal?.querySelector('.modal-header h2');
+    const submitNode = form.querySelector('button[type="submit"]');
+    const defaultAssignTitle = headerNode?.textContent || '';
+    const defaultAssignBtnText = submitNode?.textContent || '';
+    // Restauration de l'état par défaut du modal d'attribution
+    const restoreAssignModalDefaults = () => {
+        form.dataset.mode = '';
+        form.dataset.attributionId = '';
+        const pcSelectWrap = document.getElementById('assignPcNumeroSerie')?.closest('.form-group');
+        const pcSelect = document.getElementById('assignPcNumeroSerie');
+        if (pcSelectWrap) pcSelectWrap.style.display = '';
+        if (pcSelect) {
+            pcSelect.disabled = false;
+            pcSelect.required = true; 
+            // Retirer l'option placeholder d'édition si présente
+            const ph = pcSelect.querySelector('option[data-edit-placeholder="1"]');
+            if (ph) ph.remove();
+            pcSelect.value = pcSelect.options[0]?.value || '';
+        }
+        const info = pcSelectWrap?.querySelector('#currentAttribPcInfo');
+        if (info) info.remove();
+        // Rétablir titre et bouton par défaut de la modale d'attribution
+        if (headerNode) headerNode.textContent = defaultAssignTitle;
+        if (submitNode) submitNode.textContent = defaultAssignBtnText;
+    };
+
+    // Fermer via le bouton X
+    const closeBtn = document.querySelector('#assignPcModal .modern-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => setTimeout(restoreAssignModalDefaults, 0));
+    }
+    // Fermer via clic overlay
+    const assignOverlay = document.getElementById('assignPcModal');
+    if (assignOverlay) {
+        assignOverlay.addEventListener('click', (e) => {
+            if (e.target === assignOverlay) {
+                setTimeout(restoreAssignModalDefaults, 0);
+            }
+        });
+    }
+
+    form.addEventListener('submit', async function(e){
+        // En mode édition d'attribution: soit on met à jour employé/date, soit on change le PC si un numéro est sélectionné
+        if (this.dataset.mode === 'edit-attribution') {
+            e.preventDefault();
+            // Verrou anti double-soumission
+            if (this.dataset.submitting === '1') return;
+            this.dataset.submitting = '1';
+            const attributionId = this.dataset.attributionId;
+            const emp = document.getElementById('assignEmploye')?.value;
+            const dateIso = document.getElementById('assignDateAttribution')?.value;
+            const selectedNumero = document.getElementById('assignPcNumeroSerie')?.value || '';
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCsrfToken();
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            if (!csrfToken) { window.NotificationSystem?.error('Token CSRF manquant', { title:'Sécurité' }); return; }
+
+            // Helper pour mettre à jour la ligne employé/date
+            const applyEmpDateUpdate = () => {
+                const row = document.querySelector(`#attribuer-view tr[data-attribution-id="${attributionId}"]`);
+                if (!row) return;
+                const tds = row.querySelectorAll('td');
+                if (dateIso) { const [Y,M,D] = dateIso.split('-'); tds[5].textContent = `${D}/${M}/${Y}`; }
+                if (emp) {
+                    const sel = document.getElementById('assignEmploye');
+                    const opt = sel?.querySelector(`option[value="${emp}"]`);
+                    if (opt) {
+                        const parts = opt.textContent.trim().split(' ');
+                        const newNom = parts.shift();
+                        const newPrenom = parts.join(' ');
+                        if (newNom) tds[0].textContent = newNom;
+                        if (newPrenom) tds[1].textContent = newPrenom;
+                    }
+                }
+            };
+
+            try {
+                if (window.DashboardModal?.setLoading && submitBtn) window.DashboardModal.setLoading(submitBtn, true);
+                // Si un numéro de série est choisi, on change le PC attribué
+                if (selectedNumero) {
+                    const urlChange = window.changerPcAttributionUrl?.replace('0', attributionId);
+                    if (!urlChange) { window.NotificationSystem?.error('URL changement PC manquante', { title:'Erreur' }); return; }
+                    const resp = await fetch(urlChange, { method:'POST', headers:{ 'Content-Type':'application/json', 'X-CSRFToken': csrfToken }, body: JSON.stringify({ numero_serie: selectedNumero, date_attribution: dateIso || undefined }) });
+                    const data = await resp.json().catch(()=>({}));
+                    if (resp.ok) {
+                        // Mettre à jour la ligne (marque, modèle, N° série, date, éventuellement nom/prénom)
+                        const row = document.querySelector(`#attribuer-view tr[data-attribution-id="${attributionId}"]`);
+                        if (row) {
+                            const tds = row.querySelectorAll('td');
+                            const pcSelect = document.getElementById('assignPcNumeroSerie');
+                            const optSel = pcSelect?.selectedOptions?.[0];
+                            const newMarque = optSel?.dataset?.marque;
+                            const newModele = optSel?.dataset?.modele;
+                            if (newMarque) tds[2].textContent = newMarque;
+                            if (newModele) tds[3].textContent = newModele;
+                            tds[4].textContent = selectedNumero;
+                            if (dateIso) { const [Y,M,D] = dateIso.split('-'); tds[5].textContent = `${D}/${M}/${Y}`; }
+                        }
+                        applyEmpDateUpdate();
+                        window.NotificationSystem?.success(data.message || 'PC changé et attribution mise à jour', { title:'Succès' });
+                        if (window.closeModal) window.closeModal('assignPcModal');
+                        restoreAssignModalDefaults();
+                    } else {
+                        window.NotificationSystem?.error(data.error || 'Échec du changement de PC', { title:'Erreur' });
+                    }
+                } else {
+                    // Sinon, simple mise à jour employé/date
+                    const payload = {};
+                    if (emp) payload.employe_id = emp;
+                    if (dateIso) payload.date_attribution = dateIso;
+                    const url = window.modifierAttributionUrl?.replace('0', attributionId);
+                    if (!url) { window.NotificationSystem?.error('URL mise à jour manquante', { title:'Erreur' }); return; }
+                    const resp = await fetch(url, { method:'POST', headers:{ 'Content-Type':'application/json', 'X-CSRFToken': csrfToken }, body: JSON.stringify(payload) });
+                    const data = await resp.json().catch(()=>({}));
+                    if (resp.ok) {
+                        applyEmpDateUpdate();
+                        window.NotificationSystem?.success(data.message || 'Attribution mise à jour', { title:'Succès' });
+                        if (window.closeModal) window.closeModal('assignPcModal');
+                        restoreAssignModalDefaults();
+                    } else {
+                        window.NotificationSystem?.error(data.error || 'Échec de la mise à jour', { title:'Erreur' });
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                window.NotificationSystem?.error('Erreur réseau', { title:'Erreur' });
+            } finally {
+                if (window.DashboardModal?.setLoading && submitBtn) window.DashboardModal.setLoading(submitBtn, false);
+                // Relâcher le verrou
+                this.dataset.submitting = '0';
+            }
+        }
+    });
+});
