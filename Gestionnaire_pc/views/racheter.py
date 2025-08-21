@@ -106,8 +106,6 @@ def demande_de_rachat(request):
                 destinataire='kaogeorges2006@gmail.com',
                 expediteur=connected_user,
             )
-
-            # Mise à jour du statut du PC attribué à l'utilisateur connecté (status devient une chaîne)
             try:
                 if connected_user:
                     pc = Pc_attribué.objects.get(employe=connected_user)
