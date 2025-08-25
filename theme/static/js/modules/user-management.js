@@ -399,7 +399,6 @@ function initEmployeeManagement() {
                 }
 
                 if (response.ok) {
-                    // Afficher un message de succès avec icône
                     showUserNotification(result.message, 'success', 'Employé Ajouté');
                     nouvelEmployeForm.reset(); 
                     
@@ -740,7 +739,6 @@ function showUserNotification(message, type = 'info') {
     if (typeof showEmployeeNotification === 'function') {
         showEmployeeNotification(message, type);
     } else {
-        // Fallback vers une alerte simple
         const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
         alert(`${icon} ${message}`);
     }

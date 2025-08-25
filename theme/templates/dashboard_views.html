@@ -42,7 +42,6 @@
     </ul>
 </div>
 
-<!-- Vue Paramètres -->
 <div id="parametre-view" class="hidden">
     <div class="bg-white shadow-sm border-b">
         <div class="parametres-container">
@@ -285,8 +284,6 @@
 </div>
 </div>
 
-   
-    
 
 <!-- Vue Utilisateurs -->
 <div id="utilisateur-view" class="hidden">
@@ -808,18 +805,32 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for b in bordereaux %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ b.numero_serie_pc }}</td>
-                        <td>{{ b.description_pc }}</td>
-                        <td>1</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4">Aucun matériel associé.</td>
-                    </tr>
-                    {% endfor %}
+                    {% if bordereaux %}
+                        {% for b in bordereaux %}
+                            <!-- Ligne principale (PC) -->
+                            <tr>
+                                <td>1</td>
+                                <td>{{ b.numero_serie_pc }}</td>
+                                <td>{{ b.description_pc }}</td>
+                                <td>1</td>
+                            </tr>
+                            <!-- Lignes supplémentaires (matériels) -->
+                            {% for m in b.materiels.all %}
+                                <tr>
+                                    <td>{{ forloop.counter|add:"1" }}</td>
+                                    <td>{{ m.numero_serie }}</td>
+                                    <td>{% if m.description %}{{ m.description }}{% else %}{{ m.materiel }}{% endif %}</td>
+                                    <td>{{ m.quantite }}</td>
+                                </tr>
+                            {% empty %}
+                                {# Aucun matériel additionnel #}
+                            {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4">Aucun matériel associé.</td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
 

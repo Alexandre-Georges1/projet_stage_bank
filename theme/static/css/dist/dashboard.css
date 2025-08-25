@@ -354,6 +354,10 @@ button.action-btn-demande:contains("Refuser"):hover {
     border-bottom: 1px solid #f0f0f0;
     transition: background-color 0.2s;
     cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .notification-item:hover {
@@ -363,6 +367,11 @@ button.action-btn-demande:contains("Refuser"):hover {
 .notification-item.unread {
     background-color: #f0f9ff;
     border-left: 3px solid #10b981;
+}
+
+/* Mettre le message en gras pour les notifications non lues */
+.notification-item.unread .notification-message {
+    font-weight: 600;
 }
 
 .notification-content {
@@ -379,6 +388,7 @@ button.action-btn-demande:contains("Refuser"):hover {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    position: relative;
 }
 
 .notification-icon.info {
@@ -404,6 +414,8 @@ button.action-btn-demande:contains("Refuser"):hover {
 .notification-details {
     flex: 1;
 }
+
+
 
 .notification-message {
     font-size: 14px;
@@ -936,7 +948,7 @@ body {
 	border-radius: 50%;
 	top: -40px;
 	right: 0;
-	box-shadow: 20px 20px 0 var(--grey);
+	/*box-shadow: 20px 20px 0 var(--grey);*/
 	z-index: -1;
 }
 #sidebar .side-menu li.active::after {
@@ -947,7 +959,7 @@ body {
 	border-radius: 50%;
 	bottom: -40px;
 	right: 0;
-	box-shadow: 20px -20px 0 var(--grey);
+	/*box-shadow: 20px -20px 0 var(--grey);*/
 	z-index: -1;
 }
 /* Assurer que la largeur de la sidebar transition correctement */
@@ -1006,7 +1018,6 @@ body {
 #sidebar .side-menu li#message-btn:hover i {
 	animation: pulse 1.5s infinite !important;
 }
-
 @keyframes pulse {
 	0% { transform: scale(1.2); }
 	50% { transform: scale(1.3); }
@@ -1046,9 +1057,9 @@ body {
 
 /* Effet de glissement pour l'élément actif */
 #sidebar .side-menu li.active {
-	transform: translateX(10px) !important;
+	/* transform: translateX(10px) !important;*/
 	transition: all 0.3s ease !important;
-	background: linear-gradient(135deg, var(--grey) 0%, rgba(0, 200, 83, 0.1) 100%) !important;
+	background: linear-gradient(135deg,  rgba(0, 200, 83, 0.1) 100%) !important;
 }
 /* CONTENT */
 #content {
@@ -1502,11 +1513,12 @@ table tbody tr:nth-child(even) {
 }
 
 table tbody tr:hover {
-    background-color: #e0e0e0;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    transform: translateY(-3px);
-    transition: all 0.3s ease-out;
-    cursor: pointer;
+    background-color: #f1f5f9; /* plus léger */
+    /* Supprimer l'élévation pour éviter le chevauchement des lignes */
+    box-shadow: none;
+    transform: none;
+    transition: background-color 0.2s ease-in-out;
+    cursor: default;
 }
 
 .table-data .order {
@@ -1573,6 +1585,43 @@ table .btn-supprimer {
     .no-print {
         display: none !important;
     }
+}
+
+/* =============================
+   BORDEREAU (champs des lignes)
+============================= */
+#bordereauModal .bordereau-row { 
+    border-bottom: 1px solid #d1fae5; 
+    transition: background-color 0.2s; 
+}
+#bordereauModal .bordereau-row:hover { 
+    background-color: #f0fdf4; 
+}
+#bordereauModal .bordereau-col--n { 
+    padding: 16px 12px; text-align: center; font-weight: 600; color: #059669; background: #dcfce7; 
+}
+#bordereauModal .bordereau-col { 
+    padding: 16px 12px; color: #374151; font-weight: 500; 
+}
+#bordereauModal .bordereau-col--qty { 
+    padding: 16px 12px; text-align: center; font-weight: 600; color: #15803d; background: #dcfce7; 
+}
+#bordereauModal input.b-serie,
+#bordereauModal input.b-desc,
+#bordereauModal input.b-qty {
+    font-family: inherit;
+    font-size: 15px;
+    color: #374151;
+}
+/* Masquer les flèches du nombre pour un rendu texte */
+#bordereauModal input.b-qty::-webkit-outer-spin-button,
+#bordereauModal input.b-qty::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+#bordereauModal input.b-qty {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 /* ========================================

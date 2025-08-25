@@ -1,20 +1,3 @@
-/**
- * ===============================
- * NOTI    info: {
-        icon: 'info-circle',
-        color: '#10b981',
-        gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-        title: 'Information'
-    },
-    loading: {
-        icon: 'spinner',
-        color: '#10b981',
-        gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-        title: 'Chargement'
-    }ystème de notifications modernes
- * ===============================
- */
-
 /* ========================================
    SYSTÈME DE NOTIFICATIONS MODERNES
 ======================================== */

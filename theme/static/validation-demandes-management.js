@@ -53,7 +53,6 @@ class ValidationDemandeManager {
 
             if (response.ok) {
                 this.showNotification(data.message, 'success');
-                // Recharger la page pour mettre à jour les données
                 setTimeout(() => {
                     window.location.reload();
                 }, 1500);

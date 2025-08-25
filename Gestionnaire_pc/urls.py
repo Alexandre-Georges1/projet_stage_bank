@@ -1,6 +1,6 @@
 from django.urls import path
 from Gestionnaire_pc import views
-from Gestionnaire_pc.views.bordereau import envoyer_bordereau_employe, accepter_bordereau
+from Gestionnaire_pc.views.bordereau import envoyer_bordereau_employe, accepter_bordereau, bordereau_details
 from Gestionnaire_pc.views.Mail import valider_ou_refuser_pc
 from Gestionnaire_pc.views.gestion_demandes import gerer_demandes_achat
 
@@ -36,6 +36,7 @@ urlpatterns = [
     path('racheter_pc/', views.racheter_pc, name='racheter_pc'),
     path('envoyer_bordereau_employe/', envoyer_bordereau_employe, name='envoyer_bordereau_employe'),
     path('accepter-bordereau/', accepter_bordereau, name='accepter_bordereau'),
+    path('bordereau-details/<int:employe_id>/', bordereau_details, name='bordereau_details'),
     path('politique_confidentialite/', politique_confidentialite, name='politique_confidentialite'),
     path('demande-rachat/', views.demande_de_rachat, name='demande_de_rachat'),
     path('mon-bordereau/', views.bordereau_utilisateur, name='bordereau_utilisateur'),

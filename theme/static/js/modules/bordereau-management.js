@@ -49,6 +49,8 @@ function initBordereauManagement() {
             // Stocker l'ID de l'employé et les informations sur la modale pour l'envoi
             const bordereauModal = document.getElementById('bordereauModal');
             if (bordereauModal) {
+                // Nettoyer d'éventuelles lignes ajoutées précédemment et réinitialiser la numérotation
+                resetBordereauExtraRows(bordereauModal);
                 bordereauModal.dataset.employeId = rowData.employeId;
                 bordereauModal.dataset.nomEmploye = rowData.nom;
                 bordereauModal.dataset.prenomEmploye = rowData.prenom;
@@ -58,12 +60,28 @@ function initBordereauManagement() {
                 bordereauModal.dataset.telephoneEmploye = rowData.telephone;
                 bordereauModal.dataset.emailEmploye = rowData.email;
 
+                // Précharger les matériels déjà enregistrés sur le dernier bordereau (si existants)
+                try {
+                    if (rowData.employeId) {
+                        prefillBordereauItems(rowData.employeId);
+                    }
+                } catch (_) { /* noop */ }
+
                 // Attacher l'écouteur d'événements au bouton Envoyer demande
                 const btnEnvoyerDemande = bordereauModal.querySelector('.btn-Envoyer-Demande');
                 if (btnEnvoyerDemande) {
                     btnEnvoyerDemande.onclick = async function() {
                         await handleEnvoyerDemande(bordereauModal);
                     };
+                }
+
+                // Bouton (+) pour ajouter une ligne matériel
+                const addRowBtn = bordereauModal.querySelector('#btnAddBordereauRow');
+                if (addRowBtn) {
+                    // éviter doublons
+                    addRowBtn.replaceWith(addRowBtn.cloneNode(true));
+                    const newAddBtn = bordereauModal.querySelector('#btnAddBordereauRow');
+                    if (newAddBtn) newAddBtn.addEventListener('click', handleAddBordereauRow);
                 }
 
                 bordereauModal.classList.remove('hidden');
@@ -92,52 +110,88 @@ function initBordereauManagement() {
     // Cette fonction peut être appelée quand la vue bordereau devient active
     
     
-    // Utiliser un délai pour s'assurer que les éléments sont dans le DOM
-    setTimeout(() => {
-        const bordereauCheckbox = document.getElementById('acceptCheckbox');
-        const acceptBordereauBtn = document.getElementById('acceptBordereauBtn');
-       
-        // Vérifier si nous sommes dans la bonne vue
-        const bordereauView = document.getElementById('bordereau-view');
-      
-        
-        if (bordereauCheckbox && acceptBordereauBtn) {
-           
-            
-            // Supprimer les anciens événements pour éviter les doublons
-            const newCheckbox = bordereauCheckbox.cloneNode(true);
-            bordereauCheckbox.parentNode.replaceChild(newCheckbox, bordereauCheckbox);
-            
-            newCheckbox.addEventListener('change', function() {
-                
-                toggleAcceptButton();
-            });
-            
-            // Appeler une première fois pour initialiser l'état du bouton
-          
-            toggleAcceptButton();
-            
-            // Bouton d'acceptation
-            if (acceptBordereauBtn) {
-                // Retirer l'ancien onclick s'il existe
-                acceptBordereauBtn.removeAttribute('onclick');
-                acceptBordereauBtn.addEventListener('click', function() {
-                   
-                    handleAcceptBordereau();
-                });
-            }
-            
-        } else {
-           
-            
-            const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
-            const allButtons = document.querySelectorAll('button');
-         
-        }
-    }, 500); // Délai de 500ms
-    
-    // Configurer l'observer pour détecter quand la vue bordereau devient active
-    observeBordereauView();
+    // Initialiser l'état de la vue si les éléments sont présents
+    initBordereauViewElements();
+}
+
+// Nettoyer les lignes additionnelles et restaurer la numérotation
+function resetBordereauExtraRows(modalEl) {
+    try {
+        const tbody = modalEl.querySelector('#bordereauTable tbody');
+        if (!tbody) return;
+        const rows = tbody.querySelectorAll('tr:not(.bordereau-template)');
+        // Conserver la première ligne (PC principal), supprimer les suivantes
+        rows.forEach((tr, idx) => { if (idx >= 1) tr.remove(); });
+        // Rien à faire pour la template (reste cachée)
+    } catch (_) { /* noop */ }
+}
+
+// Ajouter une nouvelle ligne matériel à partir de la template
+function handleAddBordereauRow() {
+    const table = document.getElementById('bordereauTable');
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const template = tbody.querySelector('tr.bordereau-template');
+    if (!template) return;
+
+    const clone = template.cloneNode(true);
+    clone.classList.remove('bordereau-template');
+    clone.style.display = '';
+    clone.removeAttribute('aria-hidden');
+
+    // Numéro = nombre de lignes visibles (non template) + 1
+    const visibleRows = tbody.querySelectorAll('tr:not(.bordereau-template)').length;
+    const numCell = clone.querySelector('.num');
+    if (numCell) numCell.textContent = visibleRows + 1;
+
+    tbody.appendChild(clone);
+    // Focus sur le premier champ
+    const serieInput = clone.querySelector('.b-serie');
+    if (serieInput) serieInput.focus();
+}
+
+// Pré-remplir les lignes de matériels depuis l'API
+async function prefillBordereauItems(employeId) {
+    const table = document.getElementById('bordereauTable');
+    const tbody = table?.querySelector('tbody');
+    const template = tbody?.querySelector('tr.bordereau-template');
+    if (!tbody || !template) return;
+
+    try {
+        const resp = await fetch(`/bordereau-details/${employeId}/`, { headers: { 'Accept': 'application/json' } });
+        if (!resp.ok) return; // pas de bordereau existant -> ignorer
+        const data = await resp.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        if (!items.length) return;
+
+        // Nettoyer d'abord d'éventuelles lignes ajoutées (on garde la 1re ligne PC)
+        const rows = tbody.querySelectorAll('tr:not(.bordereau-template)');
+        rows.forEach((tr, idx) => { if (idx >= 1) tr.remove(); });
+
+        // Ajouter chaque item comme une nouvelle ligne
+        items.forEach((it, index) => {
+            const clone = template.cloneNode(true);
+            clone.classList.remove('bordereau-template');
+            clone.style.display = '';
+            clone.removeAttribute('aria-hidden');
+
+            const visibleRows = tbody.querySelectorAll('tr:not(.bordereau-template)').length;
+            const numCell = clone.querySelector('.num');
+            if (numCell) numCell.textContent = visibleRows + 1;
+
+            const inpSerie = clone.querySelector('.b-serie');
+            const inpDesc = clone.querySelector('.b-desc');
+            const inpQty = clone.querySelector('.b-qty');
+            if (inpSerie) inpSerie.value = it.numero_serie || '';
+            if (inpDesc) inpDesc.value = it.description || it.materiel || '';
+            if (inpQty) inpQty.value = it.quantite || 1;
+
+            tbody.appendChild(clone);
+        });
+    } catch (_) {
+        // silencieux
+    }
 }
 
 // Fonction pour gérer l'envoi de la demande
@@ -151,6 +205,24 @@ async function handleEnvoyerDemande(bordereauModal) {
         return;
     }
 
+    // Collecter toutes les lignes additionnelles saisies par l'utilisateur
+    const items = [];
+    try {
+        const tbody = document.querySelector('#bordereauTable tbody');
+        if (tbody) {
+            const extraRows = Array.from(tbody.querySelectorAll('tr:not(.bordereau-template)')).slice(1); // ignorer la 1ère ligne (PC)
+            extraRows.forEach(tr => {
+                const numero = tr.querySelector('.b-serie')?.value?.trim() || '';
+                const desc = tr.querySelector('.b-desc')?.value?.trim() || '';
+                const qteRaw = tr.querySelector('.b-qty')?.value;
+                const qte = Math.max(parseInt(qteRaw || '1', 10) || 1, 1);
+                if (numero || desc) {
+                    items.push({ numero_serie: numero, description: desc, quantite: qte });
+                }
+            });
+        }
+    } catch (_) { /* noop */ }
+
     const dataToSend = {
         employe_id: bordereauModal.dataset.employeId,
         nom_employe: bordereauModal.dataset.nomEmploye,
@@ -160,7 +232,8 @@ async function handleEnvoyerDemande(bordereauModal) {
         numero_serie_pc: bordereauModal.dataset.numeroSeriePc,
         description_pc: bordereauModal.dataset.marquePc + ' ' + bordereauModal.dataset.modelePc,
         telephone_employe: bordereauModal.dataset.telephoneEmploye,
-        email_employe: bordereauModal.dataset.emailEmploye || ''
+        email_employe: bordereauModal.dataset.emailEmploye || '',
+        items
     };
 
     try {
@@ -477,32 +550,7 @@ function handleCheckboxChange() {
 }
 
 // Fonction améliorée pour détecter quand la vue bordereau devient active
-function observeBordereauView() {
-    const bordereauView = document.getElementById('bordereau-view');
-    if (!bordereauView) {
-        return;
-    }
-
-    // Observer les changements de classe sur la vue bordereau
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const target = mutation.target;
-                if (!target.classList.contains('hidden')) {
-                    setTimeout(() => {
-                        initBordereauViewElements();
-                    }, 100);
-                }
-            }
-        });
-    });
-
-    observer.observe(bordereauView, {
-        attributes: true,
-        attributeFilter: ['class']
-    });
-
-}
+function observeBordereauView() { /* simplifié: non nécessaire avec init direct */ }
 
 window.DashboardBordereauManagement = {
     initBordereauManagement,
@@ -510,5 +558,6 @@ window.DashboardBordereauManagement = {
     observeBordereauView,      // Nouvelle fonction exposée
     handleEnvoyerDemande,
     handleDownloadBordereau,
-    handleAcceptBordereau
+    handleAcceptBordereau,
+    handleAddBordereauRow
 };

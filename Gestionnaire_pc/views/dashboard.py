@@ -108,8 +108,8 @@ def dashboard_employe(request):
 def dashboard_DCH(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
-    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
-    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
 
     connected_user = None
     if 'user_id' in request.session:
@@ -134,8 +134,8 @@ def dashboard_DCH(request):
 def dashboard_MG(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
-    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
-    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     emails = Email_MGX.objects.all()
     connected_user = None
     if 'user_id' in request.session:
@@ -162,8 +162,8 @@ def dashboard_MG(request):
 def dashboard_RMG(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
-    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
-    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     
     connected_user = None
     if 'user_id' in request.session:
@@ -182,8 +182,8 @@ def dashboard_RMG(request):
 def dashboard_DAF(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
-    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
-    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     emails = Email_DAF.objects.all()
     connected_user = None
     if 'user_id' in request.session:
@@ -207,8 +207,8 @@ def dashboard_DAF(request):
 def dashboard_RDOT(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
-    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
-    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     pc_en_service= Pc_attribué.objects.count()
     pc_total = PC.objects.count()
     pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('employe').order_by('-date_attribution')
@@ -255,8 +255,8 @@ def dashboard_RDOT(request):
 def dashboard_DOT(request):
     employes = Employe.objects.all()
     pcs = PC.objects.all()
-    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.all().order_by('-date_envoi')
-    pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
+    pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     pc_total = PC.objects.count()  
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pc_en_service= Pc_attribué.objects.count()

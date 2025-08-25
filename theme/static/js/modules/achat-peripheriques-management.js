@@ -112,12 +112,9 @@ class AchatPeripheriquesManager {
         if (isSuccess && data.message) {
             this.showSuccess(data.message);
             this.resetForm();
-            
             // Délai avant rechargement pour que l'utilisateur voie le message
             setTimeout(() => {
-                if (confirm('Demande d\'achat envoyée avec succès ! Souhaitez-vous recharger la page ?')) {
-                    location.reload();
-                }
+                location.reload();
             }, 2000);
         } else if (data.error) {
             this.showError(data.error);
@@ -289,8 +286,6 @@ class AchatPeripheriquesManager {
         return allPresent;
     }
 }
-
-// Initialisation automatique du gestionnaire d'achat de périphériques
 window.achatPeripheriquesManager = new AchatPeripheriquesManager();
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AchatPeripheriquesManager;

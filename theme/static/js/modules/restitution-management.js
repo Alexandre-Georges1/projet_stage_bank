@@ -2,7 +2,6 @@
  * Module de gestion des restitutions de PC
  * Gère les formulaires de restitution et les interactions utilisateur
  */
-
 class RestitutionManager {
     constructor() {
         this.restituerForm = null;
@@ -193,13 +192,7 @@ class RestitutionManager {
         if (isSuccess && data.message) {
             this.showSuccess(data.message);
             this.resetForm();
-            
-            // Délai avant rechargement pour que l'utilisateur voie le message
             setTimeout(() => {
-                // Optionnel : rediriger vers une page spécifique ou recharger
-                if (confirm('Demande de restitution envoyée avec succès ! Souhaitez-vous recharger la page ?')) {
-                    location.reload();
-                }
             }, 2000);
         } else if (data.error) {
             this.showError(data.error);
@@ -207,24 +200,12 @@ class RestitutionManager {
             this.showError('Une erreur inattendue est survenue.');
         }
     }
-
-    /**
-     * Affiche un message de succès
-     */
     showSuccess(message) {
         this.showNotification(message, 'success');
     }
-
-    /**
-     * Affiche un message d'erreur
-     */
     showError(message) {
         this.showNotification(message, 'error');
     }
-
-    /**
-     * Affiche une notification
-     */
     showNotification(message, type = 'info') {
         // Créer ou réutiliser un conteneur de notification
         let notificationContainer = document.getElementById('restitution-notification-container');
@@ -396,10 +377,6 @@ class RestitutionManager {
             }
         }
     }
-
-    /**
-     * Vérifie si tous les éléments requis sont présents
-     */
     checkRequiredElements() {
         const elements = {
             'Formulaire': this.restituerForm,
@@ -415,11 +392,6 @@ class RestitutionManager {
             const isPresent = element !== null;
             if (!isPresent) allPresent = false;
         }
-
-        if (!allPresent) {
-            console.warn('⚠️ Certains éléments requis sont manquants dans le DOM');
-        }
-
         return allPresent;
     }
 }

@@ -1,4 +1,3 @@
-from django.utils import timezone
 from django.db import models
 from .Employe import Employe
 from datetime import date
@@ -20,3 +19,10 @@ class Bordereau(models.Model):
     
     def __str__(self):
         return f"Bordereau pour {self.prenom_employe} {self.nom_employe} - PC: {self.marque_pc} {self.modele_pc}" 
+
+    @property
+    def materiels_count(self) -> int:
+        try:
+            return self.materiels.count()
+        except Exception:
+            return 0

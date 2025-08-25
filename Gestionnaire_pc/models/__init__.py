@@ -8,3 +8,4 @@ from .Pc_ancien import Pc_ancien
 from .Pc_ancien_attribue import Pc_ancien_attribue
 from .Bordereau import Bordereau
 from .DemandeAchatPeripherique import DemandeAchatPeripherique
+from .bordereau_mareriel import BordereauMateriel

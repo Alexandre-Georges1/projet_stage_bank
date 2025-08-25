@@ -34,6 +34,18 @@ class NotificationManager {
                 this.clearAllNotifications();
             });
         }
+
+        // Délégation: clic sur l'item pour marquer comme lu
+        if (this.notificationList) {
+            this.notificationList.addEventListener('click', (e) => {
+                const item = e.target.closest('.notification-item');
+                if (!item || !this.notificationList.contains(item)) return;
+                const id = parseInt(item.getAttribute('data-id'));
+                const notif = this.notifications.find(n => n.id === id);
+                if (!notif || notif.read) return; // déjà lu
+                this.markNotificationAsRead(id);
+            });
+        }
     }
 
     // ...existing code...
@@ -59,7 +71,7 @@ toggleDropdown() {
         }
     }
 
-    addNotification(type, message, time = null, id = null, sender_name = null, sender_email = null) {
+    addNotification(type, message, time = null, id = null, sender_name = null, sender_email = null, readFlag = false) {
         const notification = {
             id: id || Date.now(),
             type: type,
@@ -67,7 +79,7 @@ toggleDropdown() {
             time: time || this.formatTime(new Date()),
             sender_name: sender_name || 'Inconnu',
             sender_email: sender_email || '',
-            read: false
+            read: !!readFlag
         };
 
         this.notifications.unshift(notification);
@@ -134,7 +146,17 @@ toggleDropdown() {
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
             if (!csrfToken || !window.markNotificationAsReadUrl) return;
 
-            const url = window.markNotificationAsReadUrl.replace('0', notificationId);
+            // Déterminer la boîte de notification à partir du rôle ou d'une variable globale
+            const role = (window.connectedUserFonction || '').toUpperCase();
+            const box = window.notificationBox || (
+                role === 'DOT' ? 'dot' :
+                role === 'RDOT' ? 'rdot' :
+                role === 'DAF' ? 'daf' :
+                (role === 'MG' || role === 'RMG') ? 'mgx' :
+                'global'
+            );
+
+            const url = window.markNotificationAsReadUrl.replace('0', notificationId) + `?box=${encodeURIComponent(box)}`;
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -142,7 +164,7 @@ toggleDropdown() {
                     'X-CSRFToken': csrfToken,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({})
+                body: JSON.stringify({ box })
             });
 
             if (response.ok) {
@@ -150,6 +172,12 @@ toggleDropdown() {
                 const notificationIndex = this.notifications.findIndex(n => n.id === notificationId);
                 if (notificationIndex !== -1) {
                     this.notifications[notificationIndex].read = true;
+                    // Feedback immédiat: basculer la classe dans le DOM si l'élément existe
+                    const item = this.notificationList?.querySelector(`.notification-item[data-id='${notificationId}']`);
+                    if (item) {
+                        item.classList.remove('unread');
+                        item.classList.add('read');
+                    }
                     this.updateBadge();
                     this.renderNotifications(); // Re-rendre la liste pour mettre à jour l'affichage
                 }
@@ -175,16 +203,12 @@ toggleDropdown() {
         }
 
         this.notificationList.innerHTML = this.notifications.map(notification => `
-            <div class="notification-item" style="${!notification.read ? 'font-weight: bold;' : ''}"
-                 onclick="window.notificationManager?.markNotificationAsRead(${notification.id})">
+            <div class="notification-item ${notification.read ? 'read' : 'unread'}" data-id="${notification.id}">
                 <div class="notification-content">
-                    <div class="notification-icon ${notification.type}">
-                        <i class='bx ${this.getIconClass(notification.type)}'></i>
-                    </div>
                     <div class="notification-details">
                         <div class="notification-message">
-                            <strong>${notification.message}</strong><br>
-                            De : ${notification.sender_name || 'Inconnu'} ${notification.sender_email ? `(${notification.sender_email})` : ''}
+                            ${notification.message}<br>
+                            <span>De : ${notification.sender_name || 'Inconnu'} ${notification.sender_email ? `(${notification.sender_email})` : ''}</span>
                         </div>
                         <div class="notification-time">${notification.time}</div>
                     </div>
@@ -193,15 +217,7 @@ toggleDropdown() {
         `).join('');
     }
 
-    getIconClass(type) {
-        const icons = {
-            info: 'bx-info-circle',
-            success: 'bx-check-circle',
-            warning: 'bx-error-circle',
-            error: 'bx-x-circle'
-        };
-        return icons[type] || 'bx-bell';
-    }
+    
 }
 
 function initNotifications() {
@@ -220,7 +236,9 @@ function initNotifications() {
                         notif.time,
                         notif.id,
                         notif.sender_name,
-                        notif.sender_email
+                        notif.sender_email,
+                        // Accepte "read" depuis l'API ou "is_read" depuis le template Django
+                        (typeof notif.read !== 'undefined') ? notif.read : !!notif.is_read
                     );
                 });
             })
@@ -236,7 +254,9 @@ function initNotifications() {
                             notif.time,
                             notif.id,
                             notif.sender_name,
-                            notif.sender_email
+                            notif.sender_email,
+                            // Fallback: les données du template utilisent généralement "is_read"
+                            (typeof notif.read !== 'undefined') ? notif.read : !!notif.is_read
                         );
                     });
                 }
@@ -250,7 +270,8 @@ function initNotifications() {
                 notif.time,
                 notif.id,
                 notif.sender_name,
-                notif.sender_email
+                notif.sender_email,
+                (typeof notif.read !== 'undefined') ? notif.read : !!notif.is_read
             );
         });
     } else {

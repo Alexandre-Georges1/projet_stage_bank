@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 import json
 from django.utils import timezone
-from ..models import Employe, Bordereau
+from ..models import Employe, Bordereau, BordereauMateriel
 
    
 def envoyer_bordereau_employe(request):
@@ -16,7 +16,7 @@ def envoyer_bordereau_employe(request):
 
             employe = Employe.objects.get(pk=employe_id)
 
-            Bordereau.objects.create(
+            bord = Bordereau.objects.create(
                 employe=employe,
                 nom_employe=data.get('nom_employe'),
                 prenom_employe=data.get('prenom_employe'),
@@ -27,7 +27,25 @@ def envoyer_bordereau_employe(request):
                 telephone_employe=data.get('telephone_employe'),
                 email_employe=data.get('email_employe'),
             )
-            return JsonResponse({'message': 'Bordereau envoyé avec succès!'})
+            # Matériels additionnels: data.get('items') = [{numero_serie, description, quantite, materiel?}]
+            items = data.get('items') or []
+            for it in items:
+                if not it:
+                    continue
+                numero = (it.get('numero_serie') or '').strip()
+                desc = (it.get('description') or '').strip()
+                qte = it.get('quantite') or 1
+                mat = (it.get('materiel') or '').strip() or desc
+                if not (numero or desc or mat):
+                    continue
+                BordereauMateriel.objects.create(
+                    bordereau=bord,
+                    materiel=mat,
+                    numero_serie=numero,
+                    description=desc,
+                    quantite=max(int(qte), 1)
+                )
+            return JsonResponse({'message': 'Bordereau envoyé avec succès!', 'bordereau_id': bord.id_bordereau})
         except Employe.DoesNotExist:
             return JsonResponse({'error': 'Employé non trouvé.'}, status=404)
         except Exception as e:
@@ -88,3 +106,41 @@ def accepter_bordereau(request):
             return JsonResponse({'error': str(e)}, status=400)
     
     return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
+
+def bordereau_details(request, employe_id: int):
+    """Retourne en JSON le dernier bordereau de l'employé et ses matériels liés."""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        employe = Employe.objects.get(pk=employe_id)
+        bordereau = Bordereau.objects.filter(employe=employe).order_by('-date_creation', '-id_bordereau').first()
+        if not bordereau:
+            return JsonResponse({'error': 'Aucun bordereau trouvé pour cet employé.'}, status=404)
+
+        items = []
+        for m in bordereau.materiels.all().order_by('id_materiel'):
+            items.append({
+                'materiel': m.materiel,
+                'numero_serie': m.numero_serie,
+                'description': m.description,
+                'quantite': m.quantite,
+            })
+
+        data = {
+            'bordereau_id': bordereau.id_bordereau,
+            'date_creation': bordereau.date_creation.strftime('%Y-%m-%d'),
+            'statut': bordereau.statut,
+            'pc': {
+                'marque': bordereau.marque_pc,
+                'modele': bordereau.modele_pc,
+                'numero_serie': bordereau.numero_serie_pc,
+                'description': bordereau.description_pc,
+            },
+            'items': items,
+        }
+        return JsonResponse(data, status=200)
+    except Employe.DoesNotExist:
+        return JsonResponse({'error': "Employé non trouvé."}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)

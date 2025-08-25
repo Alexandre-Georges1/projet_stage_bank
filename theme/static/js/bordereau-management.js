@@ -32,8 +32,6 @@ function handleAcceptBordereau() {
             console.error("Bouton acceptBordereauBtn non trouvé");
             return;
         }
-        alert("Bouton trouvé, recherche du token CSRF...");
-        
         // Méthode 1: Meta tag
         let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         
@@ -63,17 +61,13 @@ function handleAcceptBordereau() {
             },
             body: JSON.stringify({})
         })
-        .then(response => {
-            alert("Réponse reçue, status: " + response.status);
-            
+        .then(response => { 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.json();
         })
-        .then(data => {
-            alert("Succès ! Data: " + JSON.stringify(data));
-            
+        .then(data => {  
             if (data.success) {
                 // Masquer le bouton
                 button.style.display = 'none';
@@ -103,8 +97,6 @@ function handleAcceptBordereau() {
         alert("Erreur catch: " + error.message);
     }
 }
-
-// Rendre les fonctions globalement accessibles
 window.toggleAcceptButton = toggleAcceptButton;
 window.handleAcceptBordereau = handleAcceptBordereau;
 

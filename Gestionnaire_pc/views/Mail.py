@@ -328,17 +328,66 @@ def get_notifications_rdot(request):
     return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
 
 def mark_notification_as_read(request, email_id):
-    if request.method == 'POST':
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
+    # Mapping des boîtes vers les modèles importés en haut du fichier
+    MODEL_MAP = {
+        'global': Email,
+        'dot': Email_DOT,
+        'mgx': Email_MGX,
+        'rdot': Email_RDOT,
+        'daf': Email_DAF,
+    }
+
+    # Récupération optionnelle de la boîte depuis la query (?box=...) ou le body JSON
+    box = request.GET.get('box')
+    if not box:
         try:
-            email = Email.objects.get(pk=email_id)
-            email.is_read = True
-            email.save()
-            return JsonResponse({'message': 'Notification marquée comme lue.'})
-        except Email.DoesNotExist:
+            payload = json.loads(request.body or '{}')
+            if isinstance(payload, dict):
+                box = (payload.get('box') or '').lower()
+        except Exception:
+            box = None
+
+    try:
+        if box:
+            Model = MODEL_MAP.get(box.lower())
+            if not Model:
+                return JsonResponse({'error': 'Boîte inconnue.'}, status=400)
+            email = Model.objects.get(pk=email_id)
+            # setter robuste si le champ existe
+            if getattr(email, 'is_read', None) is False:
+                email.is_read = True
+                email.save(update_fields=['is_read'])
+            else:
+                # au pire, on tente un save simple si update_fields indisponible
+                try:
+                    email.is_read = True
+                    email.save()
+                except Exception:
+                    pass
+            return JsonResponse({'message': 'Notification marquée comme lue.', 'box': box})
+        else:
+            for bx, Model in MODEL_MAP.items():
+                try:
+                    email = Model.objects.get(pk=email_id)
+                    if getattr(email, 'is_read', None) is False:
+                        email.is_read = True
+                        email.save(update_fields=['is_read'])
+                    else:
+                        try:
+                            email.is_read = True
+                            email.save()
+                        except Exception:
+                            pass
+                    return JsonResponse({'message': 'Notification marquée comme lue.', 'box': bx})
+                except Model.DoesNotExist:
+                    continue
             return JsonResponse({'error': 'Notification non trouvée.'}, status=404)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
    
 def valider_ou_refuser_pc(request):
