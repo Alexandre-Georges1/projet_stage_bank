@@ -27,10 +27,6 @@ class ValidationDemandeManager {
     async validerDemande(demandeId, statut, buttonElement) {
         const actionText = statut === 'approuve' ? 'approuver' : 'refuser';
         
-        if (!confirm(`Êtes-vous sûr de vouloir ${actionText} cette demande ?`)) {
-            return;
-        }
-
         try {
             // Désactiver le bouton pendant le traitement
             buttonElement.disabled = true;
