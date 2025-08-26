@@ -8,35 +8,35 @@
             <i class="fas fa-desktop"></i>
             <span class="text">
                 <h3>{{ pc_total }}</h3>
-                <p>PC disponibles</p>
+                <p>ordinateurs disponibles</p>
             </span>
         </li>
         <li class="dashboard-card type-rebut">
             <i class="fa-solid fa-laptop"></i>
             <span class="text">
                 <h3>{{ pc_en_rebu }}</h3>
-                <p>PC mis en rebut</p>
+                <p>ordinateurs mis en rebut</p>
             </span>
         </li>
         <li class="dashboard-card type-rebut-attr">
             <i class="fa-solid fa-laptop"></i>
             <span class="text">
                 <h3>{{ pc_en_rebu_attribue }}</h3>
-                <p>PC en rebut attribués</p>
+                <p>ordinateurs en rebut attribués</p>
             </span>
         </li>
         <li class="dashboard-card type-service">
             <i class="fas fa-desktop"></i>
             <span class="text">
                 <h3>{{ pc_en_service }}</h3>
-                <p>PC en service</p>
+                <p>ordinateurs en service</p>
             </span>
         </li>
         <li class="dashboard-card type-total">
             <i class="fas fa-desktop"></i>
             <span class="text">
                 <h3>{{ pc_total_global }}</h3>
-                <p>Total des PC</p>
+                <p>Total des ordinateurs</p>
             </span>
         </li>
     </ul>
@@ -128,16 +128,16 @@
 
 <!-- Vue Catalogue -->
 <div id="catalogue-view" class="hidden">
-    <h2>Catalogue des PC</h2>
+    <h2>Catalogue des ordinateurs</h2>
     <div class="flex justify-between items-center mb-8">
         <button aria-label="Ajouter un nouveau PC" id="new-user-btn" class="btn-ajouter-manuel">
-            Ajouter PC
+            Ajouter ordinateur
         </button>
     </div>
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Les PCs</h3>
+                <h3>Les ordinateurs</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -182,7 +182,7 @@
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Les PCs archivés</h3>
+                <h3>Les ordinateurs archivés</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -192,10 +192,10 @@
                     <i class="fas fa-history"></i> Amortir maintenant
                 </button>
                 <button aria-label="Ajouter un PC ancien" id="btn-ajouter-pc-ancien" class="btn-ajouter-manuel">
-                    <i class="fas fa-box-archive"></i> Ajouter PC ancien
+                    <i class="fas fa-box-archive"></i> Ajouter un ordinateur ancien
                 </button>
                 <button aria-label="Attribuer un PC ancien" id="btn-assigner-pc-ancien" class="btn-ajouter-manuel">
-                    <i class="fas fa-user-check"></i> Attribuer PC ancien
+                    <i class="fas fa-user-check"></i> Attribuer ordinateur mis en rebut
                 </button>
                 <span id="amortirResult" style="margin-left:10px; font-size:14px; color:#555;"></span>
             </div>
@@ -234,7 +234,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="9">Aucun PC archivé.</td></tr>
+                    <tr><td colspan="9">Aucun ordinateur archivé.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -243,7 +243,7 @@
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>PC anciens attribués</h3>
+                <h3>ordinateurs en rebut attribués</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -277,7 +277,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6">Aucune attribution de PC ancien.</td></tr>
+                    <tr><td colspan="6">Aucune attribution d'ordinateur ancien.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -400,7 +400,7 @@
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Demander une caractéristique pour un PC</h3>
+                <h3>Demander une caractéristique pour un ordinateur</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -521,7 +521,7 @@
                 <tbody>
                     {% for demande in demandes_peripheriques_en_attente %}
                     <tr data-demande-id="{{ demande.id_demande }}" style="border-bottom: 1px solid #f0f0f0;">
-                        <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ demande.employe.prenom }} {{ demande.employe.nom }}</td>
+                        <td style="padding: 34px 16px; vertical-align: middle; font-weight: 500;">{{ demande.employe.prenom }} {{ demande.employe.nom }}</td>
                         <td style="padding: 16px 8px; vertical-align: middle;">{{ demande.employe.Département }}</td>
                         <td style="padding: 16px 8px; vertical-align: middle; color: #0066cc;">{{ demande.get_materiel_display }}</td>
                         <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
@@ -699,7 +699,7 @@
     <h1>Attribution</h1>
     <div class="flex justify-between items-center mb-8">
         <button aria-label="Attribuer un PC" id="assign-pc-btn" class="btn-ajouter-manuel">
-            <i class="fas fa-plus"></i> Attribuer un PC
+            <i class="fas fa-plus"></i> Attribuer un ordinateur
         </button>
     </div>
     <div class="table-data">
@@ -724,7 +724,7 @@
                         <tbody>
                             {% for attribution in pcs_attribues %}
                             <tr data-attribution-id="{{ attribution.pk }}" style="border-bottom: 1px solid #f0f0f0;">
-                                <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ attribution.employe.nom }}</td>
+                                <td style="padding: 34px 16px; vertical-align: middle; font-weight: 500;">{{ attribution.employe.nom }}</td>
                                 <td style="padding: 16px 8px; vertical-align: middle; font-weight: 500;">{{ attribution.employe.prenom }}</td>
                                 <td style="padding: 16px 8px; vertical-align: middle;">{{ attribution.marque }}</td>
                                 <td style="padding: 16px 8px; vertical-align: middle;">{{ attribution.modele }}</td>
@@ -744,7 +744,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 30px; color: #888;">Aucun PC attribué.</td>
+                                <td colspan="7" style="text-align: center; padding: 30px; color: #888;">Aucun ordinateur attribué.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -836,7 +836,14 @@
             <div class="politique-box">
                 <a href="{% url 'politique_confidentialite' %}"><h2> Politique de Confidentialité et d'Utilisation</h2></a>
                 <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;">
-                    En acceptant ce bordereau, vous reconnaissez avoir pris connaissance et accepté les termes de notre politique de confidentialité et d'utilisation des équipements. Cela inclut notamment : la gestion et la protection des données personnelles, l'utilisation appropriée et responsable des ressources informatiques de l'entreprise, ainsi que vos engagements en matière de sécurité, de conservation et de restitution du matériel.
+                    En acceptant ce bordereau, vous reconnaissez avoir pris connaissance et accepté les termes de notre politique de confidentialité et d'utilisation des équipements. 
+                </p>
+                <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;">
+                    Cela inclut notamment : la gestion et la protection des données personnelles, l'utilisation appropriée et responsable des ressources informatiques de l'entreprise,
+                <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;">
+                    ainsi que vos engagements en matière de sécurité, de conservation et de restitution du matériel.
+                </p>
+                <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;">
                     <span style="display:inline-block; margin-top:6px;">Toute utilisation non conforme ou négligente peut engager votre responsabilité conformément aux procédures internes.</span>
                 </p>
                 <label class="checkbox-label">
@@ -926,7 +933,7 @@
 
 <!-- Vue Restituer -->
 <div id="Restituer-view" class="hidden">
-    <h1>Restituer votre PC</h1>
+    <h1>Restituer votre ordinateur</h1>
     
     <div class="table-data">
         <div class="order">
@@ -974,12 +981,12 @@
                 <div class="form-group" style="display:flex; align-items:flex-start; gap:10px; margin-top:10px;">
                     <input type="checkbox" id="confirmerRestitution" name="confirmer" required style="margin-top:4px;">
                     <label for="confirmerRestitution" style="cursor:pointer; line-height:1.4; font-size:14px;">
-                        Je confirme vouloir restituer ce PC et comprends que cette action est irréversible.
+                        Je confirme vouloir restituer cet ordinateur et comprends que cette action est irréversible.
                     </label>
                 </div>
 
                 <button aria-label="Restituer le PC" type="submit" class="btn-restituer">
-                    <i class="fas fa-undo"></i> Restituer le PC
+                    <i class="fas fa-undo"></i> Restituer l'ordinateur
                 </button>
             </form>
         </div>
@@ -1040,17 +1047,17 @@
     
 
     <p id="noPcRestitutionMessage" class="hidden" style="text-align: center; margin-top: 20px; color: #555;">
-        Aucun PC attribué disponible pour la restitution.
+        Aucun ordinateur attribué disponible pour la restitution.
     </p>
 </div>
 
 <!-- Vue Racheter -->
 <div id="Racheter-view" class="hidden">
-    <h1>Racheter votre PC</h1>
+    <h1>Acheter votre ordinateur</h1>
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Votre PC</h3>
+                <h3>Votre ordinateur</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>

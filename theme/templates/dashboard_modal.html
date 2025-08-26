@@ -567,6 +567,16 @@
             </div>
         </div>
 
+        <!-- Suivi du statut du bordereau -->
+        <div id="bordereauStatusBlock" class="no-print" style="margin-top: 20px; padding: 16px; border-radius: 8px; background: #f9fafb; border: 1px solid #e5e7eb;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <span style="font-weight: 600; color: #374151;">Statut:</span>
+                <span id="bordereauStatutBadge" style="display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600; background:#fee2e2; color:#991b1b;">En attente</span>
+            </div>
+            <div id="bordereauDates" style="display: none; color: #4b5563; font-size: 14px;">
+                <div id="bordereauAccepteAt" style="display:none;">Accepté le: <span></span></div>
+            </div>
+        </div>
         <!-- Boutons d'action -->
         <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; padding-top: 20px; border-top: 2px solid #d1fae5;">
             <button aria-label="Envoyer la demande" class="btn-Envoyer-Demande no-print"  style="

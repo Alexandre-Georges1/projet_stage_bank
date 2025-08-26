@@ -137,6 +137,8 @@ def dashboard_MG(request):
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     emails = Email_MGX.objects.all()
+    marques=marquePC.objects.all()
+    modeles=modelePC.objects.all()
     connected_user = None
     if 'user_id' in request.session:
         try:
@@ -153,6 +155,8 @@ def dashboard_MG(request):
         'connected_user': connected_user,
         'caracteristiques_envoyees': caracteristiques_envoyees, 
         'pcs_attribues': pcs_attribues,
+        'marques': marques,
+        'modeles': modeles,
         'notifications': emails
           }
     return render(request, 'page_MGX/dashboard_MG.html', context)
@@ -164,7 +168,8 @@ def dashboard_RMG(request):
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
-    
+    marques=marquePC.objects.all()
+    modeles=modelePC.objects.all()
     connected_user = None
     if 'user_id' in request.session:
         try:

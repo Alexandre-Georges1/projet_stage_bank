@@ -131,6 +131,7 @@ def bordereau_details(request, employe_id: int):
             'bordereau_id': bordereau.id_bordereau,
             'date_creation': bordereau.date_creation.strftime('%Y-%m-%d'),
             'statut': bordereau.statut,
+            'date_statut': bordereau.date_statut.strftime('%Y-%m-%dT%H:%M:%S') if getattr(bordereau, 'date_statut', None) else None,
             'pc': {
                 'marque': bordereau.marque_pc,
                 'modele': bordereau.modele_pc,

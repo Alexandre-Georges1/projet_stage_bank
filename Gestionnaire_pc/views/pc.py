@@ -4,7 +4,8 @@ from django.db import transaction
 from django.core.mail import send_mail
 from django.conf import settings
 import json
-from ..models import Employe,PC,Pc_attribué,Pc_ancien,marquePC,modelePC,Email,DemandeAchatPeripherique, Pc_ancien_attribue
+from ..models import Employe,PC,Pc_attribué,Pc_ancien,marquePC,modelePC,Email_DOT,DemandeAchatPeripherique, Pc_ancien_attribue, Bordereau,Email
+from django.db.models import Q
 from datetime import datetime, timedelta
 
   
@@ -38,7 +39,58 @@ def ajouter_pc(request):
                 numero_serie=numero_serie,
                 date_achat=date_achat
             )
-            return JsonResponse({'message': 'PC ajouté avec succès!', 'id': pc.pk})
+            email_sent = False
+            email_id = None
+            try:
+                expediteur = None
+                try:
+                    user_id = request.session.get('user_id')
+                    if user_id:
+                        expediteur = Employe.objects.filter(id_employe=user_id).first()
+                except Exception:
+                    expediteur = None
+
+                # Construire l'email
+                sujet = f"Nouveau ordinateur ajouté - {marque_instance.nom_marque} {modele_instance.nom_modele} ({numero_serie})"
+                corps_message = f"""
+Un nouveau ordinateur a été ajouté dans le système.
+
+Détails de l'ordinateur:
+- Marque: {marque_instance.nom_marque}
+- Modèle: {modele_instance.nom_modele}
+- Processeur: {processeur or ''}
+- RAM: {ram or ''}
+- Disque: {disque_dur or ''}
+- Numéro de série: {numero_serie}
+- Date d'achat: {date_achat or ''}
+
+Ajouté le: {datetime.now().strftime('%d/%m/%Y à %H:%M')}
+                """.strip()
+                # Enregistrer l'email en base
+                email = Email_DOT.objects.create(
+                    destinataire="kaogeorges2006@gmail.com",
+                    objet=sujet,
+                    corps=corps_message,
+                    expediteur=expediteur
+                )
+                email_id = email.id_email
+                # Envoyer l'email réellement
+                try:
+                    send_mail(
+                        subject=sujet,
+                        message=corps_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=["kaogeorges2006@gmail.com"],
+                        fail_silently=False,
+                    )
+                    email_sent = True
+                except Exception:
+                    # L'envoi peut échouer sans bloquer l'ajout du PC
+                    email_sent = False
+            except Exception:
+                email_sent = False
+
+            return JsonResponse({'message': 'PC ajouté avec succès!', 'id': pc.pk, 'email_id': email_id, 'email_sent': email_sent})
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -226,15 +278,34 @@ def gestion_marques(request):
 
 # =================== Gestion des attributions (modifier/supprimer) ===================
 def supprimer_attribution(request, attribution_id):
-    """Supprime une attribution Pc_attribué. Aucun prompt/confirmation côté serveur.
-    POST requis.
-    """
+    """Supprime une attribution Pc_attribué et les bordereaux associés. POST requis."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
     try:
-        pa = Pc_attribué.objects.get(pk=attribution_id)
-        pa.delete()
-        return JsonResponse({'message': 'Attribution supprimée avec succès!'})
+        pa = Pc_attribué.objects.select_related('employe').get(pk=attribution_id)
+
+        with transaction.atomic():
+            deleted_bordereaux = 0
+            q = Q()
+            # Associer par numéro de série
+            if hasattr(Bordereau, 'numero_serie_pc') and getattr(pa, 'numero_serie', None):
+                q |= Q(numero_serie_pc=pa.numero_serie)
+            # Associer par FK employé si présent sur le modèle Bordereau
+            if hasattr(Bordereau, 'employe') and getattr(pa, 'employe_id', None):
+                q |= Q(employe_id=pa.employe_id)
+            # Fallback: nom/prénom si champs texte
+            if (hasattr(Bordereau, 'nom_employe') and hasattr(Bordereau, 'prenom_employe') and getattr(pa, 'employe', None)):
+                q |= Q(nom_employe=pa.employe.nom, prenom_employe=pa.employe.prenom)
+
+            if q:
+                try:
+                    deleted_bordereaux, _ = Bordereau.objects.filter(q).delete()
+                except Exception:
+                    deleted_bordereaux = 0
+
+            pa.delete()
+
+        return JsonResponse({'message': 'Attribution supprimée avec succès!', 'bordereaux_supprimes': deleted_bordereaux})
     except Pc_attribué.DoesNotExist:
         return JsonResponse({'error': 'Attribution introuvable.'}, status=404)
     except Exception as e:

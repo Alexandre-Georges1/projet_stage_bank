@@ -18,7 +18,7 @@ class Bordereau(models.Model):
     email_employe = models.EmailField(blank=True, null=True)
     
     def __str__(self):
-        return f"Bordereau pour {self.prenom_employe} {self.nom_employe} - PC: {self.marque_pc} {self.modele_pc}" 
+        return f"Bordereau pour     {self.prenom_employe} {self.nom_employe} - PC: {self.marque_pc} {self.modele_pc}" 
 
     @property
     def materiels_count(self) -> int:

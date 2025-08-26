@@ -60,10 +60,11 @@ function initBordereauManagement() {
                 bordereauModal.dataset.telephoneEmploye = rowData.telephone;
                 bordereauModal.dataset.emailEmploye = rowData.email;
 
-                // Précharger les matériels déjà enregistrés sur le dernier bordereau (si existants)
+        // Précharger les matériels déjà enregistrés sur le dernier bordereau (si existants) et statut
                 try {
                     if (rowData.employeId) {
-                        prefillBordereauItems(rowData.employeId);
+            prefillBordereauItems(rowData.employeId);
+            prefillBordereauStatus(rowData.employeId);
                     }
                 } catch (_) { /* noop */ }
 
@@ -194,6 +195,73 @@ async function prefillBordereauItems(employeId) {
     }
 }
 
+// Pré-remplir le statut du bordereau et ses dates
+async function prefillBordereauStatus(employeId) {
+    const statusBlock = document.getElementById('bordereauStatusBlock');
+    const badge = document.getElementById('bordereauStatutBadge');
+    const dates = document.getElementById('bordereauDates');
+    const luAt = document.getElementById('bordereauLuAt');
+    const accepteAt = document.getElementById('bordereauAccepteAt');
+    if (!statusBlock || !badge) return;
+
+    // Réinitialiser
+    badge.textContent = 'En attente';
+    badge.style.background = '#fee2e2';
+    badge.style.color = '#991b1b';
+    if (dates) dates.style.display = 'none';
+    if (luAt) { luAt.style.display = 'none'; const s = luAt.querySelector('span'); if (s) s.textContent = ''; }
+    if (accepteAt) { accepteAt.style.display = 'none'; const s = accepteAt.querySelector('span'); if (s) s.textContent = ''; }
+
+    try {
+        const resp = await fetch(`/bordereau-details/${employeId}/`, { headers: { 'Accept': 'application/json' } });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const statut = (data.statut || '').toLowerCase();
+        const dateStatut = data.date_statut || null;
+
+        if (statut.includes('accept')) {
+            badge.textContent = 'Lu et accepté';
+            badge.style.background = '#dcfce7';
+            badge.style.color = '#065f46';
+            if (dates && accepteAt) {
+                dates.style.display = '';
+                accepteAt.style.display = '';
+                const s = accepteAt.querySelector('span');
+                if (s) s.textContent = formatDateFr(dateStatut) || '';
+            }
+        } else if (statut.includes('lu')) {
+            badge.textContent = 'Lu';
+            badge.style.background = '#fef9c3';
+            badge.style.color = '#92400e';
+            if (dates && luAt) {
+                dates.style.display = '';
+                luAt.style.display = '';
+                const s = luAt.querySelector('span');
+                if (s) s.textContent = formatDateFr(dateStatut) || '';
+            }
+        } else {
+            badge.textContent = 'En attente';
+            badge.style.background = '#fee2e2';
+            badge.style.color = '#991b1b';
+        }
+    } catch (_) { /* noop */ }
+}
+
+function formatDateFr(isoOrStr) {
+    if (!isoOrStr) return '';
+    try {
+        // Accepte 'YYYY-MM-DD' ou ISO datetime
+        const d = new Date(isoOrStr);
+        if (isNaN(d.getTime())) return isoOrStr;
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mi = String(d.getMinutes()).padStart(2, '0');
+        return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+    } catch (_) { return isoOrStr; }
+}
+
 // Fonction pour gérer l'envoi de la demande
 async function handleEnvoyerDemande(bordereauModal) {
     const btnEnvoyerDemande = bordereauModal.querySelector('.btn-Envoyer-Demande');
@@ -250,6 +318,10 @@ async function handleEnvoyerDemande(bordereauModal) {
 
         if (response.ok) {
             showBordereauNotification(result.message, 'success');
+            // Après envoi, rafraîchir le statut
+            if (bordereauModal?.dataset?.employeId) {
+                prefillBordereauStatus(bordereauModal.dataset.employeId);
+            }
             setTimeout(() => {
                 bordereauModal.classList.add('hidden');
             }, 1500);
@@ -317,7 +389,7 @@ async function handleAcceptBordereau() {
             body: JSON.stringify({})
         });
 
-        const result = await response.json();
+    const result = await response.json();
 
         if (response.ok) {
             // Changer le texte et style du bouton
@@ -333,6 +405,12 @@ async function handleAcceptBordereau() {
             messageDiv.style.marginTop = '10px';
             
             showBordereauNotification(`Bordereau accepté avec succès le ${result.date_acceptation}`, 'success');
+            // Mettre à jour le badge de statut si la modale est ouverte
+            const modal = document.getElementById('bordereauModal');
+            if (modal && !modal.classList.contains('hidden')) {
+                const employeId = modal.dataset?.employeId;
+                if (employeId) prefillBordereauStatus(employeId);
+            }
         } else {
             showBordereauNotification("Erreur lors de l'acceptation du bordereau : " + result.error, 'error');
         }
