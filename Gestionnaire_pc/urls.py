@@ -42,6 +42,8 @@ urlpatterns = [
     path('mon-bordereau/', views.bordereau_utilisateur, name='bordereau_utilisateur'),
     path('valider_ou_refuser_pc/', valider_ou_refuser_pc, name='valider_ou_refuser_pc'),
     path('restituer_pc/', views.restituer_pc, name='restituer_pc'),
+    # Déclaration de matériel perdu
+    path('declarer_materiel_perdu/', views.declarer_materiel_perdu, name='declarer_materiel_perdu'),
     path('demande_achat_peripheriques/', views.demande_achat_peripheriques, name='demande_achat_peripheriques'),
     path('gerer_demandes_achat/', gerer_demandes_achat, name='gerer_demandes_achat'),
     path('notifications_dot/', views.get_notifications_dot, name='get_notifications_dot'),

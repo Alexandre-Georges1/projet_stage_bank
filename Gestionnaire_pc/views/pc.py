@@ -4,7 +4,7 @@ from django.db import transaction
 from django.core.mail import send_mail
 from django.conf import settings
 import json
-from ..models import Employe,PC,Pc_attribué,Pc_ancien,marquePC,modelePC,Email_DOT,DemandeAchatPeripherique, Pc_ancien_attribue, Bordereau,Email
+from ..models import Employe,PC,Pc_attribué,Pc_ancien,marquePC,modelePC,Email_DOT,DemandeAchatPeripherique, Pc_ancien_attribue, Bordereau,Email,Email_RDOT,Email_DCH
 from django.db.models import Q
 from datetime import datetime, timedelta
 
@@ -313,10 +313,6 @@ def supprimer_attribution(request, attribution_id):
 
 
 def modifier_attribution(request, attribution_id):
-    """Modifie une attribution Pc_attribué.
-    Accepte JSON avec tout ou partie des champs: employe_id, marque, modele, numero_serie, processeur, ram, disque_dur, date_attribution (YYYY-MM-DD).
-    POST requis.
-    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
     try:
@@ -362,12 +358,6 @@ def modifier_attribution(request, attribution_id):
 
 
 def changer_pc_attribution(request, attribution_id):
-    """Change le PC attribué en affectant un autre PC disponible (table PC) à l'attribution.
-    POST JSON attendu: { numero_serie: str, date_attribution?: YYYY-MM-DD }
-    Effets:
-      - Le PC sélectionné est retiré du stock (PC.delete) et ses specs sont copiées dans Pc_attribué.
-      - L'ancien PC attribué est remis en stock (création dans PC) avec ses specs précédentes.
-    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
     try:
@@ -604,7 +594,7 @@ Motif de restitution : {motif}
             corps_message += f"\nDate de la demande : {datetime.now().strftime('%d/%m/%Y à %H:%M')}"
             
             # Enregistrer l'email dans la base de données
-            email = Email.objects.create(
+            email = Email_RDOT.objects.create(
                 destinataire="kaogeorges2006@gmail.com",
                 objet=objet,
                 corps=corps_message,
@@ -695,7 +685,7 @@ Demande :
             corps_message += f"\nNuméro de demande : {demande.id_demande}"
 
             # Enregistrer l'email dans la base de données
-            email = Email.objects.create(
+            email = Email_RDOT.objects.create(
                 destinataire="kaogeorges2006@gmail.com",
                 objet=objet,
                 corps=corps_message,
@@ -906,5 +896,90 @@ def modifier_pc_ancien_attribue(request, attribue_id):
 
         obj.save()
         return JsonResponse({'message': 'PC ancien attribué modifié avec succès'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+# Déclarer un matériel comme perdu (envoie un email avec les infos de l'utilisateur connecté)
+def declarer_materiel_perdu(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+    try:
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Utilisateur non connecté.'}, status=401)
+        try:
+            employe = Employe.objects.get(id_employe=user_id)
+        except Employe.DoesNotExist:
+            return JsonResponse({'error': 'Employé non trouvé.'}, status=404)
+        pc_attribue = None
+        try:
+            pc_attribue = Pc_attribué.objects.filter(employe=employe).first()
+        except Exception:
+            pc_attribue = None
+        commentaires = request.POST.get('commentaires', '')
+        date_perte = request.POST.get('date_perte') 
+
+        objet = "Déclaration de matériel perdu"
+        corps_message = f"""
+Déclaration de matériel perdu
+
+Employé : {employe.prenom} {employe.nom}
+Fonction : {employe.fonction}
+Département : {getattr(employe, 'Département', '')}
+Matricule : {getattr(employe, 'matricule', '')}
+Téléphone : {getattr(employe, 'telephone', '')}
+
+Détails du matériel :
+{('- Marque : ' + pc_attribue.marque) if pc_attribue else '- Aucun PC attribué trouvé'}
+{('- Modèle : ' + pc_attribue.modele) if pc_attribue else ''}
+{('- Numéro de série : ' + pc_attribue.numero_serie) if pc_attribue else ''}
+
+Date de perte déclarée : {date_perte or 'Non précisée'}
+Commentaires : {commentaires or 'N/A'}
+
+Date de la déclaration : {datetime.now().strftime('%d/%m/%Y à %H:%M')}
+        """.strip()
+
+        # Enregistrer l'email dans la base de données
+        
+        Email_DOT.objects.create(
+            destinataire="kaogeorges2006@gmail.com",
+            objet=objet,
+            corps=corps_message,
+            expediteur=employe
+        )
+        Email_RDOT.objects.create(
+            destinataire="kaogeorges2006@gmail.com",
+            objet=objet,
+            corps=corps_message,
+            expediteur=employe
+        )
+        email = Email_DCH.objects.create(
+            destinataire="kaogeorges2006@gmail.com",
+            objet=objet,
+            corps=corps_message,
+            expediteur=employe
+        )
+
+        # Envoyer l'email réellement (non bloquant)
+        email_envoye = False
+        try:
+            send_mail(
+                subject=objet,
+                message=corps_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=["kaogeorges2006@gmail.com"],
+                fail_silently=False,
+            )
+            email_envoye = True
+        except Exception as e:
+            email_envoye = False
+
+        return JsonResponse({
+            'message': 'Déclaration de perte envoyée',
+            'email_id': email.id_email,
+            'email_sent': email_envoye
+        })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)

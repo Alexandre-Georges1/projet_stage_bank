@@ -972,3 +972,116 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     });
 });
+
+/* ===================== MATERIEL PERDU (déplacé depuis pc.js) ===================== */
+// Soumission AJAX du formulaire "Matériel Perdu"
+async function submitMaterielPerdu(e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const action = form.getAttribute('action');
+    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value || getCsrfToken();
+    const formData = new FormData(form);
+    // Gestion du bouton de soumission (spinner + désactivation)
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    const setLoading = (on) => {
+        if (!submitBtn) return;
+        if (on) {
+            submitBtn.disabled = true;
+            submitBtn.dataset.loading = '1';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Déclaration en cours…';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.dataset.loading = '0';
+            submitBtn.innerHTML = originalBtnHtml || 'Déclarer';
+        }
+    };
+    if (submitBtn?.dataset.loading === '1') return; // anti double-clic
+    setLoading(true);
+    try {
+        const resp = await fetch(action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok && data && data.message) {
+            if (window.NotificationSystem?.success) {
+                window.NotificationSystem.success(data.message, { title: 'Matériel perdu' });
+            } else if (window.showNotification) {
+                window.showNotification(data.message);
+            } else {
+                alert(data.message);
+            }
+            form.reset();
+        } else {
+            const err = (data && (data.error || data.message)) || 'Erreur inconnue';
+            if (window.NotificationSystem?.error) {
+                window.NotificationSystem.error('Erreur: ' + err, { title: 'Matériel perdu' });
+            } else if (window.showNotification) {
+                window.showNotification('Erreur: ' + err);
+            } else {
+                alert('Erreur: ' + err);
+            }
+        }
+    } catch (_) {
+        if (window.NotificationSystem?.error) {
+            window.NotificationSystem.error('Erreur réseau.', { title: 'Matériel perdu' });
+        } else if (window.showNotification) {
+            window.showNotification('Erreur réseau.');
+        } else {
+            alert('Erreur réseau.');
+        }
+    }
+    finally {
+        setLoading(false);
+    }
+}
+
+// Expose une fonction globale (utilisée par dashboard-core.js) pour charger le récap du PC attribué
+window.fetchMaterielPerduPcInfo = async function () {
+    try {
+        const url = (window.racheterPcUrl || '/racheter_pc/');
+        const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const data = await resp.json().catch(() => ({}));
+        const hasInfo = data && data.pc_info;
+        const infoBox = document.getElementById('mpPcInfo');
+        const noPc = document.getElementById('mpNoPcMessage');
+        if (!infoBox || !noPc) return;
+        if (hasInfo) {
+            const pc = data.pc_info;
+            const m = document.getElementById('mpPcMarque');
+            const mo = document.getElementById('mpPcModele');
+            const s = document.getElementById('mpPcSerie');
+            if (m) m.textContent = pc.marque || '-';
+            if (mo) mo.textContent = pc.modele || '-';
+            if (s) s.textContent = pc.numero_serie || '-';
+            infoBox.style.display = 'flex';
+            noPc.style.display = 'none';
+        } else {
+            infoBox.style.display = 'none';
+            noPc.style.display = 'block';
+        }
+    } catch (_) {
+        const infoBox = document.getElementById('mpPcInfo');
+        const noPc = document.getElementById('mpNoPcMessage');
+        if (infoBox && noPc) {
+            infoBox.style.display = 'none';
+            noPc.style.display = 'block';
+        }
+    }
+};
+
+// Brancher le formulaire et charger le récap au chargement
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('declarationMaterielPerduForm');
+    if (form) {
+        form.addEventListener('submit', submitMaterielPerdu);
+        if (typeof window.fetchMaterielPerduPcInfo === 'function') {
+            window.fetchMaterielPerduPcInfo();
+        }
+    }
+});

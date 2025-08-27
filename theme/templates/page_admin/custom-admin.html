@@ -1,6 +1,28 @@
 {% extends 'dashboard.html' %}
 
 {% block content %}
+ <li class="active" id="dashboard-btn">
+					<i class='bx bxs-dashboard'></i>
+					<span class="text">Tableau de Bord</span>
+			</li>
+            <li id="catalogue-btn">
+					<i class="fa-solid fa-folder"></i>
+					<span class="text">catalogue</span>
+
+					
+			</li>
+            <li id="catalogue-ancien-btn">
+					<i class="fa-solid fa-box-archive"></i>
+					<span class="text">Catalogue des anciens PC</span>
+			</li>
+              <li id="attribuer-btn">		
+					<i class="fa-solid fa-laptop"></i>
+					<span class="text">Attribuer un PC</span>	
+			</li>
+			<li id="Envoi-btn">
+					<i class="fa-solid fa-reply"></i>
+					<span class="text"> Envoi des caracteristiques </span>	
+			</li>
     <li id="utilisateur-btn">
         <i class="fa-solid fa-user"></i>
         <span class="text">Utilisateurs</span>
@@ -9,4 +31,8 @@
 			<i class='bx bxs-cog' ></i>
 			<span class="text">Paramètres</span>
 	</li>
+    <li id="administration-btn">
+            <i class='bx bxs-report' ></i>
+            <span class="text">Administration</span>
+    </li>
 {% endblock %}

@@ -19,6 +19,10 @@ function switchView(viewId) {
         if (viewId === 'Racheter-view' && typeof fetchRacheterPcInfo === 'function') {
             fetchRacheterPcInfo();
         }
+        // Si la vue est 'materiel_perdu-view', charger le récapitulatif PC
+        if (viewId === 'materiel_perdu-view' && typeof window.fetchMaterielPerduPcInfo === 'function') {
+            window.fetchMaterielPerduPcInfo();
+        }
 
     } else {
         console.error('View not found:', viewId);

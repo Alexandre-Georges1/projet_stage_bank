@@ -29,12 +29,6 @@ def ajouter_utilisateur(request):
             try:
                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
                 email_status = "E-mail de notification envoyé avec succès."
-                Email.objects.create(
-                        objet=subject,
-                        corps=message,
-                        destinataire=', '.join(recipient_list), 
-                        expediteur=None, 
-                    )
                 Email_DOT.objects.create(
                     objet=subject,
                     corps=message,

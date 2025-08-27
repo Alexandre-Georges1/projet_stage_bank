@@ -2,7 +2,7 @@ from django.http import JsonResponse
 import json
 from django.core.mail import send_mail
 from django.conf import settings
-from ..models import Employe, Email, Email_RDOT ,Email_DOT, Email_MGX 
+from ..models import Employe,Email_RDOT ,Email_DOT, Email_MGX 
 
 
 def enregistrer_employe(request):
@@ -26,12 +26,6 @@ def enregistrer_employe(request):
             try:
                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
                 email_status = "E-mail de notification envoyé avec succès."
-                Email.objects.create(
-                objet=subject,
-                corps=message,
-                destinataire=', '.join(recipient_list), 
-                expediteur=None, 
-            )
                 Email_DOT.objects.create(
                     objet=subject,
                     corps=message,

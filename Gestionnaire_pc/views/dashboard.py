@@ -34,7 +34,6 @@ def dashboard(request):
     pc_en_rebu = Pc_ancien.objects.count()
     marques = marquePC.objects.all()
     modeles = modelePC.objects.all()
-    emails = Email.objects.all()
     connected_user = None
     demandes_achat = []
     demandes_peripheriques_en_attente, demandes_peripheriques_traitees = get_demandes_peripheriques()
@@ -66,7 +65,6 @@ def dashboard(request):
         'pc_en_rebu': pc_en_rebu,
         'marques': marques,
         'modeles': modeles,
-        'notifications': emails,
         'connected_user':connected_user,
         'demandes_achat': demandes_achat,
         'demandes_peripheriques_en_attente': demandes_peripheriques_en_attente,
@@ -315,6 +313,9 @@ def Admin(request):
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
     emails = Email.objects.all()
+    pc_en_rebu_attribue = Pc_ancien_attribue.objects.count()
+    pc_total_global=pc_total + pc_en_rebu + pc_en_rebu_attribue + pc_en_service
+    caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     connected_user = None
     if 'user_id' in request.session:
         try:
@@ -331,6 +332,9 @@ def Admin(request):
                 'pcs_attribues': pcs_attribues,
                 'pcs_anciens': pcs_anciens,
                 'pc_total': pc_total, 
+                'pc_total_global': pc_total_global,
+                'caracteristiques_envoyees': caracteristiques_envoyees,
+                'pc_en_rebu_attribue': pc_en_rebu_attribue,
                 'pc_en_service': pc_en_service,
                 'pc_en_rebu': pc_en_rebu,
                 'marques': marques,

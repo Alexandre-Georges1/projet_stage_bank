@@ -753,6 +753,141 @@
     </div>
 </div>
 
+<!-- Vue Administration -->
+<div id="administration-view" class="hidden">
+    <h1>Administration</h1>
+
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Gestion des logins / rôles</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+
+            <!-- Formulaire d’ajout / mise à jour -->
+            <form method="post" action="" class="no-print"
+                  style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin: 12px 0; background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:14px;">
+                {% csrf_token %}
+                <div style="display:flex; flex-direction:column; gap:6px; min-width:240px; flex:1;">
+                    <label for="lmLogin" style="font-size:12px; color:#6b7280; font-weight:600;">Login</label>
+                    <input id="lmLogin" name="login" type="text" placeholder="ex: a.kao"
+                           required
+                           style="height:40px; padding:0 12px; border:1px solid #d1d5db; border-radius:8px; outline:none; font-size:14px;">
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:6px; min-width:220px;">
+                    <label for="lmRole" style="font-size:12px; color:#6b7280; font-weight:600;">Rôle</label>
+                    <select id="lmRole" name="fonction" required
+                            style="height:40px; padding:0 12px; border:1px solid #d1d5db; border-radius:8px; outline:none; font-size:14px; background:#fff;">
+                        <option value="admin">admin</option>
+                        <option value="DOT">DOT</option>
+                        <option value="RDOT">RDOT</option>
+                        <option value="DCH">DCH</option>
+                        <option value="MG">MG</option>
+                        <option value="RMG">RMG</option>
+                        <option value="DAF">DAF</option>
+                        <option value="Employe" selected>Employe</option>
+                    </select>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="btn-ajouter-manuel" aria-label="Enregistrer le mapping"
+                            style="height:40px; padding:0 16px;">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+
+            <!-- Tableau des mappings -->
+            <div style="overflow-x:auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa;">
+                            <th style="width: 40%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Login</th>
+                            <th style="width: 40%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Rôle</th>
+                            <th style="width: 20%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #f0f0f0;">
+                            <td style="padding: 14px 8px; vertical-align: middle; font-weight: 500;"></td>
+                            <td style="padding: 10px 8px; vertical-align: middle;">
+                                <form method="post" action="" style="display:flex; gap:8px; align-items:center;">
+                                    {% csrf_token %}
+                                    <select name="fonction"
+                                            style="height:36px; padding:0 12px; border:1px solid #d1d5db; border-radius:8px; outline:none; font-size:14px; background:#fff;">
+                                        <option value="admin" >admin</option>
+                                        <option value="DOT" >DOT</option>
+                                        <option value="RDOT" >RDOT</option>
+                                        <option value="DCH" >DCH</option>
+                                        <option value="MG" >MG</option>
+                                        <option value="RMG" >RMG</option>
+                                        <option value="DAF" >DAF</option>
+                                        <option value="Employe" >Employe</option>
+                                    </select>
+                                    <button type="submit" class="btn-modifier" aria-label="Mettre à jour" title="Mettre à jour"
+                                            style="margin:0 2px;"><i class="fas fa-save"></i></button>
+                                </form>
+                            </td>
+                            <td style="padding: 10px 8px; text-align: center; vertical-align: middle;">
+                                <form method="post" action=""  style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-supprimer" aria-label="Supprimer" title="Supprimer" onclick="return showNotification('Suppression réussie');" style="margin:0 2px;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align:center; color:#888; padding:30px;">Aucun mapping défini.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div> 
+
+<!-- Vue Matériel Perdu -->
+<div id="materiel_perdu-view" class="hidden">
+    <h1>Matériel Perdu</h1>
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Déclarer mon ordinateur comme perdu</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <!-- Récapitulatif de l'ordinateur attribué -->
+            <div id="mpPcRecap" style="margin: 10px 0 16px; padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa;">
+                <div style="font-weight:600; margin-bottom:8px; color:#333;">Votre ordinateur attribué</div>
+                <div id="mpNoPcMessage" style="color:#666; font-size:14px; display:none;">Aucun PC attribué trouvé pour votre compte.</div>
+                <div id="mpPcInfo" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;" class="table-data">
+                    <div><span style="color:#666;">Marque:</span> <span id="mpPcMarque" style="font-weight:600;">-</span></div>
+                    <div><span style="color:#666;">Modèle:</span> <span id="mpPcModele" style="font-weight:600;">-</span></div>
+                    <div><span style="color:#666;">N° Série:</span> <span id="mpPcSerie" style="font-weight:600;">-</span></div>
+                </div>
+            </div>
+            <form id="declarationMaterielPerduForm" method="post" action="{% url 'declarer_materiel_perdu' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="commentairesmatperdu">Commentaires additionnels (optionnel):</label>
+                    <textarea id="commentairesmatperdu" name="commentaires" rows="6" style="width:100%; min-height:160px; padding:12px 14px; border:1px solid #d0d0d0; border-radius:8px; resize:vertical; font-size:14px; line-height:1.4;" placeholder="Ajoutez des informations complémentaires si nécessaire..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="date_perte">Date de perte:</label>
+                    <input type="date" id="date_perte" name="date_perte" required>
+                </div>
+                <button type="submit" class="btn-ajouter-manuel">Déclarer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
 <!-- Vue Bordereau -->
 <div id="bordereau-view" class="hidden">
     <h1>Mon Bordereau de Livraison</h1>

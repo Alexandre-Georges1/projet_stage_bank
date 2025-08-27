@@ -81,13 +81,7 @@ def demande_de_rachat(request):
                 email_status = "E-mail envoyé avec succès."
             except Exception as e:
                 email_status = f"Erreur lors de l'envoi de l’e-mail : {e}"
-
-            Email.objects.create(
-                objet=subject,
-                destinataire='kaogeorges2006@gmail.com',
-                corps=message,
-                expediteur=connected_user
-            ) 
+                
             Email_RDOT.objects.create(
                 objet=subject,
                 corps=message,
