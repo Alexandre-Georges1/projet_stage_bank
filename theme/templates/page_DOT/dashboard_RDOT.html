@@ -9,7 +9,7 @@
 
     <li id="catalogue-btn">
         <i class="fa-solid fa-folder"></i>
-        <span class="text">Catalogue</span>
+        <span class="text">Inventaire</span>
     </li>
 
     <li id="catalogue-ancien-btn">
@@ -25,6 +25,52 @@
         <i class="fa-solid fa-keyboard"></i>
         <span class="text">Demande matériel</span>
     </li>
+    <li id="monpc-root" class="has-submenu">
+					<i class='bx bx-laptop'></i>
+					<span class="text">Mon ordinateur</span>
+					<i class='bx bx-chevron-down submenu-caret' style="margin-left:auto;"></i>
+					<ul class="submenu" style="display:none;">
+						
+            <li id="bordereau-btn">
+				<i class="fa-solid fa-file-contract"></i>
+					<span class="text"> Mon Bordereau</span>
+			</li>
+            <li id="Racheter-btn">	
+				<i class="fa-solid fa-money-check-dollar"></i>
+					<span class="text"> Racheter PC </span>
+			</li>
+            <li id="Restituer-btn">
+				<i class="fa-solid fa-rotate-left"></i>
+					<span class="text">Restituer PC</span>
+			</li>
+
+			 <li id="Achat_piece-btn">
+				<i class="fa-solid fa-computer-mouse"></i>
+					<span class="text">Demande d'achat de périphérique</span>
+			</li>
+			
+			<li id="materiel_perdu-btn">
+				<i class="fa-solid fa-triangle-exclamation"></i>
+					<span class="text">Matériel perdu ou volé</span>
+			</li>
+					</ul>
+			</li>
+
+			<script>
+			document.addEventListener('DOMContentLoaded', function(){
+				var root = document.getElementById('monpc-root');
+				if (!root) return;
+				var submenu = root.querySelector('.submenu');
+				root.addEventListener('click', function(e){
+					if (e.target.closest('.submenu')) { return; }
+					e.stopPropagation();
+					var expanded = root.classList.toggle('expanded');
+					submenu.style.display = expanded ? 'block' : 'none';
+				});
+			});
+			</script>
+			
+
      
     
 {% endblock %}

@@ -63,8 +63,7 @@ function initBordereauManagement() {
         // Précharger les matériels déjà enregistrés sur le dernier bordereau (si existants) et statut
                 try {
                     if (rowData.employeId) {
-            prefillBordereauItems(rowData.employeId);
-            prefillBordereauStatus(rowData.employeId);
+                        prefillBordereauData(rowData.employeId); // fetch unique + rendu optimisé
                     }
                 } catch (_) { /* noop */ }
 
@@ -247,6 +246,88 @@ async function prefillBordereauStatus(employeId) {
     } catch (_) { /* noop */ }
 }
 
+// Nouvelle fonction: un seul fetch pour items + statut, moins de latence
+async function prefillBordereauData(employeId) {
+    const statusBlock = document.getElementById('bordereauStatusBlock');
+    const badge = document.getElementById('bordereauStatutBadge');
+    const dates = document.getElementById('bordereauDates');
+    const luAt = document.getElementById('bordereauLuAt');
+    const accepteAt = document.getElementById('bordereauAccepteAt');
+    const table = document.getElementById('bordereauTable');
+    const tbody = table?.querySelector('tbody');
+    const template = tbody?.querySelector('tr.bordereau-template');
+
+    try {
+        const resp = await fetch(`/bordereau-details/${employeId}/`, { headers: { 'Accept': 'application/json' } });
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        // 1) Statut
+        if (statusBlock && badge) {
+            const statut = (data.statut || '').toLowerCase();
+            const dateStatut = data.date_statut || null;
+            // Reset
+            if (dates) dates.style.display = 'none';
+            if (luAt) { luAt.style.display = 'none'; const s = luAt.querySelector('span'); if (s) s.textContent = ''; }
+            if (accepteAt) { accepteAt.style.display = 'none'; const s = accepteAt.querySelector('span'); if (s) s.textContent = ''; }
+            if (statut.includes('accept')) {
+                badge.textContent = 'Lu et accepté';
+                badge.style.background = '#dcfce7';
+                badge.style.color = '#065f46';
+                if (dates && accepteAt) {
+                    dates.style.display = '';
+                    accepteAt.style.display = '';
+                    const s = accepteAt.querySelector('span');
+                    if (s) s.textContent = formatDateFr(dateStatut) || '';
+                }
+            } else if (statut.includes('lu')) {
+                badge.textContent = 'Lu';
+                badge.style.background = '#fef9c3';
+                badge.style.color = '#92400e';
+                if (dates && luAt) {
+                    dates.style.display = '';
+                    luAt.style.display = '';
+                    const s = luAt.querySelector('span');
+                    if (s) s.textContent = formatDateFr(dateStatut) || '';
+                }
+            } else {
+                badge.textContent = 'En attente';
+                badge.style.background = '#fee2e2';
+                badge.style.color = '#991b1b';
+            }
+        }
+
+        // 2) Items
+        if (!tbody || !template) return;
+        const items = Array.isArray(data.items) ? data.items : [];
+        if (!items.length) return;
+
+        // Nettoyer les lignes ajoutées précédemment (on garde la 1re ligne PC)
+        const rows = tbody.querySelectorAll('tr:not(.bordereau-template)');
+        rows.forEach((tr, idx) => { if (idx >= 1) tr.remove(); });
+
+        // Rendu optimisé avec DocumentFragment
+        const frag = document.createDocumentFragment();
+        let count = tbody.querySelectorAll('tr:not(.bordereau-template)').length; // devrait être 1
+        for (const it of items) {
+            const clone = template.cloneNode(true);
+            clone.classList.remove('bordereau-template');
+            clone.style.display = '';
+            clone.removeAttribute('aria-hidden');
+            const numCell = clone.querySelector('.num');
+            if (numCell) numCell.textContent = (++count);
+            const inpSerie = clone.querySelector('.b-serie');
+            const inpDesc = clone.querySelector('.b-desc');
+            const inpQty = clone.querySelector('.b-qty');
+            if (inpSerie) inpSerie.value = it.numero_serie || '';
+            if (inpDesc) inpDesc.value = it.description || it.materiel || '';
+            if (inpQty) inpQty.value = it.quantite || 1;
+            frag.appendChild(clone);
+        }
+        tbody.appendChild(frag);
+    } catch (_) { /* noop */ }
+}
+
 function formatDateFr(isoOrStr) {
     if (!isoOrStr) return '';
     try {
@@ -266,10 +347,13 @@ function formatDateFr(isoOrStr) {
 async function handleEnvoyerDemande(bordereauModal) {
     const btnEnvoyerDemande = bordereauModal.querySelector('.btn-Envoyer-Demande');
     showBordereauLoadingState(true, btnEnvoyerDemande);
+    const loadingStart = Date.now();
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;  
     if (!csrfToken) {
         showBordereauNotification('Token CSRF manquant', 'error');
-        showBordereauLoadingState(false, btnEnvoyerDemande);
+        // Assurer 3s de loading affiché minimum
+        const elapsed = Date.now() - loadingStart; const wait = Math.max(0, 3000 - elapsed);
+        setTimeout(() => showBordereauLoadingState(false, btnEnvoyerDemande), wait);
         return;
     }
 
@@ -322,17 +406,19 @@ async function handleEnvoyerDemande(bordereauModal) {
             if (bordereauModal?.dataset?.employeId) {
                 prefillBordereauStatus(bordereauModal.dataset.employeId);
             }
+            // Laisser le temps de lecture (~3s) avant de fermer la modale
             setTimeout(() => {
                 bordereauModal.classList.add('hidden');
-            }, 1500);
+            }, 3000);
         } else {
             showBordereauNotification("Erreur lors de l'envoi du bordereau : " + result.error, 'error');
         }
     } catch (error) {
         showBordereauNotification("Une erreur est survenue lors de l'envoi du bordereau.", 'error');
     } finally {
-        // Désactiver l'état de chargement
-        showBordereauLoadingState(false, btnEnvoyerDemande);
+        // Désactiver l'état de chargement après un minimum de 3s
+        const elapsed = Date.now() - loadingStart; const wait = Math.max(0, 3000 - elapsed);
+        setTimeout(() => showBordereauLoadingState(false, btnEnvoyerDemande), wait);
     }
 }
 
@@ -343,14 +429,44 @@ function handleDownloadBordereau() {
 
     if (!modal || !printBtn) return;
 
-    // Masquer le bouton avant impression
-    printBtn.style.display = 'none';
-    const printContents = modal.querySelector('.modern-modal-content')?.innerHTML || '';
+    const contentNode = modal.querySelector('.modern-modal-content');
+    if (!contentNode) return;
+
+    // Cloner le contenu et convertir les champs éditables en texte pour l'impression
+    const clone = contentNode.cloneNode(true);
+    // Retirer les templates cachées
+    clone.querySelectorAll('.bordereau-template').forEach(n => n.remove());
+    // Remplacer inputs/select/textarea par leur valeur lisible
+    clone.querySelectorAll('input, textarea, select').forEach(el => {
+        const span = document.createElement('span');
+        span.style.whiteSpace = 'pre-wrap';
+        if (el.tagName === 'SELECT') {
+            const opt = el.selectedOptions && el.selectedOptions[0];
+            span.textContent = (opt && (opt.textContent || opt.value)) || '';
+        } else if (el.tagName === 'TEXTAREA') {
+            span.textContent = el.value || '';
+        } else {
+            const type = (el.getAttribute('type') || 'text').toLowerCase();
+            if (type === 'checkbox' || type === 'radio') {
+                span.textContent = el.checked ? '✓' : '✗';
+            } else {
+                span.textContent = el.value || '';
+            }
+        }
+        // Conserver un style de cellule si utile
+        span.className = el.className;
+        el.replaceWith(span);
+    });
+
+    // Supprimer la croix de fermeture dans la version imprimée
+    clone.querySelectorAll('.modal-close-button, .modern-close-btn, .modern-header-close').forEach(n => n.remove());
+
+    const printContents = clone.innerHTML;
     const win = window.open('', '', 'height=600,width=800');
     
     if (win) {
         win.document.write('<html><head><title>Bordereau de Livraison</title>');
-        win.document.write('<style>@media print {.no-print{display:none!important;}}</style>');
+    win.document.write('<style>@media print {.no-print{display:none!important;}} table{width:100%;border-collapse:collapse;} td,th{border:1px solid #ddd;padding:6px;} .num{width:40px;text-align:center;} .modal-close-button,.modern-close-btn,.modern-header-close{display:none!important;}</style>');
         win.document.write('</head><body>');
         win.document.write(printContents);
         win.document.write('</body></html>');
@@ -359,8 +475,6 @@ function handleDownloadBordereau() {
         setTimeout(() => {
             win.print();
             win.close();
-            // Réafficher le bouton après impression
-            printBtn.style.display = '';
         }, 500);
     }
 }
@@ -375,6 +489,7 @@ async function handleAcceptBordereau() {
         return;
     }
     showBordereauLoadingState(true, acceptBtn);
+    const loadingStart = Date.now();
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                      document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
                      getCookie('csrftoken');
@@ -419,7 +534,8 @@ async function handleAcceptBordereau() {
     } finally {
         // Désactiver l'état de chargement seulement si l'acceptation a échoué
         if (!acceptBtn.disabled) {
-            showBordereauLoadingState(false, acceptBtn);
+            const elapsed = Date.now() - loadingStart; const wait = Math.max(0, 3000 - elapsed);
+            setTimeout(() => showBordereauLoadingState(false, acceptBtn), wait);
         }
     }
 }
@@ -502,103 +618,16 @@ function showBordereauLoadingState(isLoading, submitButton) {
  * @param {string} type - Type de notification (success, error, info)
  */
 function showBordereauNotification(message, type = 'info') {
-    // Créer ou réutiliser un conteneur de notification
-    let notificationContainer = document.getElementById('bordereau-notification-container');
-    
-    if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
-        notificationContainer.id = 'bordereau-notification-container';
-        notificationContainer.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            max-width: 400px;
-        `;
-        document.body.appendChild(notificationContainer);
+    // Utiliser exclusivement le système global si présent (aligné PC Management)
+    const ns = window.NotificationSystem;
+    const opts = { title: 'Bordereau', duration: 3500 };
+    if (ns) {
+        if (typeof ns[type] === 'function') return ns[type](message, opts);
+        if (typeof ns.show === 'function') return ns.show(message, type);
     }
-    
-    // Créer la notification
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        padding: 15px 20px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        line-height: 1.4;
-        animation: slideIn 0.3s ease-out;
-        border-left: 4px solid;
-        background: white;
-    `;
-    
-    // Définir les couleurs selon le type
-    const styles = {
-        success: {
-            borderColor: '#28a745',
-            backgroundColor: '#d4edda',
-            color: '#155724',
-            icon: '✅'
-        },
-        error: {
-            borderColor: '#dc3545',
-            backgroundColor: '#f8d7da',
-            color: '#721c24',
-            icon: '❌'
-        },
-        info: {
-            borderColor: '#17a2b8',
-            backgroundColor: '#d1ecf1',
-            color: '#0c5460',
-            icon: 'ℹ️'
-        }
-    };
-    
-    const style = styles[type] || styles.info;
-    notification.style.borderLeftColor = style.borderColor;
-    notification.style.backgroundColor = style.backgroundColor;
-    notification.style.color = style.color;
-    
-    notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 16px;">${style.icon}</span>
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" 
-                    style="margin-left: auto; background: none; border: none; font-size: 18px; 
-                           cursor: pointer; color: ${style.color}; opacity: 0.7;">&times;</button>
-        </div>
-    `;
-    
-    // Ajouter les styles d'animation si ce n'est pas déjà fait
-    if (!document.getElementById('bordereau-notification-styles')) {
-        const styleSheet = document.createElement('style');
-        styleSheet.id = 'bordereau-notification-styles';
-        styleSheet.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(styleSheet);
-    }
-    notificationContainer.appendChild(notification);
-    // Auto-suppression après 5 secondes pour les succès, 8 secondes pour les erreurs
-    const autoRemoveDelay = type === 'success' ? 5000 : 8000;
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.style.animation = 'slideOut 0.3s ease-in';
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 300);
-        }
-    }, autoRemoveDelay);
+    // Fallback minimal
+    if (type === 'error') alert('Erreur: ' + message);
+    else alert(message);
 }
 // Fonction spécifique pour initialiser les éléments de la vue bordereau
 function initBordereauViewElements() {
@@ -632,8 +661,8 @@ function observeBordereauView() { /* simplifié: non nécessaire avec init direc
 
 window.DashboardBordereauManagement = {
     initBordereauManagement,
-    initBordereauViewElements, // Fonction exposée
-    observeBordereauView,      // Nouvelle fonction exposée
+    initBordereauViewElements,
+    observeBordereauView,
     handleEnvoyerDemande,
     handleDownloadBordereau,
     handleAcceptBordereau,

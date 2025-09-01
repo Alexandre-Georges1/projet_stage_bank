@@ -100,7 +100,9 @@
         <script>
       
         document.addEventListener('DOMContentLoaded', function() {
-            var menuItems = document.querySelectorAll('#sidebar .side-menu.top li');
+            // Ne considérer que les éléments mappés à des vues (suffixe -btn)
+            var allMenu = Array.from(document.querySelectorAll('#sidebar .side-menu.top li[id]'));
+            var menuItems = allMenu.filter(function(li){ return typeof li.id === 'string' && li.id.endsWith('-btn'); });
             var firstVisibleMenu = null;
             for (var i = 0; i < menuItems.length; i++) {
                 var li = menuItems[i];
@@ -110,9 +112,7 @@
                 }
             }
             if (firstVisibleMenu) {
-                menuItems.forEach(function(li) {
-                    li.classList.remove('active');
-                });
+                allMenu.forEach(function(li) { li.classList.remove('active'); });
                 firstVisibleMenu.classList.add('active');
                 document.querySelectorAll('main > div[id$="-view"]').forEach(function(view) {
                     view.classList.add('hidden');
@@ -125,15 +125,6 @@
             }
         });
         </script>
-        <div class="sidebar" style="position: absolute; bottom: 0; width: 100%;">
-            <ul class="side-menu">
-                <li id="logout-btn">
-                        <i class='bx bxs-log-out-circle'></i>
-                        <span class="text" style="color:#dc3545; font-weight:bold;">Se déconnecter</span>
-                </li>
-            </ul>
-        </div>
-        
     </section>
     <section id="content">
         <nav>
@@ -141,7 +132,7 @@
             <form action="#" method="get">
             </form>
         <div class="user-profile-container">
-            <div class="user-info-display">
+            <div class="user-info-display" id="userInfoToggle" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
                 <div class="user-text-info">
                     <div class="user-display-name">
                         {% if connected_user %}{{ connected_user.prenom }} {{ connected_user.nom }}{% else %}Utilisateur Inconnu{% endif %}
@@ -156,6 +147,62 @@
                     </span>
                 </div>
             </div>
+            <!-- Dropdown d'information utilisateur -->
+            <div class="user-info-dropdown" id="userInfoDropdown" aria-hidden="true">
+                <div class="user-header">
+                    <div class="user-avatar">
+                        {% if connected_user %}{{ connected_user.prenom|first|upper }}{{ connected_user.nom|first|upper }}{% else %}??{% endif %}
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name">{% if connected_user %}{{ connected_user.prenom }} {{ connected_user.nom }}{% else %}Utilisateur Inconnu{% endif %}</div>
+                        <div class="user-role">{% if connected_user %}{{ connected_user.fonction }}{% else %}Rôle Inconnu{% endif %}</div>
+                    </div>
+                </div>
+                <div class="user-actions">
+                    <button id="logoutAction" class="user-action-item logout-action">
+                        <i class='bx bxs-log-out-circle'></i>
+                        Se déconnecter
+                    </button>
+                </div>
+            </div>
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var toggle = document.getElementById('userInfoToggle');
+                var dropdown = document.getElementById('userInfoDropdown');
+                if (!toggle || !dropdown) return;
+
+                function closeDropdown(){
+                    dropdown.classList.remove('show');
+                    toggle.setAttribute('aria-expanded','false');
+                    dropdown.setAttribute('aria-hidden','true');
+                }
+                function toggleDropdown(e){
+                    e && e.stopPropagation();
+                    var show = !dropdown.classList.contains('show');
+                    dropdown.classList.toggle('show', show);
+                    toggle.setAttribute('aria-expanded', show ? 'true' : 'false');
+                    dropdown.setAttribute('aria-hidden', show ? 'false' : 'true');
+                }
+                toggle.addEventListener('click', toggleDropdown);
+                toggle.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleDropdown(e);} });
+                document.addEventListener('click', function(e){
+                    if (!dropdown.contains(e.target) && !toggle.contains(e.target)) closeDropdown();
+                });
+                document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDropdown(); });
+
+                var logoutBtn = document.getElementById('logoutAction');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function(e){
+                        e.preventDefault();
+                        if (window.deconnexionUrl) {
+                            window.location.href = window.deconnexionUrl;
+                        } else {
+                            alert('URL de déconnexion introuvable');
+                        }
+                    });
+                }
+            });
+            </script>
         </div>
     <div class="notification-container">
         <button aria-label="Ouvrir les notifications" class="notification-btn" id="notificationBtn">
@@ -176,17 +223,14 @@
             {% include 'dashboard_views.html' %}
         </main>
     </section>
-    
     <!-- Inclusion de toutes les modales du dashboard -->
     {% include 'dashboard_modal.html' %}
-    
     <script>
     window.demandeRachat="{% url 'demande_de_rachat'%}"
     window.ajouterPcUrl = "{% url 'ajouter_pc' %}";
     window.modifierPcUrl = "{% url 'modifier_pc' pc_id=0 %}";
     window.supprimerPcUrl = "{% url 'supprimer_pc' pc_id=0 %}";
     window.assignPcUrl = "{% url 'assign_pc_via_form' %}";
-    // URLs pour gérer les attributions (édition/suppression/changement de PC)
     window.modifierAttributionUrl = "{% url 'modifier_attribution' attribution_id=0 %}";
     window.supprimerAttributionUrl = "{% url 'supprimer_attribution' attribution_id=0 %}";
     window.changerPcAttributionUrl = "{% url 'changer_pc_attribution' attribution_id=0 %}";
@@ -219,7 +263,6 @@
     window.restituerPcUrl = "{% url 'restituer_pc' %}";
     window.demandeAchatPeripheriquesUrl = "{% url 'demande_achat_peripheriques' %}";
     window.connectedUserFonction = "{{ connected_user.fonction|default:'' }}";
-    // URLs PC anciens
     window.ajouterPcAncienUrl = "{% url 'ajouter_pc_ancien' %}";
     window.assignPcAncienUrl = "{% url 'assign_pc_ancien' %}";
     window.modifierPcAncienUrl = "{% url 'modifier_pc_ancien' ancien_id=0 %}";
@@ -228,7 +271,6 @@
 
 <script src="{% static 'js/core/utilities.js' %}"></script>
 <!-- Token CSRF caché pour JavaScript -->
-
 
 <script src="{% static 'js/core/dashboard-core.js' %}"></script>
 <script src="{% static 'js/core/notifications.js' %}"></script>
@@ -243,7 +285,6 @@
 <script src="{% static 'validation-demandes-management.js' %}"></script>
 <script src="{% static 'js/modules/amortir.js' %}"></script>
 <script src="{% static 'js/modules/pc-anciens-management.js' %}"></script>
-<!-- pc.js fusionné dans pc-management.js -->
 <script src="{% static 'js/modules/table-search.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>
 </body>

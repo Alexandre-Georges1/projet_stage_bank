@@ -53,12 +53,11 @@ def connexion(request):
 
                 response_data = {'success': True, 'user_fonction': employe.fonction}
 
-                if employe.fonction in ['DOT', 'RDOT', 'DCH', 'MG', 'RMG', 'DAF']:
-                    response_data['choice_required'] = True
-                    response_data['user_role'] = employe.fonction
-                    response_data['specific_dashboard_url'] = reverse(f'dashboard_{employe.fonction}')
-                    response_data['general_dashboard_url'] = reverse('dashboard_employe')
-                elif employe.fonction in ['Admin', 'admin']:
+                role = employe.fonction
+        
+                if role in ['DOT', 'RDOT', 'DCH', 'MG', 'RMG', 'DAF']:
+                    response_data['redirect_url'] = reverse(f'dashboard_{role}')
+                elif role in ['Admin', 'admin']:
                     response_data['redirect_url'] = reverse('custom_admin')
                 else:
                     response_data['redirect_url'] = reverse('dashboard_employe')
@@ -146,12 +145,11 @@ def connexion(request):
                     'user_fonction': user_role
                 }
 
-                if user_role in ['DOT', 'DCH', 'MG' , 'RDOT', 'RMG', 'DAF', 'Admin','Stagiaire']:
-                    response_data.update({
-                        'choice_required': True,
-                        'specific_dashboard_url': reverse(f'dashboard_{user_role}'),
-                        'general_dashboard_url': reverse('dashboard_employe')
-                    })
+                # Redirection automatique selon le rôle
+                if user_role in ['DOT', 'DCH', 'MG' , 'RDOT', 'RMG', 'DAF', 'Stagiaire']:
+                    response_data['redirect_url'] = reverse(f'dashboard_{user_role}')
+                elif user_role in ['Admin', 'admin']:
+                    response_data['redirect_url'] = reverse('custom_admin')
                 else:
                     response_data['redirect_url'] = reverse('dashboard_employe')
                 # Envoi d'un mail de confirmation à l'utilisateur (email en base)

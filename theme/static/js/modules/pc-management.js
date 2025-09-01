@@ -644,8 +644,9 @@ function initPcManagement() {
                         return;
                     }
 
-                    // Afficher notification de chargement
+                    // Afficher notification de chargement (minimum 3s)
                     let loadingId = null;
+                    const loadingStart = Date.now();
                     if (window.NotificationSystem) {
                         loadingId = window.NotificationSystem.loading('Suppression en cours...', { 
                             title: 'Suppression PC' 
@@ -660,31 +661,38 @@ function initPcManagement() {
                             }
                         });
                         const result = await response.json();
-                        
+                        // Attendre au besoin pour garantir 3s d'affichage du loading
+                        const elapsed = Date.now() - loadingStart;
+                        const wait = Math.max(0, 3000 - elapsed);
+                        if (wait) await new Promise(r => setTimeout(r, wait));
                         // Supprimer la notification de chargement
                         if (loadingId && window.NotificationSystem) {
                             window.NotificationSystem.remove(loadingId);
                         }
-                        
                         if (response.ok) {
                             if (window.NotificationSystem) {
                                 window.NotificationSystem.success(result.message, { 
-                                    title: 'PC Supprimé' 
+                                    title: 'PC Supprimé', duration: 3500 
                                 });
                             } else {
                                 showPcNotification(result.message, 'success');
                             }
                             row.remove();
                         } else {
+                            const errMsg = 'Erreur lors de la suppression : ' + (result.error || 'Erreur inconnue');
                             if (window.NotificationSystem) {
-                                window.NotificationSystem.error('Erreur lors de la suppression : ' + result.error, { 
-                                    title: 'Échec Suppression' 
+                                window.NotificationSystem.error(errMsg, { 
+                                    title: 'Échec Suppression', duration: 3500 
                                 });
                             } else {
-                                showPcNotification('Erreur lors de la suppression : ' + result.error, 'error');
+                                showPcNotification(errMsg, 'error');
                             }
                         }
                     } catch (error) {
+                        // Attendre au besoin pour garantir 3s d'affichage du loading
+                        const elapsed = Date.now() - loadingStart;
+                        const wait = Math.max(0, 3000 - elapsed);
+                        if (wait) await new Promise(r => setTimeout(r, wait));
                         // Supprimer la notification de chargement en cas d'erreur
                         if (loadingId && window.NotificationSystem) {
                             window.NotificationSystem.remove(loadingId);
@@ -692,7 +700,7 @@ function initPcManagement() {
                         
                         if (window.NotificationSystem) {
                             window.NotificationSystem.error('Une erreur est survenue lors de la suppression.', { 
-                                title: 'Erreur Réseau' 
+                                title: 'Erreur Réseau', duration: 3500 
                             });
                         } else {
                             showPcNotification('Une erreur est survenue lors de la suppression.', 'error');
@@ -796,6 +804,7 @@ function initPcManagement() {
                     }
                     // Suppression directe sans confirmation
                     let loadingId = null;
+                    const loadingStart = Date.now();
                     if (window.NotificationSystem?.loading) {
                         loadingId = window.NotificationSystem.loading('Suppression en cours...', { title: 'Attribution' });
                     }
@@ -804,16 +813,20 @@ function initPcManagement() {
                         headers: { 'X-CSRFToken': csrfToken }
                     });
                     const data = await resp.json().catch(()=>({}));
+                    // Attendre au besoin pour garantir 3s d'affichage du loading
+                    const elapsed = Date.now() - loadingStart;
+                    const wait = Math.max(0, 3000 - elapsed);
+                    if (wait) await new Promise(r => setTimeout(r, wait));
                     if (loadingId && window.NotificationSystem?.remove) window.NotificationSystem.remove(loadingId);
                     if (resp.ok) {
                         row.remove();
-                        window.NotificationSystem?.success(data.message || 'Attribution supprimée', { title: 'Supprimée' });
+                        window.NotificationSystem?.success(data.message || 'Attribution supprimée', { title: 'Supprimée', duration: 3500 });
                     } else {
-                        window.NotificationSystem?.error(data.error || 'Échec de la suppression', { title: 'Erreur' });
+                        window.NotificationSystem?.error(data.error || 'Échec de la suppression', { title: 'Erreur', duration: 3500 });
                     }
                 } catch (err) {
                     console.error(err);
-                    window.NotificationSystem?.error('Erreur lors de la suppression', { title: 'Erreur Réseau' });
+                    window.NotificationSystem?.error('Erreur lors de la suppression', { title: 'Erreur Réseau', duration: 3500 });
                 }
             }
         });
@@ -880,8 +893,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     form.addEventListener('submit', async function(e){
-        // En mode édition d'attribution: soit on met à jour employé/date, soit on change le PC si un numéro est sélectionné
-        if (this.dataset.mode === 'edit-attribution') {
+    // En mode édition d'attribution: soit on met à jour employé/date, soit on change le PC si un numéro est sélectionné
+    if (this.dataset.mode === 'edit-attribution') {
             e.preventDefault();
             // Verrou anti double-soumission
             if (this.dataset.submitting === '1') return;
@@ -937,11 +950,11 @@ document.addEventListener('DOMContentLoaded', function(){
                             if (dateIso) { const [Y,M,D] = dateIso.split('-'); tds[5].textContent = `${D}/${M}/${Y}`; }
                         }
                         applyEmpDateUpdate();
-                        window.NotificationSystem?.success(data.message || 'PC changé et attribution mise à jour', { title:'Succès' });
+                        window.NotificationSystem?.success(data.message || 'PC changé et attribution mise à jour', { title:'Succès', duration: 3500 });
                         if (window.closeModal) window.closeModal('assignPcModal');
                         restoreAssignModalDefaults();
                     } else {
-                        window.NotificationSystem?.error(data.error || 'Échec du changement de PC', { title:'Erreur' });
+                        window.NotificationSystem?.error(data.error || 'Échec du changement de PC', { title:'Erreur', duration: 3500 });
                     }
                 } else {
                     // Sinon, simple mise à jour employé/date
@@ -954,19 +967,77 @@ document.addEventListener('DOMContentLoaded', function(){
                     const data = await resp.json().catch(()=>({}));
                     if (resp.ok) {
                         applyEmpDateUpdate();
-                        window.NotificationSystem?.success(data.message || 'Attribution mise à jour', { title:'Succès' });
+                        window.NotificationSystem?.success(data.message || 'Attribution mise à jour', { title:'Succès', duration: 3500 });
                         if (window.closeModal) window.closeModal('assignPcModal');
                         restoreAssignModalDefaults();
                     } else {
-                        window.NotificationSystem?.error(data.error || 'Échec de la mise à jour', { title:'Erreur' });
+                        window.NotificationSystem?.error(data.error || 'Échec de la mise à jour', { title:'Erreur', duration: 3500 });
                     }
                 }
             } catch (err) {
                 console.error(err);
-                window.NotificationSystem?.error('Erreur réseau', { title:'Erreur' });
+                window.NotificationSystem?.error('Erreur réseau', { title:'Erreur', duration: 3500 });
             } finally {
                 if (window.DashboardModal?.setLoading && submitBtn) window.DashboardModal.setLoading(submitBtn, false);
                 // Relâcher le verrou
+                this.dataset.submitting = '0';
+            }
+        } else {
+            // Mode création d'attribution: intercepter pour afficher la notification assez longtemps
+            e.preventDefault();
+            if (this.dataset.submitting === '1') return;
+            this.dataset.submitting = '1';
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCsrfToken();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            try {
+                if (!csrfToken) { window.NotificationSystem?.error('Token CSRF manquant', { title:'Sécurité' }); return; }
+                if (window.DashboardModal?.setLoading && submitBtn) window.DashboardModal.setLoading(submitBtn, true);
+                const action = this.getAttribute('action');
+                const formData = new FormData(this);
+                const resp = await fetch(action, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrfToken },
+                    body: formData
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (resp.ok) {
+                    // Afficher un succès avec une durée accrue et retarder la fermeture/rechargement
+                    const msg = data.message || 'PC attribué avec succès';
+                    if (window.NotificationSystem?.success) {
+                        window.NotificationSystem.success(msg, { title: 'Attribution', duration: 3500 });
+                    } else if (window.showNotification) {
+                        window.showNotification(msg);
+                    } else {
+                        alert(msg);
+                    }
+                    const closeAndRefresh = () => {
+                        if (window.closeModal) window.closeModal('assignPcModal'); else assignModal?.classList.add('hidden');
+                        // Recharger pour refléter la nouvelle attribution
+                        location.reload();
+                    };
+                    // Laisser le temps de lecture (~3s)
+                    setTimeout(closeAndRefresh, 3000);
+                } else {
+                    const err = data.error || data.message || 'Échec de l\'attribution';
+                    if (window.NotificationSystem?.error) {
+                        window.NotificationSystem.error(err, { title: 'Attribution' });
+                    } else if (window.showNotification) {
+                        window.showNotification('Erreur: ' + err);
+                    } else {
+                        alert('Erreur: ' + err);
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                if (window.NotificationSystem?.error) {
+                    window.NotificationSystem.error('Erreur réseau', { title: 'Attribution' });
+                } else if (window.showNotification) {
+                    window.showNotification('Erreur réseau');
+                } else {
+                    alert('Erreur réseau');
+                }
+            } finally {
+                if (window.DashboardModal?.setLoading && submitBtn) window.DashboardModal.setLoading(submitBtn, false);
                 this.dataset.submitting = '0';
             }
         }

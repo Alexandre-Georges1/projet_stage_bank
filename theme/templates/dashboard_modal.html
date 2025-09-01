@@ -138,7 +138,7 @@
                 <label for="assignEmploye">Sélectionner un employé:</label>
                 <select id="assignEmploye" name="employe_id" required>
                     <option value="" disabled>-- Sélectionner --</option>
-                    {% for employe in employes %}
+                    {% for employe in employes_sans_pc %}
                     <option value="{{ employe.id_employe }}">{{ employe.nom }} {{ employe.prenom }}</option>
                     {% endfor %}
                 </select>

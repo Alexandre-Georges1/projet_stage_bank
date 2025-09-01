@@ -56,10 +56,16 @@ function isReallyVisible(el) {
     return visible;
 }
 function initNavigation() {
-    const menuItems = document.querySelectorAll('#sidebar .side-menu li');
-    // Gestion des clics sur le menu
-    menuItems.forEach(menuItem => {
-        menuItem.addEventListener('click', function() {
+    // Tous les éléments de menu (y compris sous-menus)
+    const allMenuItems = Array.from(document.querySelectorAll('#sidebar .side-menu li[id]'));
+    // Uniquement les boutons qui pointent vers une vue (suffixe -btn)
+    const viewButtons = allMenuItems.filter(el => typeof el.id === 'string' && el.id.endsWith('-btn'));
+
+    // Gestion des clics uniquement pour les éléments mappés à des vues
+    viewButtons.forEach(menuItem => {
+        menuItem.addEventListener('click', function (e) {
+            // Empêcher que le clic remonte et déclenche des handlers parents
+            e.stopPropagation();
             const viewId = this.id.replace('-btn', '-view');
             switchView(viewId);
         });
@@ -70,9 +76,9 @@ function initNavigation() {
     });
 
     let firstVisibleMenu = null;
-    for (let i = 0; i < menuItems.length; i++) {
-        if (isReallyVisible(menuItems[i])) {
-            firstVisibleMenu = menuItems[i];
+    for (let i = 0; i < viewButtons.length; i++) {
+        if (isReallyVisible(viewButtons[i])) {
+            firstVisibleMenu = viewButtons[i];
             break;
         }
     }
@@ -82,15 +88,15 @@ function initNavigation() {
         const targetView = document.getElementById(firstViewId);
         if (targetView) targetView.classList.remove('hidden');
         // Forcer l'activation du bouton menu
-        menuItems.forEach(item => item.classList.remove('active'));
+        allMenuItems.forEach(item => item.classList.remove('active'));
         firstVisibleMenu.classList.add('active');
-    } else if (menuItems.length > 0) {
+    } else if (viewButtons.length > 0) {
         // Fallback : si aucun menu visible détecté, prendre le premier de la liste
-        const fallbackViewId = menuItems[0].id.replace('-btn', '-view');
+        const fallbackViewId = viewButtons[0].id.replace('-btn', '-view');
         const targetView = document.getElementById(fallbackViewId);
         if (targetView) targetView.classList.remove('hidden');
-        menuItems.forEach(item => item.classList.remove('active'));
-        menuItems[0].classList.add('active');
+        allMenuItems.forEach(item => item.classList.remove('active'));
+        viewButtons[0].classList.add('active');
         console.warn('Aucun menu vraiment visible, fallback sur le premier :', fallbackViewId);
     } else {
         console.warn('Aucun élément de menu trouvé pour l\'initialisation de la vue.');

@@ -35,6 +35,7 @@ def dashboard(request):
     marques = marquePC.objects.all()
     modeles = modelePC.objects.all()
     connected_user = None
+    bordereaux = []
     demandes_achat = []
     demandes_peripheriques_en_attente, demandes_peripheriques_traitees = get_demandes_peripheriques()
     
@@ -45,6 +46,8 @@ def dashboard(request):
             demandes_achat = DemandeAchatPeripherique.objects.filter(
                 employe=connected_user
             ).order_by('-date_demande')
+            # Récupérer les bordereaux de l'utilisateur connecté
+            bordereaux = Bordereau.objects.select_related('employe').filter(employe=connected_user)
             
             for pc in pcs_attribues:
                 print(f"DEBUG - PC: {pc.marque} {pc.modele} attribué à employé ID: {pc.employe.id_employe} ({pc.employe.nom} {pc.employe.prenom})")
@@ -66,6 +69,7 @@ def dashboard(request):
         'marques': marques,
         'modeles': modeles,
         'connected_user':connected_user,
+    'bordereaux': bordereaux,
         'demandes_achat': demandes_achat,
         'demandes_peripheriques_en_attente': demandes_peripheriques_en_attente,
         'demandes_peripheriques_traitees': demandes_peripheriques_traitees
@@ -85,7 +89,7 @@ def dashboard_employe(request):
         try:
             employe = Employe.objects.get(pk=request.session['user_id'])
             connected_user = employe
-            bordereaux = Bordereau.objects.filter(employe=employe)
+            bordereaux = Bordereau.objects.select_related('employe').filter(employe=employe)
             # Utiliser la fonction helper pour récupérer les demandes
             demandes_achat = get_user_demandes_achat(request.session['user_id'])
         except Employe.DoesNotExist:
@@ -108,11 +112,16 @@ def dashboard_DCH(request):
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
-
+    bordereaux = []
+    demandes_achat = []
+    employe = None
     connected_user = None
     if 'user_id' in request.session:
         try:
+            employe = Employe.objects.get(pk=request.session['user_id'])
             connected_user = Employe.objects.get(pk=request.session['user_id'])
+            bordereaux = Bordereau.objects.select_related('employe').filter(employe=employe)
+            demandes_achat = get_user_demandes_achat(request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
             return redirect('connexion')
@@ -124,7 +133,8 @@ def dashboard_DCH(request):
                   'connected_user': connected_user,
                     'caracteristiques_envoyees': caracteristiques_envoyees,
                       'pcs_attribues': pcs_attribues,
-                      
+                      'bordereaux': bordereaux,
+                      'demandes_achat': demandes_achat
                       }
     return render(request, 'page_DCH/dashboard_DCH.html', context)
 
@@ -135,7 +145,8 @@ def dashboard_MG(request):
         CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
     )
     employes_sans_caracteristique = Employe.objects.exclude(pk__in=emp_ids_avec_carac)
-
+    bordereaux = []
+    demandes_achat = []
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
@@ -143,9 +154,13 @@ def dashboard_MG(request):
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
     connected_user = None
+    employe = None
     if 'user_id' in request.session:
         try:
+            employe = Employe.objects.get(pk=request.session['user_id'])
             connected_user = Employe.objects.get(pk=request.session['user_id'])
+            bordereaux = Bordereau.objects.select_related('employe').filter(employe=employe)
+            demandes_achat = get_user_demandes_achat(request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
             return redirect('connexion')
@@ -156,6 +171,8 @@ def dashboard_MG(request):
         'employes': employes, 
         'employes_sans_caracteristique': employes_sans_caracteristique,
         'pcs': pcs, 
+        'bordereaux': bordereaux,
+        'demandes_achat': demandes_achat,
         'connected_user': connected_user,
         'caracteristiques_envoyees': caracteristiques_envoyees, 
         'pcs_attribues': pcs_attribues,
@@ -174,6 +191,8 @@ def dashboard_RMG(request):
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
+    bordereaux = []
+    demandes_achat = []
     emp_ids_avec_carac = list(
         CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
     )
@@ -182,6 +201,8 @@ def dashboard_RMG(request):
     if 'user_id' in request.session:
         try:
             connected_user = Employe.objects.get(pk=request.session['user_id'])
+            bordereaux = Bordereau.objects.select_related('employe').filter(employe=connected_user)
+            demandes_achat = get_user_demandes_achat(request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
             return redirect('connexion')
@@ -191,6 +212,8 @@ def dashboard_RMG(request):
     context = {'employes': employes,
                'employes_sans_caracteristique': employes_sans_caracteristique,
                'pcs': pcs, 
+               'bordereaux': bordereaux,
+               'demandes_achat': demandes_achat,
                'marques': marques,
                'modeles': modeles,
                'connected_user': connected_user,
@@ -206,10 +229,16 @@ def dashboard_DAF(request):
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     emails = Email_DAF.objects.all()
+    employe=None
+    bordereaux = []
+    demandes_achat = []
     connected_user = None
     if 'user_id' in request.session:
         try:
+            employe = Employe.objects.get(pk=request.session['user_id'])
             connected_user = Employe.objects.get(pk=request.session['user_id'])
+            bordereaux = Bordereau.objects.select_related('employe').filter(employe=employe)
+            demandes_achat = get_user_demandes_achat(request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
             return redirect('connexion')
@@ -217,8 +246,11 @@ def dashboard_DAF(request):
         return redirect('connexion') 
 
     context = {
-        'employes': employes, 
+        'employes': employes,
+        'bordereaux': bordereaux,
+        'demandes_achat': demandes_achat,
         'pcs': pcs,
+        'employe': employe,
         'connected_user': connected_user, 
         'caracteristiques_envoyees': caracteristiques_envoyees, 
         'pcs_attribues': pcs_attribues}
@@ -227,6 +259,8 @@ def dashboard_DAF(request):
 
 def dashboard_RDOT(request):
     employes = Employe.objects.all()
+    bordereaux = []
+    demandes_achat = []
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
@@ -239,6 +273,10 @@ def dashboard_RDOT(request):
     emails = Email_RDOT.objects.all()
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
+    employe=None
+    employes_sans_pc = Employe.objects.exclude(
+    pk__in=Pc_attribué.objects.values('employe_id')
+)
     emp_ids_avec_carac = list(
         CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
     )
@@ -249,7 +287,10 @@ def dashboard_RDOT(request):
     connected_user = None
     if 'user_id' in request.session:
         try:
+            employe = Employe.objects.get(pk=request.session['user_id'])    
             connected_user = Employe.objects.get(pk=request.session['user_id'])
+            bordereaux = Bordereau.objects.select_related('employe').filter(employe=employe)
+            demandes_achat = get_user_demandes_achat(request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
             return redirect('connexion')
@@ -258,8 +299,10 @@ def dashboard_RDOT(request):
 
     context = {
                 'employes': employes,
-                'pcs': pcs, 
-                'connected_user': connected_user, 
+                'pcs': pcs,
+                'bordereaux': bordereaux,
+                'demandes_achat': demandes_achat,
+                'connected_user': connected_user,
                 'caracteristiques_envoyees': caracteristiques_envoyees,
                 'pcs_attribues': pcs_attribues,
                 'pc_en_service': pc_en_service,
@@ -269,6 +312,8 @@ def dashboard_RDOT(request):
                 'demandes_peripheriques_en_attente': demandes_peripheriques_en_attente,
                 'demandes_peripheriques_traitees': demandes_peripheriques_traitees,
                 'notifications': emails,
+                'employe': employe,
+                'employes_sans_pc': employes_sans_pc,
                 'pcs_anciens': pcs_anciens,
                 'pc_en_rebu_attribue': pc_en_rebu_attribue,
                 'pc_total_global': pc_total_global,
@@ -284,8 +329,13 @@ def dashboard_DOT(request):
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     pc_total = PC.objects.count()  
+    bordereaux = []
+    demandes_achat = []
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pc_en_service= Pc_attribué.objects.count()
+    employes_sans_pc = Employe.objects.exclude(
+    pk__in=Pc_attribué.objects.values('employe_id')
+)
     pc_en_rebu= Pc_ancien.objects.count()
     emp_ids_avec_carac = list(
         CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
@@ -297,10 +347,14 @@ def dashboard_DOT(request):
     pc_en_rebu_attribue = Pc_ancien_attribue.objects.count()
     pc_total_global=pc_total + pc_en_rebu + pc_en_rebu_attribue + pc_en_service
     connected_user = None
+    employe = None
     emails = Email_DOT.objects.all()
     if 'user_id' in request.session:
         try:
             connected_user = Employe.objects.get(pk=request.session['user_id'])
+            # Filtrer correctement sur l'utilisateur connecté
+            bordereaux = Bordereau.objects.select_related('employe').filter(employe=connected_user)
+            demandes_achat = get_user_demandes_achat(request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
             return redirect('connexion')
@@ -310,15 +364,19 @@ def dashboard_DOT(request):
 
     context = {'employes': employes,
                 'pcs': pcs,
-                'connected_user': connected_user, 
-                'caracteristiques_envoyees': caracteristiques_envoyees, 
+                'bordereaux': bordereaux,
+                'demandes_achat': demandes_achat,
+                'connected_user': connected_user,
+                'caracteristiques_envoyees': caracteristiques_envoyees,
                 'pcs_attribues': pcs_attribues,
                 'pc_total': pc_total, 
                 'employes_sans_caracteristique': employes_sans_caracteristique,
                 'pc_en_service': pc_en_service,
                 'pcs_anciens': pcs_anciens,
+                'employes_sans_pc': employes_sans_pc,
                 'pc_en_rebu': pc_en_rebu,
                 'marques': marques,
+                'employe': employe,
                 'pc_en_rebu_attribue': pc_en_rebu_attribue,
                 'pc_total_global': pc_total_global,
                 'modeles': modeles,
@@ -340,7 +398,12 @@ def Admin(request):
     pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('employe').order_by('-date_attribution')
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
+    bordereaux = []
+    demandes_achat = []
     emails = Email.objects.all()
+    employes_sans_pc = Employe.objects.exclude(
+    pk__in=Pc_attribué.objects.values('employe_id')
+)
     emp_ids_avec_carac = list(
         CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
     )
@@ -349,9 +412,13 @@ def Admin(request):
     pc_total_global=pc_total + pc_en_rebu + pc_en_rebu_attribue + pc_en_service
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     connected_user = None
+    employe = None
     if 'user_id' in request.session:
         try:
             connected_user = Employe.objects.get(pk=request.session['user_id'])
+            # Filtrer correctement sur l'utilisateur connecté
+            bordereaux = Bordereau.objects.select_related('employe').filter(employe=connected_user)
+            demandes_achat = get_user_demandes_achat(request.session['user_id'])
         except Employe.DoesNotExist:
             del request.session['user_id']
             return redirect('connexion')
@@ -363,6 +430,7 @@ def Admin(request):
                 'connected_user': connected_user,
                 'pcs_attribues': pcs_attribues,
                 'pcs_anciens': pcs_anciens,
+                'employes_sans_pc': employes_sans_pc,
                 'pc_total': pc_total, 
                 'pc_total_global': pc_total_global,
                 'caracteristiques_envoyees': caracteristiques_envoyees,
@@ -370,7 +438,10 @@ def Admin(request):
                 'pc_en_rebu_attribue': pc_en_rebu_attribue,
                 'pc_en_service': pc_en_service,
                 'pc_en_rebu': pc_en_rebu,
+                'employe': employe,
                 'marques': marques,
+                'bordereaux': bordereaux,
+                'demandes_achat': demandes_achat,
                 'modeles': modeles,
                 'pcs_anciens_attribues': pcs_anciens_attribues,
                 'notifications':emails}

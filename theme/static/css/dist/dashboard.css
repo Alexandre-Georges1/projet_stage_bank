@@ -976,22 +976,39 @@ body {
 }
 
 #sidebar .side-menu li:hover {
-	transform: translateX(8px) !important;
-	background: linear-gradient(135deg, rgba(0, 200, 83, 0.15) 0%, rgba(0, 200, 83, 0.05) 100%) !important;
-	box-shadow: 0 4px 15px rgba(0, 200, 83, 0.2) !important;
+    transform: translateX(8px) !important;
+    background: linear-gradient(135deg, rgba(0, 200, 83, 0.15) 0%, rgba(0, 200, 83, 0.05) 100%) !important;
+    box-shadow: 0 4px 15px rgba(0, 200, 83, 0.2) !important;
 }
 
-#sidebar .side-menu li:hover i {
-	transform: scale(1.2) !important;
-	color: #00c853 !important;
-	transition: all 0.3s ease !important;
+/* Appliquer l'effet de survol uniquement aux enfants directs du LI survolé */
+#sidebar .side-menu li:hover > i {
+    transform: scale(1.2) !important;
+    color: #00c853 !important;
+    transition: all 0.3s ease !important;
 }
 
-#sidebar .side-menu li:hover .text {
-	font-weight: 600 !important;
-	color: #00c853 !important;
-	transition: all 0.3s ease !important;
+#sidebar .side-menu li:hover > .text {
+    font-weight: 600 !important;
+    color: #00c853 !important;
+    transition: all 0.3s ease !important;
 }
+
+/* Ne pas colorer tout le bloc lorsqu'on survole un parent avec sous-menu */
+#sidebar .side-menu li.has-submenu { position: relative; }
+#sidebar .side-menu li.has-submenu {
+    height: auto;              /* le parent grandit avec le sous-menu */
+    padding-bottom: 6px;       /* léger espace pour les éléments enfants */
+}
+#sidebar .side-menu li.has-submenu:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+/* AUCUN highlight ni changement visuel sur le parent en hover */
+#sidebar .side-menu li.has-submenu:hover::before { content: none !important; }
+#sidebar .side-menu li.has-submenu:hover > i { transform: none !important; color: inherit !important; }
+#sidebar .side-menu li.has-submenu:hover > .text { font-weight: inherit !important; color: inherit !important; }
 
 /* Effet spécial pour le bouton déconnexion */
 #sidebar .side-menu li#logout-btn:hover {
@@ -1017,6 +1034,36 @@ body {
 /* Effet de pulsation pour les notifications */
 #sidebar .side-menu li#message-btn:hover i {
 	animation: pulse 1.5s infinite !important;
+}
+
+/* ================================
+   Sidebar: sous-menu (taille réduite)
+================================ */
+#sidebar .side-menu li.has-submenu .submenu {
+    margin: 10px 0 4px 0;      /* plus d'espace entre parent et premier enfant */
+    padding-top: 4px;          /* respiration supplémentaire */
+    padding-left: 10px;        /* indentation */
+}
+#sidebar .side-menu li.has-submenu .submenu li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px; /* plus compact */
+    border-radius: 8px;
+    transform: none !important; /* pas de gros slide par défaut */
+}
+#sidebar .side-menu li.has-submenu .submenu li i {
+    font-size: 17px !important; /* plus petit */
+}
+#sidebar .side-menu li.has-submenu .submenu li .text {
+    font-size: 14px !important; /* texte réduit */
+    line-height: 1.2;
+}
+/* Hover plus doux pour les sous-éléments */
+#sidebar .side-menu li.has-submenu .submenu li:hover {
+    background: rgba(0, 200, 83, 0.08) !important;
+    box-shadow: none !important;
+    transform: translateX(4px) !important; /* léger décalage */
 }
 @keyframes pulse {
 	0% { transform: scale(1.2); }
@@ -1458,7 +1505,6 @@ body {
 /* Alignement à droite dans un conteneur flex */
 .flex > .btn-ajouter-manuel { margin-left: auto; }
 
-
 /* Boutons Modifier et Supprimer */
 .btn-modifier,
 .btn-supprimer {
@@ -1543,6 +1589,15 @@ table tbody tr:hover {
 table td:last-child {
     text-align: center;
     white-space: nowrap;
+}
+
+/* Correction d'alignement pour la 1ère colonne du tableau Racheter
+   Le style global ci-dessus force le premier td des lignes en display:flex,
+   ce qui décale la cellule "Marque". On neutralise cet effet pour cette vue. */
+#Racheter-view .table-data .order table tr td:first-child {
+    display: table-cell !important;
+    padding-left: 15px !important; /* cohérent avec table td padding */
+    align-items: initial !important;
 }
 
 /* Réduction de la taille des boutons dans les tableaux */

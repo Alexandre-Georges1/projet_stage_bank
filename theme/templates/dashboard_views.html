@@ -860,8 +860,8 @@
             </div>
             <!-- Récapitulatif de l'ordinateur attribué -->
             <div id="mpPcRecap" style="margin: 10px 0 16px; padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa;">
-                <div style="font-weight:600; margin-bottom:8px; color:#333;">Votre ordinateur attribué</div>
-                <div id="mpNoPcMessage" style="color:#666; font-size:14px; display:none;">Aucun PC attribué trouvé pour votre compte.</div>
+                <div style="font-weight:600; margin-bottom:8px; color:#333;">Votre ordinateur</div>
+                <div id="mpNoPcMessage" style="color:#666; font-size:14px; display:none;">Aucun ordinateur attribué trouvé pour votre compte.</div>
                 <div id="mpPcInfo" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;" class="table-data">
                     <div><span style="color:#666;">Marque:</span> <span id="mpPcMarque" style="font-weight:600;">-</span></div>
                     <div><span style="color:#666;">Modèle:</span> <span id="mpPcModele" style="font-weight:600;">-</span></div>
@@ -912,10 +912,10 @@
                     {% for b in bordereaux %}
                     <tr>
                         <td>{{ b.date_creation|date:"d/m/Y" }}</td>
-                        <td>{{ employe.nom }}</td>
-                        <td>{{ employe.prenom }}</td>
+                        <td>{{ b.employe.nom }}</td>
+                        <td>{{ b.employe.prenom }}</td>
                         <td>ORAGROUP</td>
-                        <td>{{ employe.telephone }}</td>
+                        <td>{{ b.employe.telephone }}</td>
                     </tr>
                     {% empty %}
                     <tr>
