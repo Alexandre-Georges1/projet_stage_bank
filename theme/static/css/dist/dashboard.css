@@ -57,10 +57,10 @@
 	background-color: #28a745 !important;
 	color: white !important;
 	border: none;
-	padding: 6px 12px;
-	border-radius: 4px;
+	padding: 6px 10px;
+	border-radius: 3px;
 	cursor: pointer;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 500;
 	transition: all 0.3s ease;
 	min-width: 80px;
@@ -77,10 +77,10 @@
 	background-color: #dc3545 !important;
 	color: white !important;
 	border: none;
-	padding: 6px 12px;
-	border-radius: 4px;
+	padding: 6px 10px;
+	border-radius: 3px;
 	cursor: pointer;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 500;
 	transition: all 0.3s ease;
 	min-width: 80px;
@@ -111,10 +111,10 @@
 /* Boutons d'action pour les demandes de rachat */
 .action-btn-demande {
 	border: none;
-	padding: 6px 12px;
-	border-radius: 4px;
+	padding: 6px 10px;
+	border-radius: 3px;
 	cursor: pointer;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 500;
 	transition: all 0.3s ease;
 	min-width: 70px;
@@ -163,7 +163,7 @@ button.action-btn-demande:contains("Refuser"):hover {
 	background-color: #ffc107 !important;
 	color: #212529 !important;
 	border: none;
-	padding: 8px 15px;
+	padding: 7px 12px;
 	border-radius: 4px;
 	cursor: pointer;
 	font-weight: bold;
@@ -201,19 +201,19 @@ button.action-btn-demande:contains("Refuser"):hover {
    POLITIQUE ET BORDEREAU
 ======================================== */
 .politique-box {
-    margin-top: 30px;
-    padding-top: 20px;
+    margin-top: 20px;
+    padding-top: 15px;
     border-top: 1px solid #eee;
 }
 
 .politique-box h2 {
-    font-size: 20px;
+    font-size: 17px;
     text-align: center;
     margin-bottom: 15px;
 }
 
 .politique-box p {
-    font-size: 14px;
+    font-size: 12px;
     color: #555;
     line-height: 1.6;
     text-align: justify;
@@ -247,7 +247,7 @@ button.action-btn-demande:contains("Refuser"):hover {
     position: relative;
     background: white;
     border: none;
-    padding: 15px;
+    padding: 13px;
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -263,7 +263,7 @@ button.action-btn-demande:contains("Refuser"):hover {
 }
 
 .notification-btn i {
-    font-size: 24px;
+    font-size: 22px;
     color: rgb(67, 165, 56);
 }
 
@@ -436,7 +436,7 @@ button.action-btn-demande:contains("Refuser"):hover {
 }
 
 .empty-state i {
-    font-size: 48px;
+    font-size: 45px;
     color: #ddd;
     margin-bottom: 12px;
 }
@@ -457,8 +457,8 @@ button.action-btn-demande:contains("Refuser"):hover {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 18px;
+    margin-bottom: 18px;
 }
 
 .liste-items {
@@ -524,7 +524,7 @@ button.action-btn-demande:contains("Refuser"):hover {
 }
 
 .user-display-name {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #1e293b;
     line-height: 1.2;
@@ -1432,9 +1432,17 @@ body {
 /* ========================================
    BOUTONS
 ======================================== */
+.flex { display: flex; }
+.justify-between { justify-content: space-between; }
+.items-center { align-items: center; }
+.mb-8 { margin-bottom: 2rem; }
+
 .btn-ajouter-manuel {
-    display: block;
-    width: 100%;
+    display: inline-flex;
+    width: auto;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
     padding: 12px 20px;
     background-color: #3e8e41;
     color: white;
@@ -1446,6 +1454,9 @@ body {
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
 }
+
+/* Alignement à droite dans un conteneur flex */
+.flex > .btn-ajouter-manuel { margin-left: auto; }
 
 
 /* Boutons Modifier et Supprimer */
@@ -1846,7 +1857,7 @@ table .btn-supprimer {
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
-    font-size: 28px;
+    font-size: 26px;
     animation: iconPulse 2s infinite;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
@@ -1859,7 +1870,7 @@ table .btn-supprimer {
 .modal-header h2,
 .modal-header h3 {
     margin: 0 0 10px 0;
-    font-size: 28px;
+    font-size: 25px;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     position: relative;
@@ -1868,7 +1879,7 @@ table .btn-supprimer {
 
 .modal-subtitle {
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
     opacity: 0.9;
     font-weight: 400;
     position: relative;
@@ -1900,7 +1911,7 @@ table .btn-supprimer {
     margin-bottom: 8px;
     font-weight: 600;
     color: #374151;
-    font-size: 14px;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -1913,7 +1924,7 @@ table .btn-supprimer {
     padding: 15px 20px;
     border: 2px solid #e5e7eb;
     border-radius: 12px;
-    font-size: 16px;
+    font-size: 14px;
     transition: all 0.3s ease;
     background: #ffffff;
     color: #1f2937;
@@ -1951,7 +1962,7 @@ table .btn-supprimer {
     border: none;
     border-radius: 10px;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -2004,7 +2015,7 @@ table .btn-supprimer {
     position: absolute;
     top: 20px;
     right: 25px;
-    font-size: 24px;
+    font-size: 22px;
     color: rgba(255, 255, 255, 0.8);
     cursor: pointer;
     z-index: 100;
@@ -2035,7 +2046,7 @@ table .btn-supprimer {
     padding: 15px 30px;
     border-radius: 12px;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
@@ -2071,7 +2082,7 @@ table .btn-supprimer {
     .modal-icon {
         width: 60px;
         height: 60px;
-        font-size: 24px;
+        font-size: 22px;
     }
     
     .modern-modal-content .form-group {
@@ -2155,7 +2166,7 @@ table .btn-supprimer {
 .table-filter-input {
     width: 100%;
     padding: 6px 8px;
-    font-size: 13px;
+    font-size: 12px;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
     box-sizing: border-box;

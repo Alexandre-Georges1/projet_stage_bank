@@ -4,22 +4,17 @@
  * ===============================
  */
 
-// Fonction de notification unifiée pour le module User Management
-function showUserNotification(message, type = 'success', title = null) {
-    // Vérifier si le système de notifications est disponible
+// Fonction de notification unifiée (même système que pc-management.js)
+function showUserNotification(message, type = 'info', title = null) {
+    if (window.showNotification && typeof window.showNotification === 'function') {
+        return window.showNotification(message, type, title);
+    }
     if (window.NotificationSystem && typeof window.NotificationSystem.show === 'function') {
         return window.NotificationSystem.show(message, type, title ? { title } : {});
-    } else {
-        // Fallback avec alert coloré
-        const icons = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
-        };
-        const icon = icons[type] || 'ℹ️';
-        alert(`${icon} ${title ? title + ': ' : ''}${message}`);
     }
+    // Fallback minimal
+    const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+    alert(`${icon} ${title ? title + ': ' : ''}${message}`);
 }
 
 // Fonction principale d'initialisation de la gestion des utilisateurs
@@ -402,7 +397,6 @@ function initEmployeeManagement() {
                     showUserNotification(result.message, 'success', 'Employé Ajouté');
                     nouvelEmployeForm.reset(); 
                     
-                    // Délai avant rechargement pour que l'utilisateur voie le message
                     setTimeout(() => {
                         location.reload();
                     }, 1500);
@@ -412,7 +406,7 @@ function initEmployeeManagement() {
 
             } catch (error) {
                 console.error('Erreur lors de l\'envoi des données employé:', error);
-                showEmployeeNotification('Une erreur est survenue lors de l\'envoi des données.', 'error');
+                showUserNotification('Une erreur est survenue lors de l\'envoi des données.', 'error');
             } finally {
                 // Masquer l'indicateur de chargement
                 showEmployeeLoadingState(false, submitButton);
@@ -456,112 +450,9 @@ function showEmployeeLoadingState(isLoading, submitButton) {
  * @param {string} message - Message à afficher
  * @param {string} type - Type de notification (success, error, info)
  */
-function showEmployeeNotification(message, type = 'info') {
-    // Créer ou réutiliser un conteneur de notification
-    let notificationContainer = document.getElementById('employee-notification-container');
-    
-    if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
-        notificationContainer.id = 'employee-notification-container';
-        notificationContainer.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            max-width: 400px;
-        `;
-        document.body.appendChild(notificationContainer);
-    }
-    
-    // Créer la notification
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        padding: 15px 20px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        line-height: 1.4;
-        animation: slideIn 0.3s ease-out;
-        border-left: 4px solid;
-        background: white;
-    `;
-    
-    // Définir les couleurs selon le type
-    const styles = {
-        success: {
-            borderColor: '#28a745',
-            backgroundColor: '#d4edda',
-            color: '#155724',
-            icon: '✅'
-        },
-        error: {
-            borderColor: '#dc3545',
-            backgroundColor: '#f8d7da',
-            color: '#721c24',
-            icon: '❌'
-        },
-        info: {
-            borderColor: '#17a2b8',
-            backgroundColor: '#d1ecf1',
-            color: '#0c5460',
-            icon: 'ℹ️'
-        }
-    };
-    
-    const style = styles[type] || styles.info;
-    notification.style.borderLeftColor = style.borderColor;
-    notification.style.backgroundColor = style.backgroundColor;
-    notification.style.color = style.color;
-    
-    notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 16px;">${style.icon}</span>
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" 
-                    style="margin-left: auto; background: none; border: none; font-size: 18px; 
-                           cursor: pointer; color: ${style.color}; opacity: 0.7;">&times;</button>
-        </div>
-    `;
-    
-    // Ajouter les styles d'animation si ce n'est pas déjà fait
-    if (!document.getElementById('notification-styles')) {
-        const styleSheet = document.createElement('style');
-        styleSheet.id = 'notification-styles';
-        styleSheet.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(styleSheet);
-    }
-    
-    // Ajouter la notification
-    notificationContainer.appendChild(notification);
-    
-    // Auto-suppression après 5 secondes pour les succès, 8 secondes pour les erreurs
-    const autoRemoveDelay = type === 'success' ? 5000 : 8000;
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.style.animation = 'slideOut 0.3s ease-in';
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 300);
-        }
-    }, autoRemoveDelay);
-}
 
 // Initialisation de la gestion des caractéristiques
 function initCharacteristics() {
-    // Demande de caractéristique
     const demandeCaracteristiqueForm = document.getElementById('demandeCaracteristiqueForm');
     if (demandeCaracteristiqueForm) {
         demandeCaracteristiqueForm.addEventListener('submit', async function(e) {
@@ -600,14 +491,14 @@ function initCharacteristics() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    showCharacteristicsNotification(result.message, 'success');
+                    showUserNotification(result.message, 'success', 'Caractéristiques');
                     demandeCaracteristiqueForm.reset(); 
                 } else {
-                    showCharacteristicsNotification('Erreur : ' + result.error, 'error');
+                    showUserNotification('Erreur : ' + result.error, 'error', 'Caractéristiques');
                 }
             } catch (error) {
                 console.error('Erreur lors de l\'envoi de la demande de caractéristique:', error);
-                showCharacteristicsNotification('Une erreur est survenue lors de l\'envoi des données.', 'error');
+                showUserNotification('Une erreur est survenue lors de l\'envoi des données.', 'error', 'Caractéristiques');
             } finally {
                 // Désactiver l'état de chargement
                 showCharacteristicsLoadingState(false, submitButton);
@@ -655,7 +546,7 @@ function initCharacteristics() {
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
 
             if (!csrfToken) {
-                showCharacteristicsNotification('Token CSRF manquant', 'error');
+                showUserNotification('Token CSRF manquant', 'error', 'Caractéristiques');
                 showCharacteristicsLoadingState(false, submitButton);
                 return;
             }
@@ -682,17 +573,17 @@ function initCharacteristics() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    showCharacteristicsNotification(result.message, 'success');
+                    showUserNotification(result.message, 'success', 'Caractéristiques');
                     sendCharacteristicsModal.classList.add('hidden');
-                    setTimeout(() => location.reload(), 1500); // Délai pour voir la notification
+                    setTimeout(() => location.reload(), 2000); // Délai pour voir la notification
                 } else {
-                    showCharacteristicsNotification('Erreur : ' + result.error, 'error');
+                    showUserNotification('Erreur : ' + result.error, 'error', 'Caractéristiques');
                 }
             } catch (error) {
                 console.error('Erreur lors de l\'envoi des caractéristiques:', error);
-                showCharacteristicsNotification('Une erreur est survenue lors de l\'envoi des données.', 'error');
+                showUserNotification('Une erreur est survenue lors de l\'envoi des données.', 'error', 'Caractéristiques');
             } finally {
-                // Désactiver l'état de chargement
+                
                 showCharacteristicsLoadingState(false, submitButton);
             }
         });
@@ -711,7 +602,6 @@ function showUserLoadingState(isLoading, submitButton) {
         // Sauvegarder le texte original
         submitButton.dataset.originalText = submitButton.innerHTML;
         
-        // Afficher l'indicateur de chargement
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement en cours...';
         submitButton.style.opacity = '0.7';
@@ -734,15 +624,7 @@ function showUserLoadingState(isLoading, submitButton) {
  * @param {string} message - Message à afficher
  * @param {string} type - Type de notification (success, error, info)
  */
-function showUserNotification(message, type = 'info') {
-    // Réutiliser la même fonction que pour les employés
-    if (typeof showEmployeeNotification === 'function') {
-        showEmployeeNotification(message, type);
-    } else {
-        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
-        alert(`${icon} ${message}`);
-    }
-}
+
 
 /**
  * Gère l'état de chargement pour les formulaires de caractéristiques
@@ -753,15 +635,11 @@ function showCharacteristicsLoadingState(isLoading, submitButton) {
     if (!submitButton) return;
     
     if (isLoading) {
-        // Sauvegarder le texte original
         submitButton.dataset.originalText = submitButton.innerHTML;
-        
-        // Afficher l'indicateur de chargement
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
         submitButton.style.opacity = '0.7';
         
-        // Ajouter une classe pour le style
         submitButton.classList.add('loading');
     } else {
         // Restaurer l'état original
@@ -769,7 +647,6 @@ function showCharacteristicsLoadingState(isLoading, submitButton) {
         submitButton.innerHTML = submitButton.dataset.originalText || 'Envoyer';
         submitButton.style.opacity = '1';
         
-        // Retirer la classe de chargement
         submitButton.classList.remove('loading');
     }
 }

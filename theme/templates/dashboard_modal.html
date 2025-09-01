@@ -35,26 +35,26 @@
                 <label for="processeur">Processeur:</label>
                 <select id="processeur" name="processeur" required>
                     <option value="" disabled selected>Sélectionner un Processeur</option>
-                    <option value="corei7"> Core i7</option>
+                    <option value="Core i7"> Core i7</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="ram">RAM:</label>
                 <select id="ram" name="ram" required>
                     <option value="" disabled selected>Sélectionner la RAM</option>
-                    <option value="8GB">8 GB</option>
-                    <option value="16GB">16 GB</option>
-                    <option value="32GB">32 GB</option>
+                    <option value="8 Go">8 Go</option>
+                    <option value="16 Go">16 Go</option>
+                    <option value="32 Go">32 Go</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="disque">Disque:</label>
                 <select id="disque" name="disque" required>
                     <option value="" disabled selected>Sélectionner un Disque </option>
-                    <option value="256GB">256 GB</option>
-                    <option value="512GB">512 GB</option>
-                    <option value="1To">1 To</option>
-                    <option value="2To">2 To</option>
+                    <option value="256 Go">256 Go</option>
+                    <option value="512 Go">512 Go</option>
+                    <option value="1 To">1 To</option>
+                    <option value="2 To">2 To</option>
                 </select>
             </div>
             <div class="form-group">
@@ -200,26 +200,26 @@
                 <label for="ancienProcesseur">Processeur:</label>
                 <select id="ancienProcesseur" name="processeur" required>
                     <option value="" disabled selected>Sélectionner un Processeur</option>
-                    <option value="corei7">Core i7</option>
+                    <option value="Core i7">Core i7</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="ancienRam">RAM:</label>
                 <select id="ancienRam" name="ram" required>
                     <option value="" disabled selected>Sélectionner la RAM</option>
-                    <option value="8GB">8 GB</option>
-                    <option value="16GB">16 GB</option>
-                    <option value="32GB">32 GB</option>
+                    <option value="8 Go">8 Go</option>
+                    <option value="16 Go">16 Go</option>
+                    <option value="32 Go">32 Go</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="ancienDisque">Disque Dur:</label>
                 <select id="ancienDisque" name="disque" required>
                     <option value="" disabled selected>Sélectionner un Disque</option>
-                    <option value="256GB">256 GB</option>
-                    <option value="512GB">512 GB</option>
-                    <option value="1To">1 To</option>
-                    <option value="2To">2 To</option>
+                    <option value="256 Go">256 Go</option>
+                    <option value="512 Go">512 Go</option>
+                    <option value="1 To">1 To</option>
+                    <option value="2 To">2 To</option>
                 </select>
             </div>
             <div class="form-group">
@@ -429,7 +429,7 @@
                 <label for="selectEmployeConcerne">Employé Concerné:</label>
                 <select id="selectEmployeConcerne" name="employe_concerne" required>
                     <option value="" disabled selected>Sélectionner un employé</option>
-                    {% for employe in employes %}
+                    {% for employe in employes_sans_caracteristique %}
                     <option value="{{ employe.pk }}">{{ employe.nom }} {{ employe.prenom }}</option>
                     {% endfor %}
                 </select>

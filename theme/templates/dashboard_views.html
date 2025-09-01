@@ -8,28 +8,28 @@
             <i class="fas fa-desktop"></i>
             <span class="text">
                 <h3>{{ pc_total }}</h3>
-                <p>ordinateurs disponibles</p>
+                <p>Disponibles</p>
             </span>
         </li>
         <li class="dashboard-card type-rebut">
             <i class="fa-solid fa-laptop"></i>
             <span class="text">
                 <h3>{{ pc_en_rebu }}</h3>
-                <p>ordinateurs mis en rebut</p>
+                <p>Mis en rebut</p>
             </span>
         </li>
         <li class="dashboard-card type-rebut-attr">
             <i class="fa-solid fa-laptop"></i>
             <span class="text">
                 <h3>{{ pc_en_rebu_attribue }}</h3>
-                <p>ordinateurs en rebut attribués</p>
+                <p>En rebut attribués</p>
             </span>
         </li>
         <li class="dashboard-card type-service">
             <i class="fas fa-desktop"></i>
             <span class="text">
                 <h3>{{ pc_en_service }}</h3>
-                <p>ordinateurs en service</p>
+                <p>En service</p>
             </span>
         </li>
         <li class="dashboard-card type-total">
@@ -45,10 +45,9 @@
 <div id="parametre-view" class="hidden">
     <div class="bg-white shadow-sm border-b">
         <div class="parametres-container">
-            <h1 class="text-3xl font-bold text-gray-900 py-4">Paramètres</h1>
+            <h2 class="text-3xl font-bold text-gray-900 py-4">Paramètres</h2>
         </div>
     </div>
-    
     <div class="parametres-container">
         <div id="alertContainer"></div>
         
@@ -126,10 +125,10 @@
     </div>
 </div>
 
-<!-- Vue Catalogue -->
+<!-- Vue Inventaire -->
 <div id="catalogue-view" class="hidden">
-    <h2>Catalogue des ordinateurs</h2>
     <div class="flex justify-between items-center mb-8">
+        <h2>Inventaire des ordinateurs</h2>
         <button aria-label="Ajouter un nouveau PC" id="new-user-btn" class="btn-ajouter-manuel">
             Ajouter ordinateur
         </button>
@@ -176,13 +175,13 @@
     </div>
 </div>
 
-<!-- Vue Catalogue Ancien -->
+<!-- Vue Inventaire Ancien -->
 <div id="catalogue-ancien-view" class="hidden">
-    <h1>Catalogue Ancien</h1>
+    <h2>Inventaire Ancien</h2>
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Les ordinateurs archivés</h3>
+                <h3>Ordinateurs archivés</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -229,8 +228,8 @@
                         <td>{% if pc_arch.employe %}{{ pc_arch.employe.nom }} {{ pc_arch.employe.prenom }}{% else %}-{% endif %}</td>
                         <td>{{ pc_arch.date_ajout|date:"Y-m-d" }}</td>
                         <td>
-                            <button class="btn-modifier" aria-label="Modifier" style="margin: 0 2px;"><i class="fas fa-edit"></i></button>
-                            <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 2px;"><i class="fas fa-trash-alt"></i></button>
+                            <button class="btn-modifier" title="Modifier" style="margin: 0 2px;"><i class="fas fa-edit"></i></button>
+                            <button class="btn-supprimer" title="Supprimer" style="margin: 0 2px;"><i class="fas fa-trash-alt"></i></button>
                         </td>
                     </tr>
                     {% empty %}
@@ -243,7 +242,7 @@
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>ordinateurs en rebut attribués</h3>
+                <h3>Ordinateurs en rebut attribués</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -272,8 +271,8 @@
                         <td>{{ a.date_attribution|date:"Y-m-d" }}</td>
                         <td>{{ a.date_fin_attribution|date:"Y-m-d" }}</td>
                         <td>
-                            <button class="btn-modifier" aria-label="Modifier" style="margin: 0 2px;"><i class="fas fa-edit"></i></button>
-                            <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 2px;"><i class="fas fa-trash-alt"></i></button>
+                            <button class="btn-modifier" aria-label="Modifier" title="Modifier" style="margin: 0 2px;"><i class="fas fa-edit"></i></button>
+                            <button class="btn-supprimer" aria-label="Supprimer" title="Supprimer" style="margin: 0 2px;"><i class="fas fa-trash-alt"></i></button>
                         </td>
                     </tr>
                     {% empty %}
@@ -289,8 +288,8 @@
 
 <!-- Vue Utilisateurs -->
 <div id="utilisateur-view" class="hidden">
-    <h1>Utilisateurs</h1>
     <div class="flex justify-between items-center mb-8">
+        <h2>Utilisateurs</h2>
         <button aria-label="Ouvrir le formulaire d'ajout d'utilisateur" id="add-user-btn" class="btn-ajouter-manuel" aria-label="Ajouter Utilisateur">
             <i class="fas fa-plus"></i>
             Ajouter Utilisateur
@@ -333,10 +332,10 @@
                         <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ employe.date_embauche|date:"d/m/Y" }}</td>
                         <td style="padding: 16px 8px; vertical-align: middle;">{{ employe.fonction }}</td>
                         <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
-                            <button class="btn-modifier" aria-label="Modifier" style="margin: 0 2px;">
+                            <button class="btn-modifier" aria-label="Modifier" title="Modifier" style="margin: 0 2px;">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 2px;">
+                            <button class="btn-supprimer" aria-label="Supprimer" title="Supprimer" style="margin: 0 2px;">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </td>
@@ -350,11 +349,11 @@
 
 <!-- Vue Nouvel Employé -->
 <div id="nouvel-employe-view" class="hidden">	
-    <h1>Nouvel Employé</h1>
+    <h2>Nouvel Employé</h2>
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Informer de l'arrivé d'un nouvel employé</h3>
+                <h3>Informer un arrivé</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -396,11 +395,11 @@
 
 <!-- Vue Demande de caractéristique -->
 <div id="demande-view" class="hidden">
-    <h1>Demande de caractéristique</h1>
+    <h2>Demande de caractéristique</h2>
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Demander une caractéristique pour un ordinateur</h3>
+                <h3>Demander caractéristique</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -410,7 +409,7 @@
                     <label for="demandeEmploye">Sélectionner un employé:</label>
                     <select id="demandeEmploye" name="employe_id" required>
                         <option value="" disabled selected>Sélectionner un employé</option>
-                        {% for employe in employes %}
+                        {% for employe in employes_sans_caracteristique %}
                         <option value="{{ employe.pk }}">{{ employe.nom }} {{ employe.prenom }}</option>
                         {% endfor %}
                     </select>
@@ -433,7 +432,7 @@
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Faire une demande d'achat de périphérique</h3>
+                <h3>Faire une demande</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -499,11 +498,11 @@
 
 <!-- Vue Validation des demandes d'achat de périphériques -->
 <div id="Achat_piecevalider-view" class="hidden">
-    <h1>Validation des Demandes d'Achat de Périphériques</h1>
+    <h2>Validation des Demandes d'Achat de Périphériques</h2>
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Demandes en attente de validation</h3>
+                <h3>Demandes en attente</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -603,8 +602,8 @@
 
 <!-- Vue Envoi des caractéristiques -->
 <div id="Envoi-view" class="hidden">
-    <h1>Envoi des caractéristiques</h1>
     <div class="flex justify-between items-center mb-8">
+        <h2>Envoi des caractéristiques</h2>
         <button aria-label="Envoyer Caractéristiques" id="send-characteristics-btn" class="btn-ajouter-manuel">
             <i class="fas fa-paper-plane"></i> Envoyer Caractéristiques
         </button>
@@ -612,7 +611,7 @@
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Historique des Caractéristiques Envoyées</h3>
+                <h3>Historique des envois</h3>
             </div>
             <table>
                 <thead>
@@ -652,11 +651,11 @@
 
 <!-- Vue Caractéristiques reçues -->
 <div id="received-characteristics-view" class="hidden">
-    <h1>Caractéristiques Reçues</h1>
+    <h2>Caractéristiques reçues</h2>
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Historique des Caractéristiques Reçues</h3>
+                <h3>Historique des caractéristiques reçues</h3>
             </div>
             <table>
                 <thead>
@@ -696,8 +695,8 @@
 
 <!-- Vue Attribution -->
 <div id="attribuer-view" class="hidden">
-    <h1>Attribution</h1>
     <div class="flex justify-between items-center mb-8">
+        <h2>Attribution</h2>
         <button aria-label="Attribuer un PC" id="assign-pc-btn" class="btn-ajouter-manuel">
             <i class="fas fa-plus"></i> Attribuer un ordinateur
         </button>
@@ -705,9 +704,9 @@
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Les attributions</h3>
-                <i class='bx bx-search'></i>
-                <i class='bx bx-filter'></i>
+                <h3>Historique des attributions</h3>
+                <i class='bx bx-search' title="Rechercher"></i>
+                <i class='bx bx-filter' title="Filtrer"></i>
             </div>
             <table style="width: 100%; border-collapse: collapse;">
                         <thead>
@@ -755,14 +754,13 @@
 
 <!-- Vue Administration -->
 <div id="administration-view" class="hidden">
-    <h1>Administration</h1>
-
+    <h2>Administration</h2>
     <div class="table-data">
         <div class="order">
             <div class="head">
                 <h3>Gestion des logins / rôles</h3>
-                <i class='bx bx-search'></i>
-                <i class='bx bx-filter'></i>
+                <i class='bx bx-search' title="Rechercher"></i>
+                <i class='bx bx-filter' title="Filtrer"></i>
             </div>
 
             <!-- Formulaire d’ajout / mise à jour -->
@@ -856,7 +854,7 @@
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Déclarer mon ordinateur comme perdu</h3>
+                <h3>Ordinateur volé ou perdu</h3>
                 <i class='bx bx-search'></i>
                 <i class='bx bx-filter'></i>
             </div>
@@ -1016,11 +1014,11 @@
 
 <!-- Vue Les demandes -->
 <div id="lesdemandes-view" class="hidden">
-    <h1>Les Demandes</h1>
+    <h2>Les Demandes</h2>
     <div class="table-data">
         <div class="order">
             <div class="head">
-                <h3>Les demandes de rachat</h3>
+                <h3>Demandes d'achat</h3>
                 <i class="bx bx-search"></i>
                 <i class="bx bx-filter"></i>
             </div>

@@ -2,6 +2,15 @@ from django.http import JsonResponse
 from ..models import Pc_attribué, Employe, Email, Email_RDOT, Email_DAF, Email_MGX
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
+
+# Utilitaire pour ajouter un nombre d'années à une date (gère 29/02)
+def _add_years(d, years):
+    try:
+        return d.replace(year=d.year + years)
+    except ValueError:
+        # Si la date est le 29 février et que l'année cible n'est pas bissextile
+        return d.replace(month=2, day=28, year=d.year + years)
 
 def racheter_pc(request):
     user_id = request.session.get('user_id')
@@ -46,6 +55,23 @@ def demande_de_rachat(request):
 
             if not connected_user or not pc:
                 return JsonResponse({'error': "Impossible de retrouver l'utilisateur ou son PC attribué."}, status=400)
+
+            # Contrôle d'amortissement: 4 ans depuis la date d'attribution
+            attrib_date = pc.date_attribution
+            if not attrib_date:
+                return JsonResponse({'error': "la date d'amortissement de votre ordinateur n'est pas encore atteinte"}, status=400)
+
+            # Normaliser en date (si datetime)
+            if hasattr(attrib_date, 'date'):
+                try:
+                    attrib_date = attrib_date.date()
+                except Exception:
+                    pass
+
+            today = timezone.now().date()
+            amort_date = _add_years(attrib_date, 4)
+            if today < amort_date:
+                return JsonResponse({'error': "la date d'amortissement de votre ordinateur n'est pas encore atteinte"}, status=400)
             nom = connected_user.nom
             prenom = connected_user.prenom
             telephone = connected_user.telephone

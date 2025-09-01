@@ -131,6 +131,11 @@ def dashboard_DCH(request):
 
 def dashboard_MG(request):
     employes = Employe.objects.all()
+    emp_ids_avec_carac = list(
+        CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
+    )
+    employes_sans_caracteristique = Employe.objects.exclude(pk__in=emp_ids_avec_carac)
+
     pcs = PC.objects.all()
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
@@ -149,6 +154,7 @@ def dashboard_MG(request):
 
     context = {
         'employes': employes, 
+        'employes_sans_caracteristique': employes_sans_caracteristique,
         'pcs': pcs, 
         'connected_user': connected_user,
         'caracteristiques_envoyees': caracteristiques_envoyees, 
@@ -168,6 +174,10 @@ def dashboard_RMG(request):
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
+    emp_ids_avec_carac = list(
+        CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
+    )
+    employes_sans_caracteristique = Employe.objects.exclude(pk__in=emp_ids_avec_carac)
     connected_user = None
     if 'user_id' in request.session:
         try:
@@ -178,7 +188,15 @@ def dashboard_RMG(request):
     if not connected_user or connected_user.fonction != 'RMG':
         return redirect('connexion') 
 
-    context = {'employes': employes, 'pcs': pcs, 'connected_user': connected_user, 'caracteristiques_envoyees': caracteristiques_envoyees, 'pcs_attribues': pcs_attribues}
+    context = {'employes': employes,
+               'employes_sans_caracteristique': employes_sans_caracteristique,
+               'pcs': pcs, 
+               'marques': marques,
+               'modeles': modeles,
+               'connected_user': connected_user,
+               'caracteristiques_envoyees': caracteristiques_envoyees,
+               'pcs_attribues': pcs_attribues
+               }
     return render(request, 'page_MGX/dashboard_RMG.html', context)
 
 
@@ -221,6 +239,10 @@ def dashboard_RDOT(request):
     emails = Email_RDOT.objects.all()
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
+    emp_ids_avec_carac = list(
+        CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
+    )
+    employes_sans_caracteristique = Employe.objects.exclude(pk__in=emp_ids_avec_carac)
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     demandes_peripheriques_en_attente, demandes_peripheriques_traitees = get_demandes_peripheriques()
     
@@ -243,6 +265,7 @@ def dashboard_RDOT(request):
                 'pc_en_service': pc_en_service,
                 'pc_total': pc_total,
                 'pc_en_rebu': pc_en_rebu,
+                'employes_sans_caracteristique': employes_sans_caracteristique,
                 'demandes_peripheriques_en_attente': demandes_peripheriques_en_attente,
                 'demandes_peripheriques_traitees': demandes_peripheriques_traitees,
                 'notifications': emails,
@@ -264,6 +287,10 @@ def dashboard_DOT(request):
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pc_en_service= Pc_attribué.objects.count()
     pc_en_rebu= Pc_ancien.objects.count()
+    emp_ids_avec_carac = list(
+        CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
+    )
+    employes_sans_caracteristique = Employe.objects.exclude(pk__in=emp_ids_avec_carac)
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
     pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('employe').order_by('-date_attribution')
@@ -287,6 +314,7 @@ def dashboard_DOT(request):
                 'caracteristiques_envoyees': caracteristiques_envoyees, 
                 'pcs_attribues': pcs_attribues,
                 'pc_total': pc_total, 
+                'employes_sans_caracteristique': employes_sans_caracteristique,
                 'pc_en_service': pc_en_service,
                 'pcs_anciens': pcs_anciens,
                 'pc_en_rebu': pc_en_rebu,
@@ -313,6 +341,10 @@ def Admin(request):
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
     emails = Email.objects.all()
+    emp_ids_avec_carac = list(
+        CaracteristiqueEnvoyee.objects.values_list('employe_concerne_id', flat=True).distinct()
+    )
+    employes_sans_caracteristique = Employe.objects.exclude(pk__in=emp_ids_avec_carac)
     pc_en_rebu_attribue = Pc_ancien_attribue.objects.count()
     pc_total_global=pc_total + pc_en_rebu + pc_en_rebu_attribue + pc_en_service
     caracteristiques_envoyees = CaracteristiqueEnvoyee.objects.select_related('envoyeur', 'employe_concerne').all().order_by('-date_envoi')
@@ -334,6 +366,7 @@ def Admin(request):
                 'pc_total': pc_total, 
                 'pc_total_global': pc_total_global,
                 'caracteristiques_envoyees': caracteristiques_envoyees,
+                'employes_sans_caracteristique': employes_sans_caracteristique,
                 'pc_en_rebu_attribue': pc_en_rebu_attribue,
                 'pc_en_service': pc_en_service,
                 'pc_en_rebu': pc_en_rebu,

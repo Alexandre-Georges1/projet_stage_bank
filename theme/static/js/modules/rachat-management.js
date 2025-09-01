@@ -4,6 +4,47 @@
  * ===============================
  */
 
+// Helpers date: parsing tolérant, addition d'années (gère 29/02) et format FR
+function parseDateSafe(s) {
+    if (!s) return null;
+    // Si déjà un objet Date
+    if (s instanceof Date) return isNaN(s.getTime()) ? null : s;
+    const str = String(s).trim();
+    // Essayer ISO (YYYY-MM-DD) / RFC
+    let d = new Date(str);
+    if (!isNaN(d.getTime())) return d;
+    // Essayer format dd/mm/yyyy
+    const m = str.match(/^([0-3]?\d)[/.-]([0-1]?\d)[/.-](\d{4})$/);
+    if (m) {
+        const dd = parseInt(m[1], 10);
+        const mm = parseInt(m[2], 10) - 1;
+        const yy = parseInt(m[3], 10);
+        d = new Date(yy, mm, dd);
+        if (!isNaN(d.getTime())) return d;
+    }
+    return null;
+}
+
+function addYearsSafe(date, years) {
+    if (!(date instanceof Date)) return null;
+    const d = new Date(date.getTime());
+    const month = d.getMonth();
+    d.setFullYear(d.getFullYear() + years);
+    // Correction 29/02 -> 28/02 si nécessaire
+    if (d.getMonth() !== month) {
+        d.setMonth(1, 28); // février 28
+    }
+    return d;
+}
+
+function formatDateFR(date) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) return '';
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yy = date.getFullYear();
+    return `${dd}/${mm}/${yy}`;
+}
+
 // Fonction pour récupérer les informations du PC de rachat
 async function fetchRacheterPcInfo() {
     try {
@@ -48,6 +89,31 @@ async function fetchRacheterPcInfo() {
 
             if (racheterPcRow) racheterPcRow.classList.remove('hidden');
             if (noPcAttributedMessage) noPcAttributedMessage.classList.add('hidden');
+
+            const btn = document.querySelector('.btn-Envoyer-Demande_de_rachat');
+            const dateAttr = parseDateSafe(result.pc_info.date_attribution);
+            if (dateAttr && btn) {
+                const elig = addYearsSafe(dateAttr, 4);
+                const today = new Date();
+                // Title sur le bouton
+                btn.title = `Éligible au rachat à partir du ${formatDateFR(elig)}`;
+
+                // Message à côté du bouton
+                let infoEl = document.getElementById('rachatEligibilityInfo');
+                if (!infoEl) {
+                    infoEl = document.createElement('div');
+                    infoEl.id = 'rachatEligibilityInfo';
+                    infoEl.style.cssText = 'margin-top:8px;font-size:12px;';
+                    btn.insertAdjacentElement('afterend', infoEl);
+                }
+                if (today < elig) {
+                    infoEl.textContent = `Éligible le ${formatDateFR(elig)}`;
+                    infoEl.style.color = '#b7791f'; // amber
+                } else {
+                    infoEl.textContent = 'Éligible au rachat';
+                    infoEl.style.color = '#2f855a'; // green
+                }
+            }
         } else if (response.ok && result.message) {
             // Aucun PC attribué
             if (racheterPcRow) racheterPcRow.classList.add('hidden');
@@ -85,6 +151,17 @@ function initRachatManagement() {
     if (btnRachat) {
         btnRachat.addEventListener('click', async function(e) {
             e.preventDefault();
+
+            // Garde front: empêcher l'envoi si amortissement non atteint
+            const dateAttrText = document.getElementById('racheterDateAttribution')?.textContent;
+            const dateAttr = parseDateSafe(dateAttrText);
+            if (dateAttr) {
+                const elig = addYearsSafe(dateAttr, 4);
+                if (elig && new Date() < elig) {
+                    showRachatNotification("la date d'amortissement de votre ordinateur n'est pas encore atteinte", 'error', 'Rachat');
+                    return;
+                }
+            }
             
             // Activer l'état de chargement
             showRachatLoadingState(true, btnRachat);
@@ -136,7 +213,7 @@ function initRachatManagement() {
                         fetchRacheterPcInfo(); 
                     }, 1500);
                 } else {
-                    showRachatNotification("Erreur lors de l'envoi de la demande : " + result.error, 'error');
+                    showRachatNotification(result?.error || "Erreur lors de l'envoi de la demande.", 'error');
                 }
             } catch (error) {
                 console.error("Erreur réseau :", error);
@@ -243,100 +320,17 @@ function showRachatLoadingState(isLoading, submitButton) {
  * @param {string} message - Message à afficher
  * @param {string} type - Type de notification (success, error, info)
  */
-function showRachatNotification(message, type = 'info') {
-    // Créer ou réutiliser un conteneur de notification
-    let notificationContainer = document.getElementById('rachat-notification-container');  
-    if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
-        notificationContainer.id = 'rachat-notification-container';
-        notificationContainer.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            max-width: 400px;
-        `;
-        document.body.appendChild(notificationContainer);
+function showRachatNotification(message, type = 'info', title = null) {
+    // Utiliser le système global si disponible
+    if (window.showNotification && typeof window.showNotification === 'function') {
+        return window.showNotification(message, type, title);
     }
-    
-    // Créer la notification
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        padding: 15px 20px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        line-height: 1.4;
-        animation: slideIn 0.3s ease-out;
-        border-left: 4px solid;
-        background: white;
-    `;
-    const styles = {
-        success: {
-            borderColor: '#28a745',
-            backgroundColor: '#d4edda',
-            color: '#155724',
-            icon: '✅'
-        },
-        error: {
-            borderColor: '#dc3545',
-            backgroundColor: '#f8d7da',
-            color: '#721c24',
-            icon: '❌'
-        },
-        info: {
-            borderColor: '#17a2b8',
-            backgroundColor: '#d1ecf1',
-            color: '#0c5460',
-            icon: 'ℹ️'
-        }
-    };
-    
-    const style = styles[type] || styles.info;
-    notification.style.borderLeftColor = style.borderColor;
-    notification.style.backgroundColor = style.backgroundColor;
-    notification.style.color = style.color;
-    
-    notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 16px;">${style.icon}</span>
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" 
-                    style="margin-left: auto; background: none; border: none; font-size: 18px; 
-                           cursor: pointer; color: ${style.color}; opacity: 0.7;">&times;</button>
-        </div>
-    `;
-    
-    // Ajouter les styles d'animation si ce n'est pas déjà fait
-    if (!document.getElementById('rachat-notification-styles')) {
-        const styleSheet = document.createElement('style');
-        styleSheet.id = 'rachat-notification-styles';
-        styleSheet.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(styleSheet);
+    if (window.NotificationSystem && typeof window.NotificationSystem.show === 'function') {
+        return window.NotificationSystem.show(message, type, title ? { title } : {});
     }
-    notificationContainer.appendChild(notification);
-    const autoRemoveDelay = type === 'success' ? 5000 : 8000;
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.style.animation = 'slideOut 0.3s ease-in';
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 300);
-        }
-    }, autoRemoveDelay);
+    // Fallback minimal
+    const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+    alert(`${icon} ${title ? title + ': ' : ''}${message}`);
 }
 
 function styleActionButtons() {

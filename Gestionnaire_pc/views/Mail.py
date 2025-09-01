@@ -39,12 +39,6 @@ def demander_caracteristique(request):
             try:
                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
                 email_status = "E-mail de notification envoyé avec succès."
-                Email.objects.create(
-                    objet=subject,
-                    corps=message,
-                    destinataire=', '.join(recipient_list), 
-                    expediteur=connected_user, 
-                )
                 Email_DOT.objects.create(
                     objet=subject,
                     corps=message,
@@ -112,13 +106,6 @@ def envoyer_caracteristiques(request):
             try:
                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
                 email_status = "E-mail de notification envoyé avec succès."
-
-                Email.objects.create(
-                    objet=subject,
-                    corps=message,
-                    destinataire=', '.join(recipient_list),
-                    expediteur=connected_user,
-                )
                 Email_MGX.objects.create(
                     objet=subject,
                     corps=message,
