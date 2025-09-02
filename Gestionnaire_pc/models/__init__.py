@@ -2,7 +2,7 @@ from .Employe import Employe, EmployeDOT, EmployeMGX, EmployeDCH, EmployeRMG, Em
 from .pc import PC, marquePC, modelePC
 from .pc_attribué import Pc_attribué
 from .Email import Email, Email_RDOT, Email_DOT, Email_MGX, Email_RMG, Email_DCH, Email_DAF
-from .caracteristiqueRecue import CaracteristiqueRecue
+from .caracteristiqueRecue import DemandeCaracteristique
 from .caracteristiqueEnvoyé import CaracteristiqueEnvoyee
 from .Pc_ancien import Pc_ancien
 from .Pc_ancien_attribue import Pc_ancien_attribue

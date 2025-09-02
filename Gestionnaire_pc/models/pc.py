@@ -8,7 +8,8 @@ class PC(models.Model):
     ram = models.CharField(max_length=50)
     disque_dur = models.CharField(max_length=50)
     date_achat = models.DateField()
-    
+    destinataire = models.CharField(max_length=100,default="Destinataire inconnu")
+
 class marquePC(models.Model):
     id_marque = models.AutoField(primary_key=True)
     nom_marque = models.CharField(max_length=100, unique=True)

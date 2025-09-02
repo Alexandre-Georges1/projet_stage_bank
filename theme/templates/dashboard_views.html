@@ -32,6 +32,20 @@
                 <p>En service</p>
             </span>
         </li>
+         <li class="dashboard-card type-rebut">
+            <i class="fa-solid fa-laptop"></i>
+            <span class="text">
+                <h3>{{ demandes_en_attente|default:0 }}</h3>
+                <p>Caractéristiques en attente</p>
+            </span>
+        </li>
+         <li  class="dashboard-card type-total">
+            <i class="fa-solid fa-laptop"></i>
+            <span class="text">
+                <h3>{{ total_caracteristique_envoyee }}</h3>
+                <p>Caractéristiques envoyées</p>
+            </span>
+        </li>
         <li class="dashboard-card type-total">
             <i class="fas fa-desktop"></i>
             <span class="text">
@@ -150,6 +164,7 @@
                         <th style="width: 10%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Disque</th>
                         <th style="width: 15%; padding: 12px 8px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">N° de série</th>
                         <th style="width: 12%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Date d'achat</th>
+                        <th style="width: 12%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Destinataire</th>
                         <th style="width: 16%; padding: 12px 8px; text-align: center; border-bottom: 2px solid #e0e0e0; font-weight: 600; background-color: #f8f9fa;">Actions</th>
                     </tr>
                 </thead>
@@ -163,6 +178,7 @@
                         <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ pc.disque_dur }}</td>
                         <td style="padding: 16px 8px; vertical-align: middle; font-family: monospace; font-size: 13px;">{{ pc.numero_serie }}</td>
                         <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ pc.date_achat|date:"d/m/Y" }}</td>
+                        <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">{{ pc.destinataire }}</td>
                         <td style="padding: 16px 8px; text-align: center; vertical-align: middle;">
                             <button class="btn-modifier" aria-label="Modifier" style="margin: 0 2px;"><i class="fas fa-edit"></i></button>
                             <button class="btn-supprimer" aria-label="Supprimer" style="margin: 0 2px;"><i class="fas fa-trash-alt"></i></button>
@@ -428,40 +444,11 @@
 
 <!-- Vue Achat de périphérique -->
 <div id="Achat_piece-view" class="hidden">
-    <h1>Demande d'achat de périphérique</h1>
-    <div class="table-data">
-        <div class="order">
-            <div class="head">
-                <h3>Faire une demande</h3>
-                <i class='bx bx-search'></i>
-                <i class='bx bx-filter'></i>
-            </div>
-            <form id="demandeAchatPieceForm" method="post" action="{% url 'demande_achat_peripheriques' %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="demandeAchatMateriel">Sélectionner le matériel </label>
-                    <select id="demandeAchatMateriel" name="materiel" required>
-                        <option value="" disabled selected>Sélectionner le matériel: </option>
-                        <option value="Souris">Souris</option>
-                        <option value="Clavier">Clavier</option>
-                        <option value="Écran">Écran</option>
-                        <option value="Imprimante">Imprimante</option>
-                        <option value="Autre">Autre</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="demandeAchatCaracteristique">Objet de la demande:</label>
-                    <select id="demandeAchatCaracteristique" name="caracteristique" required disabled style="width: 100%; padding: 12px 15px; border: 1px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; font-size: 16px; color: #333;">
-                        <option value="Demande d'achat de périphérique" selected>Demande d'achat de périphérique</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="commentairesAchat">Commentaires additionnels (optionnel):</label>
-                    <textarea id="commentairesAchat" name="commentaires" rows="6" style="width:100%; min-height:160px; padding:12px 14px; border:1px solid #d0d0d0; border-radius:8px; resize:vertical; font-size:14px; line-height:1.4;" placeholder="Précisez vos besoins ou ajoutez des informations complémentaires..."></textarea>
-                </div>
-                <button aria-label="Faire la demande" type="submit" class="btn-ajouter-manuel">Faire la demande</button>
-            </form>
-        </div>
+    <div class="flex justify-between items-center mb-8">
+        <h2>Demande d'achat de périphérique</h2>
+         <button aria-label="Faire la demande" type="button" id="openAchatPieceModalBtn" class="btn-ajouter-manuel">
+                    Faire la demande
+        </button>
     </div>
     <div class="table-data">
         <div class="order">
@@ -969,10 +956,13 @@
             <div class="politique-box">
                 <a href="{% url 'politique_confidentialite' %}"><h2> Politique de Confidentialité et d'Utilisation</h2></a>
                 <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;">
-                    En acceptant ce bordereau, vous reconnaissez avoir pris connaissance et accepté les termes de notre politique de confidentialité et d'utilisation des équipements. 
+                    En acceptant ce bordereau, vous reconnaissez avoir pris connaissance et accepté les termes de notre politique 
                 </p>
+                <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;">de confidentialité et d'utilisation des équipements.</p>
                 <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;">
-                    Cela inclut notamment : la gestion et la protection des données personnelles, l'utilisation appropriée et responsable des ressources informatiques de l'entreprise,
+                    Cela inclut notamment : la gestion et la protection des données personnelles, l'utilisation appropriée et responsable 
+                </p>
+                <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;"> des ressources informatiques</p>
                 <p style="max-width:860px; margin:14px auto 0; font-size:14px; line-height:1.55; text-align:justify; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; padding:0 8px; color:#333;">
                     ainsi que vos engagements en matière de sécurité, de conservation et de restitution du matériel.
                 </p>

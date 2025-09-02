@@ -335,8 +335,7 @@ function initPcManagement() {
     const formSerial = document.getElementById('serial');
     const formDateAchat = document.getElementById('dateAchat');
     const formSubmitBtn = addPcForm ? addPcForm.querySelector('button[type="submit"]') : null;
-
-  
+    const formDestinataire = document.getElementById('destinataire');
 
     // Variables pour la modale des PCs Attribués (Historique)
     const attributedPcBtn = document.getElementById('attributed-pcs-btn');
@@ -450,6 +449,7 @@ function initPcManagement() {
             const disqueValue = formDisque?.value?.trim() || '';
             const serialValue = formSerial?.value?.trim() || '';
             const dateAchatValue = formDateAchat?.value || '';
+            const destinataireValue = formDestinataire?.value || '';
 
          
 
@@ -489,6 +489,16 @@ function initPcManagement() {
                 if (formSerial) formSerial.focus();
                 return;
             }
+            if (!destinataireValue) {
+                if (window.NotificationSystem) {
+                    window.NotificationSystem.error('Le destinataire est obligatoire', { title: 'Validation' });
+                } else {
+                    showPcNotification('Le destinataire est obligatoire', 'error');
+                }
+                showPcLoadingState(false);
+                formDestinataire?.focus();
+                return;
+            }
         
             const pcData = {
                 marque: marqueValue,
@@ -497,7 +507,8 @@ function initPcManagement() {
                 ram: ramValue,
                 disque: disqueValue,
                 serial: serialValue,
-                dateAchat: dateAchatValue
+                dateAchat: dateAchatValue,
+                destinataire: destinataireValue
             };
 
             let url = '';
@@ -548,8 +559,35 @@ function initPcManagement() {
                     }
                     // Délai augmenté pour laisser le temps de lire la notification (3s au lieu de 1.5s)
                     setTimeout(() => {
+                        // Mise à jour optimiste de la ligne en mode édition
+                        if (mode === 'edit' && pcId) {
+                            try {
+                                const row = document.querySelector(`#catalogue-view tr[data-pc-id="${pcId}"]`);
+                                if (row) {
+                                    const tds = row.querySelectorAll('td');
+                                    if (tds[0]) tds[0].textContent = marqueValue;
+                                    if (tds[1]) tds[1].textContent = modelValue;
+                                    if (tds[2]) tds[2].textContent = processeurValue;
+                                    if (tds[3]) tds[3].textContent = ramValue;
+                                    if (tds[4]) tds[4].textContent = disqueValue;
+                                    if (tds[5]) tds[5].textContent = serialValue;
+                                    if (tds[6]) {
+                                        if (dateAchatValue && /^\d{4}-\d{2}-\d{2}$/.test(dateAchatValue)) {
+                                            const [Y, M, D] = dateAchatValue.split('-');
+                                            tds[6].textContent = `${D}/${M}/${Y}`;
+                                        }
+                                    }
+                                    if (tds[7] && formDestinataire) {
+                                        const sel = formDestinataire.selectedOptions?.[0];
+                                        tds[7].textContent = sel ? sel.textContent.trim() : '';
+                                    }
+                                }
+                            } catch(_) {}
+                        }
                         addPcModal.classList.add('hidden');
-                        location.reload();
+                        if (mode === 'add') {
+                            location.reload();
+                        }
                     }, 3000);
                 } else {
                     if (window.NotificationSystem) {
@@ -613,6 +651,16 @@ function initPcManagement() {
                             addPcForm.dataset.mode = 'edit';
                             addPcForm.dataset.pcId = pcId;
                         }
+                        // Pré-remplissage du destinataire selon la valeur affichée dans le tableau (colonne 8 / index 7)
+                        const destinataireTxt = cells[7]?.textContent?.trim() || '';
+                        if (formDestinataire) {
+                            let matched = false;
+                            formDestinataire.querySelectorAll('option').forEach(opt => {
+                                if ((opt.textContent?.trim() || '') === destinataireTxt) { opt.selected = true; matched = true; }
+                            });
+                            if (!matched) formDestinataire.value = '';
+                        }
+
                         // Utiliser la fonction universelle d'ouverture
                         if (window.openModal) {
                             window.openModal('addPcModal');

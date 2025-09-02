@@ -65,6 +65,15 @@
                 <label for="dateAchat">Date d'achat:</label>
                 <input type="date" id="dateAchat" name="dateAchat" required>
             </div>
+            <div class="form-group">
+                <label for="destinataire">Destinataire:</label>
+                <select id="destinataire" name="destinataire" required>
+                    <option value="" disabled selected>Sélectionner un destinataire</option>
+                    {% for employe in employes %}
+                    <option value="{{ employe.pk }}">{{ employe.nom }} {{ employe.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             <button aria-label="Ajouter PC" type="submit" class="btn-ajouter-manuel modern-submit-btn">
                 <i class="fas fa-plus"></i>
                 Ajouter PC
@@ -93,9 +102,53 @@
                 <i class="fas fa-trash"></i>
                 Supprimer
             </button>
-        </div>
+        </div>     
     </div>
 </div>
+
+<!-- Modal : Demande d'achat de périphérique -->
+<div id="achatPieceModal" class="modern-modal-overlay hidden">
+    <div class="modern-modal-content">
+        <span class="modern-close-btn" data-close="achatPieceModal">&times;</span>
+        <div class="modal-header">
+            <div class="modal-icon">
+                <i class="fas fa-cart-plus"></i>
+            </div>
+            <h2>Demande d'achat de périphérique</h2>
+            <p class="modal-subtitle">Soumettre une demande d'achat</p>
+        </div>
+        <form id="achatPieceModalForm" method="post" action="{% url 'demande_achat_peripheriques' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="modalDemandeAchatMateriel">Sélectionner le matériel</label>
+                <select id="modalDemandeAchatMateriel" name="materiel" required>
+                    <option value="" disabled selected>Sélectionner le matériel: </option>
+                    <option value="Souris">Souris</option>
+                    <option value="Clavier">Clavier</option>
+                    <option value="Écran">Écran</option>
+                    <option value="Imprimante">Imprimante</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="modalDemandeAchatCaracteristique">Objet de la demande:</label>
+                <select id="modalDemandeAchatCaracteristique" name="caracteristique" required disabled>
+                    <option value="Demande d'achat de périphérique" selected>Demande d'achat de périphérique</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="modalCommentairesAchat">Commentaires additionnels (optionnel):</label>
+                <textarea id="modalCommentairesAchat" name="commentaires" rows="6" placeholder="Précisez vos besoins ou ajoutez des informations complémentaires..."></textarea>
+            </div>
+            <button aria-label="Confirmer la demande" type="submit" class="btn-ajouter-manuel modern-submit-btn">
+                <i class="fas fa-paper-plane"></i>
+                Confirmer la demande
+            </button>
+        </form>
+    </div>
+</div>
+
+
 
 <!-- Modal d'édition -->
 <div id="editModal" class="modern-modal-overlay hidden">
@@ -148,7 +201,7 @@
                 <select id="assignPcNumeroSerie" name="numero_serie" required>
                     <option value="" disabled selected>-- Sélectionner --</option>
                     {% for pc in pcs %}
-                    <option value="{{ pc.numero_serie }}" data-marque="{{ pc.marque }}" data-modele="{{ pc.modele }}">{{ pc.marque }} {{ pc.modele }} ({{ pc.numero_serie }})</option>
+                    <option value="{{ pc.numero_serie }}" data-marque="{{ pc.marque }}" data-modele="{{ pc.modele }}">{{ pc.marque }} {{ pc.modele }} ({{ pc.numero_serie }})({{ pc.destinataire }})</option>
                     {% endfor %}
                 </select>
             </div>
@@ -378,6 +431,15 @@
         <form id="sendCharacteristicsForm">
             {% csrf_token %}
             <div class="form-group">
+                <label for="selectEmployeConcerne">Employé Concerné:</label>
+                <select id="selectEmployeConcerne" name="employe_concerne" required>
+                    <option value="" disabled selected>Sélectionner un employé</option>
+                    {% for employe in employes_sans_caracteristique %}
+                    <option value="{{ employe.pk }}">{{ employe.nom }} {{ employe.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="selectMarque">Marque:</label>
                 <select id="selectMarque" name="marque" required>
                     <option value="" disabled selected>Sélectionner une marque</option>
@@ -425,15 +487,7 @@
                     <option value="Autre">Autre</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="selectEmployeConcerne">Employé Concerné:</label>
-                <select id="selectEmployeConcerne" name="employe_concerne" required>
-                    <option value="" disabled selected>Sélectionner un employé</option>
-                    {% for employe in employes_sans_caracteristique %}
-                    <option value="{{ employe.pk }}">{{ employe.nom }} {{ employe.prenom }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+            
             <button aria-label="Envoyer" type="submit" class="btn-ajouter-manuel modern-submit-btn">
                 <i class="fas fa-paper-plane"></i>
                 Envoyer
@@ -441,19 +495,6 @@
         </form>
     </div>
 </div>
-<!--
-<div id="administrationModal" class="modern-modal-overlay hidden">
-    <div class="modern-modal-content small-modal">
-        <div class="modal-header">
-            <div class="modal-icon">
-                <i class="fas fa-user-shield"></i>
-            </div>
-            <h2>Administration</h2>
-            <p class="modal-subtitle">Bientôt disponible</p>
-        </div>
-    </div>
-</div>
--->
 
 <!-- Modale pour le bordereau de livraison -->
 <div id="bordereauModal" class="modern-modal-overlay hidden">

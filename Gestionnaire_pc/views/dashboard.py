@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
-from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique, Email_DOT, Email_DAF, Email_MGX, Email_RDOT, Pc_ancien_attribue
-from django.contrib.auth.decorators import login_required
+from ..models import Employe,PC,CaracteristiqueEnvoyee, Pc_attribué, Pc_ancien, marquePC, modelePC, Email,Bordereau,DemandeAchatPeripherique, Email_DOT, Email_DAF, Email_MGX, Email_RDOT, Pc_ancien_attribue, DemandeCaracteristique
 
 
 def get_demandes_peripheriques():
@@ -32,6 +31,7 @@ def dashboard(request):
     pc_total = PC.objects.count()  
     pc_en_service = Pc_attribué.objects.count()
     pc_en_rebu = Pc_ancien.objects.count()
+    total_caracteristique_envoyee = CaracteristiqueEnvoyee.objects.count()
     marques = marquePC.objects.all()
     modeles = modelePC.objects.all()
     connected_user = None
@@ -64,6 +64,7 @@ def dashboard(request):
     'pcs_attribues': pcs_attribues,  
     'pcs_anciens_attribues': pcs_anciens_attribues,
         'pc_total':pc_total,
+        'total_caracteristique_envoyee': total_caracteristique_envoyee,
         'pc_en_service': pc_en_service,
         'pc_en_rebu': pc_en_rebu,
         'marques': marques,
@@ -271,9 +272,11 @@ def dashboard_RDOT(request):
     pc_en_rebu_attribue = Pc_ancien_attribue.objects.count()
     pc_total_global=pc_total + pc_en_rebu + pc_en_rebu_attribue + pc_en_service
     emails = Email_RDOT.objects.all()
+    demande_en_attente = DemandeCaracteristique.objects.filter(statut="non recu").count()
     marques=marquePC.objects.all()
     modeles=modelePC.objects.all()
     employe=None
+    total_caracteristique_envoyee = CaracteristiqueEnvoyee.objects.count()
     employes_sans_pc = Employe.objects.exclude(
     pk__in=Pc_attribué.objects.values('employe_id')
 )
@@ -300,8 +303,10 @@ def dashboard_RDOT(request):
     context = {
                 'employes': employes,
                 'pcs': pcs,
+                'demandes_en_attente': demande_en_attente,
                 'bordereaux': bordereaux,
                 'demandes_achat': demandes_achat,
+                'total_caracteristique_envoyee': total_caracteristique_envoyee,
                 'connected_user': connected_user,
                 'caracteristiques_envoyees': caracteristiques_envoyees,
                 'pcs_attribues': pcs_attribues,
@@ -330,6 +335,7 @@ def dashboard_DOT(request):
     pcs_attribues = Pc_attribué.objects.select_related('employe').all().order_by('-date_attribution')
     pc_total = PC.objects.count()  
     bordereaux = []
+    total_caracteristique_envoyee = CaracteristiqueEnvoyee.objects.count()
     demandes_achat = []
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pc_en_service= Pc_attribué.objects.count()
@@ -347,6 +353,7 @@ def dashboard_DOT(request):
     pc_en_rebu_attribue = Pc_ancien_attribue.objects.count()
     pc_total_global=pc_total + pc_en_rebu + pc_en_rebu_attribue + pc_en_service
     connected_user = None
+    demande_en_attente = DemandeCaracteristique.objects.filter(statut="non recu").count()
     employe = None
     emails = Email_DOT.objects.all()
     if 'user_id' in request.session:
@@ -367,9 +374,11 @@ def dashboard_DOT(request):
                 'bordereaux': bordereaux,
                 'demandes_achat': demandes_achat,
                 'connected_user': connected_user,
+                'demandes_en_attente': demande_en_attente,
                 'caracteristiques_envoyees': caracteristiques_envoyees,
                 'pcs_attribues': pcs_attribues,
                 'pc_total': pc_total, 
+                'total_caracteristique_envoyee': total_caracteristique_envoyee,
                 'employes_sans_caracteristique': employes_sans_caracteristique,
                 'pc_en_service': pc_en_service,
                 'pcs_anciens': pcs_anciens,
@@ -389,10 +398,12 @@ def dashboard_DOT(request):
 
 def Admin(request):
     employes = Employe.objects.all()
+    demande_en_attente = DemandeCaracteristique.objects.filter(statut="non recu").count()
     pcs = PC.objects.all()
     pcs_attribues = Pc_attribué.objects.all().order_by('-date_attribution')
     pcs_anciens = Pc_ancien.objects.all().order_by('-date_ajout')
     pc_total = PC.objects.count()  
+    total_caracteristique_envoyee = CaracteristiqueEnvoyee.objects.count()
     pc_en_service= Pc_attribué.objects.count()
     pc_en_rebu = Pc_ancien.objects.count()
     pcs_anciens_attribues = Pc_ancien_attribue.objects.select_related('employe').order_by('-date_attribution')
@@ -430,6 +441,8 @@ def Admin(request):
                 'connected_user': connected_user,
                 'pcs_attribues': pcs_attribues,
                 'pcs_anciens': pcs_anciens,
+                'demandes_en_attente': demande_en_attente,
+                'total_caracteristique_envoyee': total_caracteristique_envoyee,
                 'employes_sans_pc': employes_sans_pc,
                 'pc_total': pc_total, 
                 'pc_total_global': pc_total_global,

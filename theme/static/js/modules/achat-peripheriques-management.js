@@ -9,6 +9,13 @@ class AchatPeripheriquesManager {
         this.submitButton = null;
         this.materielSelect = null;
         this.commentairesField = null;
+    // Modal elements
+    this.openBtn = null;
+    this.modalOverlay = null;
+    this.modalForm = null;
+    this.modalCloseBtn = null;
+    this.modalMaterielSelect = null;
+    this.modalCommentairesField = null;
         
         this.init();
     }
@@ -37,13 +44,26 @@ class AchatPeripheriquesManager {
         this.submitButton = this.demandeForm ? this.demandeForm.querySelector('button[type="submit"]') : null;
         this.materielSelect = document.getElementById('demandeAchatMateriel');
         this.commentairesField = document.getElementById('commentairesAchat');
+
+    // Modal-based elements
+    this.openBtn = document.getElementById('openAchatPieceModalBtn');
+    this.modalOverlay = document.getElementById('achatPieceModal');
+    this.modalForm = document.getElementById('achatPieceModalForm');
+    this.modalCloseBtn = this.modalOverlay ? this.modalOverlay.querySelector('.modern-close-btn') : null;
+    this.modalMaterielSelect = document.getElementById('modalDemandeAchatMateriel');
+    this.modalCommentairesField = document.getElementById('modalCommentairesAchat');
     }
 
     /**
      * Configure les écouteurs d'événements
      */
     setupEventListeners() {
-        this.setupFormSubmission();
+        // Backward compatibility if inline form exists (should be removed now)
+        if (this.demandeForm) {
+            this.setupFormSubmission();
+        }
+        // Preferred: modal interactions
+        this.setupModalBehavior();
     }
 
     /**
@@ -54,6 +74,101 @@ class AchatPeripheriquesManager {
             this.demandeForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 this.handleFormSubmit();
+            });
+        }
+    }
+
+    /**
+     * Gestion de la modale (ouverture/fermeture + submit via fetch)
+     */
+    setupModalBehavior() {
+        const overlay = this.modalOverlay;
+        const form = this.modalForm;
+        const openBtn = this.openBtn;
+        const closeBtn = this.modalCloseBtn;
+
+        const ouvrirModal = () => {
+            if (!overlay) return;
+            overlay.classList.remove('hidden');
+        };
+        const fermerModal = () => {
+            if (!overlay) return;
+            overlay.classList.add('hidden');
+        };
+
+        // Open
+        if (openBtn) {
+            openBtn.addEventListener('click', () => {
+                if (this.modalMaterielSelect) this.modalMaterielSelect.value = '';
+                if (this.modalCommentairesField) this.modalCommentairesField.value = '';
+                ouvrirModal();
+            });
+        }
+        // Close
+        if (closeBtn) closeBtn.addEventListener('click', fermerModal);
+        if (overlay) {
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) fermerModal(); });
+        }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerModal(); });
+
+        // Submit via fetch
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalHtml = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+                    submitBtn.style.opacity = '0.7';
+                    submitBtn.style.cursor = 'not-allowed';
+                }
+                try {
+                    const formData = new FormData(form);
+                    const csrf = form.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                    const resp = await fetch(window.demandeAchatPeripheriquesUrl || form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-CSRFToken': csrf }
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (resp.ok) {
+                        if (window.NotificationSystem?.success) {
+                            window.NotificationSystem.success("Demande d'achat envoyée", { description: data.message || 'Votre demande a été transmise.', duration: 3500 });
+                        } else {
+                            this.showSuccess(data.message || 'Demande envoyée');
+                        }
+                        fermerModal();
+                        form.reset();
+                        if (window.DashboardCore?.switchView) {
+                            window.DashboardCore.switchView('Achat_piece-view');
+                        }
+                        setTimeout(() => { window.location.reload(); }, 1200);
+                    } else {
+                        const msg = data?.error || "Échec de l'envoi de la demande.";
+                        if (window.NotificationSystem?.error) {
+                            window.NotificationSystem.error('Erreur', { description: msg, duration: 3500 });
+                        } else {
+                            this.showError(msg);
+                        }
+                    }
+                } catch (err) {
+                    const msg = 'Erreur réseau ou serveur.';
+                    if (window.NotificationSystem?.error) {
+                        window.NotificationSystem.error('Erreur', { description: msg, duration: 3500 });
+                    } else {
+                        this.showError(msg);
+                    }
+                } finally {
+                    if (submitBtn) {
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalHtml;
+                            submitBtn.style.opacity = '1';
+                            submitBtn.style.cursor = 'pointer';
+                        }, 600);
+                    }
+                }
             });
         }
     }

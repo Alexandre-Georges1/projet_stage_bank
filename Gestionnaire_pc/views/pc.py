@@ -29,6 +29,32 @@ def ajouter_pc(request):
             disque_dur = data.get('disque')
             numero_serie = data.get('serial')
             date_achat = data.get('dateAchat')
+
+            # Gestion du destinataire: accepter un id employé ou un nom déjà formaté
+            destinataire_final = None
+            dest_id = data.get('destinataire_id') or None
+            dest_name = data.get('destinataire_name') or None
+            # Compat: certains clients peuvent envoyer 'destinataire'
+            legacy_dest = data.get('destinataire')
+            try:
+                if dest_id:
+                    # Priorité au lookup par identifiant
+                    employe = Employe.objects.filter(pk=dest_id).first()
+                    if employe:
+                        destinataire_final = f"{employe.nom} {employe.prenom}".strip()
+                if not destinataire_final and legacy_dest:
+                    # legacy_dest peut être un id ou un libellé
+                    if str(legacy_dest).isdigit():
+                        employe = Employe.objects.filter(pk=int(legacy_dest)).first()
+                        if employe:
+                            destinataire_final = f"{employe.nom} {employe.prenom}".strip()
+                    else:
+                        destinataire_final = str(legacy_dest).strip()
+                if not destinataire_final and dest_name:
+                    destinataire_final = str(dest_name).strip()
+            except Exception:
+                # En cas d'erreur de parsing, ne pas bloquer la création du PC
+                destinataire_final = None
             
             pc = PC.objects.create(
                 marque=marque_instance,
@@ -37,7 +63,8 @@ def ajouter_pc(request):
                 ram=ram,
                 disque_dur=disque_dur,
                 numero_serie=numero_serie,
-                date_achat=date_achat
+                date_achat=date_achat,
+                destinataire=destinataire_final or ''
             )
             email_sent = False
             email_id = None
@@ -63,6 +90,7 @@ Détails de l'ordinateur:
 - Disque: {disque_dur or ''}
 - Numéro de série: {numero_serie}
 - Date d'achat: {date_achat or ''}
+ - Destinataire: {destinataire_final or ''}
 
 Ajouté le: {datetime.now().strftime('%d/%m/%Y à %H:%M')}
                 """.strip()
@@ -130,6 +158,29 @@ def modifier_pc(request, pc_id):
             pc.disque_dur = data.get('disque', pc.disque_dur)
             pc.numero_serie = data.get('serial', pc.numero_serie)
             pc.date_achat = data.get('dateAchat', pc.date_achat)
+            # Mise à jour éventuelle du destinataire
+            destinataire_final = None
+            dest_id = data.get('destinataire_id') or None
+            dest_name = data.get('destinataire_name') or None
+            legacy_dest = data.get('destinataire')
+            try:
+                if dest_id:
+                    employe = Employe.objects.filter(pk=dest_id).first()
+                    if employe:
+                        destinataire_final = f"{employe.nom} {employe.prenom}".strip()
+                if not destinataire_final and legacy_dest:
+                    if str(legacy_dest).isdigit():
+                        employe = Employe.objects.filter(pk=int(legacy_dest)).first()
+                        if employe:
+                            destinataire_final = f"{employe.nom} {employe.prenom}".strip()
+                    else:
+                        destinataire_final = str(legacy_dest).strip()
+                if not destinataire_final and dest_name:
+                    destinataire_final = str(dest_name).strip()
+            except Exception:
+                destinataire_final = None
+            if destinataire_final is not None:
+                pc.destinataire = destinataire_final
             
             pc.save()
             return JsonResponse({'message': 'PC modifié avec succès!'})
@@ -165,7 +216,7 @@ def assign_pc_via_form(request):
                     return JsonResponse({'message': 'PC déjà attribué (requête répétée ignorée).'}, status=200)
                 return JsonResponse({'error': 'Numéro de série inconnu ou non conforme au PC.'}, status=400)
             date_attribution = datetime.strptime(date_attribution_str, '%Y-%m-%d').date()
-            Pc_attribué.objects.create(
+            attrib = Pc_attribué.objects.create(
                 marque=pc.marque.nom_marque,
                 modele=pc.modele.nom_modele,
                 ram=pc.ram,
@@ -176,8 +227,55 @@ def assign_pc_via_form(request):
                 employe=employe,
                 date_attribution=date_attribution
             )
+            # Envoyer un email à l'employé pour l'informer de l'attribution
+            email_sent = False
+            email_id = None
+            try:
+                expediteur = None
+                try:
+                    user_id = request.session.get('user_id')
+                    if user_id:
+                        expediteur = Employe.objects.filter(id_employe=user_id).first()
+                except Exception:
+                    expediteur = None
+
+                sujet = f"Attribution d'un ordinateur - {pc.marque.nom_marque} {pc.modele.nom_modele}"
+                corps_message = f"""
+Bonjour {employe.prenom} {employe.nom},
+
+Un ordinateur vient de vous être attribué.
+
+Merci de bien vouloir cliquer sur ce lien si dessous afin de valider votre bordereau:
+e-machines.orabank.group
+
+Contacter le service IT pour toute question.
+                """.strip()
+
+                # Enregistrer l'email en base
+                email_obj = Email.objects.create(
+                    destinataire=getattr(employe, 'email', '') or 'noreply@example.com',
+                    objet=sujet,
+                    corps=corps_message,
+                    expediteur=expediteur
+                )
+                email_id = email_obj.id_email
+                # Envoyer l'email réellement
+                try:
+                    if getattr(employe, 'email', None):
+                        send_mail(
+                            subject=sujet,
+                            message=corps_message,
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[employe.email],
+                            fail_silently=False,
+                        )
+                        email_sent = True
+                except Exception:
+                    email_sent = False
+            except Exception:
+                email_sent = False
             pc.delete()
-            return JsonResponse({'message': 'PC attribué et archivé avec succès !'})
+            return JsonResponse({'message': 'PC attribué et archivé avec succès !', 'email_to_employe_sent': email_sent, 'email_id': email_id})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
@@ -186,8 +284,6 @@ def assign_pc_via_form(request):
 def pc_disponible():
     return PC.objects.count()
 
-
-    
 def gestion_modeles(request):
     if request.method == 'GET':
         modeles = list(modelePC.objects.values())

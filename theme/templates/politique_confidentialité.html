@@ -50,13 +50,45 @@
             color: #2c5282;
         }
 
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #edf2f7;
+            color: #1a202c;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.05s ease;
+            margin-bottom: 16px;
+        }
+
+        .back-btn:hover {
+            background: #e6f0ff;
+        }
+
+        .back-btn:active {
+            transform: translateY(1px);
+        }
+
+        .back-btn .icon {
+            font-size: 16px;
+            line-height: 1;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
+        <button type="button" class="back-btn" onclick="window.history.back()" aria-label="Revenir à la page précédente">
+            <span class="icon">←</span>
+            <span>Retour</span>
+        </button>
         <h1>
             Article 5 du manuel de politique de sécurité : <br>
-            <span class="important">Responsabilité de l'utilisateur vis-à-vis des ressources informatiques</span>
+            <span class="important" style="color:#16a34a;">Responsabilité de l'utilisateur vis-à-vis des ressources informatiques</span>
         </h1>
 
         <p>

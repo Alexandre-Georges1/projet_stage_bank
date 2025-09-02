@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from ..models import DemandeAchatPeripherique, Employe
+from django.core.mail import send_mail
+from django.conf import settings
+from ..models import DemandeAchatPeripherique, Employe, Email_MGX
 import json
 
   
@@ -39,10 +41,57 @@ def gerer_demandes_achat(request):
                 demande.statut = nouveau_statut
                 demande.traite_par = connected_user
                 demande.save()
-                
+
+                email_sent = False
+                email_id = None
+                # Si la demande est approuvée, notifier par email la nécessité d'achat
+                if (nouveau_statut or '').lower() == 'approuve':
+                    try:
+                        employe = demande.employe
+                        objet = f"Validation d'achat de périphérique - {employe.nom} {employe.prenom} - {demande.materiel}"
+                        corps_message = f"""
+Une demande d'achat de périphérique a été approuvée par le responsable exploitation et infrastructure {connected_user.prenom} {connected_user.nom}.
+Détails de la demande:
+- Employé: {employe.prenom} {employe.nom}
+- Département: {getattr(employe, 'Département', '')}
+- Matricule: {getattr(employe, 'matricule', '')}
+- Téléphone: {getattr(employe, 'telephone', '')}
+- Objet: {demande.objet_demande}
+- Matériel: {demande.materiel}
+- Commentaires: {demande.commentaires or 'N/A'}
+- Numéro de demande: {demande.id_demande}
+
+Approuvée par: {connected_user.prenom} {connected_user.nom}
+                        """.strip()
+
+                        # Enregistrer l'email
+                        email = Email_MGX.objects.create(
+                            destinataire="kaogeorges2006@gmail.com",
+                            objet=objet,
+                            corps=corps_message,
+                            expediteur=connected_user
+                        )
+                        email_id = email.id_email
+                        # Envoyer l'email réellement
+                        try:
+                            send_mail(
+                                subject=objet,
+                                message=corps_message,
+                                from_email=settings.DEFAULT_FROM_EMAIL,
+                                recipient_list=["kaogeorges2006@gmail.com"],
+                                fail_silently=False,
+                            )
+                            email_sent = True
+                        except Exception:
+                            email_sent = False
+                    except Exception:
+                        email_sent = False
+
                 return JsonResponse({
-                    'message': f'Demande mise à jour avec succès: {demande.get_statut_display()}',
-                    'nouveau_statut': demande.get_statut_display()
+                    'message': f'Demande approuvée avec succès: {demande.get_statut_display()}',
+                    'nouveau_statut': demande.get_statut_display(),
+                    'email_sent': email_sent,
+                    'email_id': email_id,
                 })
                 
             except DemandeAchatPeripherique.DoesNotExist:

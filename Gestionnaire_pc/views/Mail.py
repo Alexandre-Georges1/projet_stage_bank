@@ -2,7 +2,8 @@ from django.http import JsonResponse
 import json
 from django.core.mail import send_mail
 from django.conf import settings
-from ..models import Employe, Email, CaracteristiqueEnvoyee,Pc_attribué,Email_MGX, Email_DOT, Email_RDOT, Email_DAF
+from django.utils import timezone
+from ..models import Employe, Email, CaracteristiqueEnvoyee, DemandeCaracteristique, Pc_attribué, Email_MGX, Email_DOT, Email_RDOT, Email_DAF
 
 
 def demander_caracteristique(request):
@@ -51,9 +52,17 @@ def demander_caracteristique(request):
                     destinataire=', '.join(recipient_list), 
                     expediteur=connected_user, 
                 )
-              
+                # Enregistrer la demande dans DemandeCaracteristique
+                try:
+                    DemandeCaracteristique.objects.create(
+                        caracteristique=caracteristique or '',
+                        envoyeur=connected_user,
+                        employe_concerne=employe,
+                    )
+                except Exception as _:
+                    pass
             except Exception as e:
-                email_status = f"Erreur lors de l\'envoi de l\'e-mail : {e}"
+                email_status = f"Erreur lors de l'envoi de l'e-mail : {e}"
                 print(email_status) 
             return JsonResponse({'message': f'Demande envoyée avec succès! {email_status}'})
         except Employe.DoesNotExist:
